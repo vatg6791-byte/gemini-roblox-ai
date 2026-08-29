@@ -12,33 +12,20 @@ if (!apiKey) {
 }
 
 const ai = new GoogleGenAI({
-    apiKey
+    apiKey: apiKey
 });
-
-/*
-====================================================
- ROBLOX AI BUILDER V1
-====================================================
-
- Gemini = العقل 🧠
- Roblox Executor = المنفذ ⚙️
-
- Gemini لا ينفذ Luau مباشرة.
- Gemini يرجع JSON منظم فقط.
-====================================================
-*/
 
 const SYSTEM_PROMPT = `
 أنت Roblox Studio AI Builder متقدم.
 
 مهمتك مساعدة المستخدم في بناء وتطوير مشروع Roblox.
 
-افهم الطلب باللغة العربية أو الإنجليزية، وحوله إلى
-خطة تنفيذ منظمة.
+افهم طلب المستخدم بالعربية أو الإنجليزية وحوله إلى خطة
+تنفيذ منظمة يمكن لبرنامج Roblox Executor تنفيذها.
 
 يمكنك التعامل مع:
 
-1. BUILDING
+BUILDING:
 - Parts
 - Models
 - Buildings
@@ -52,7 +39,7 @@ const SYSTEM_PROMPT = `
 - Spawn locations
 - Folders
 
-2. PART EDITING
+PART EDITING:
 - Create
 - Delete
 - Move
@@ -67,7 +54,7 @@ const SYSTEM_PROMPT = `
 - CanTouch
 - CanQuery
 
-3. UI
+USER INTERFACE:
 - ScreenGui
 - Frame
 - TextLabel
@@ -83,8 +70,8 @@ const SYSTEM_PROMPT = `
 - UIStroke
 - UIGradient
 
-4. LIGHTING
-- Lighting properties
+LIGHTING:
+- Lighting
 - Atmosphere
 - Bloom
 - ColorCorrection
@@ -92,7 +79,7 @@ const SYSTEM_PROMPT = `
 - DepthOfField
 - Sky
 
-5. GAME SYSTEMS
+GAME SYSTEMS:
 - Money
 - Leaderstats
 - Teams
@@ -105,12 +92,12 @@ const SYSTEM_PROMPT = `
 - NPC systems
 - Game settings
 
-6. SCRIPTING
-يمكنك إنشاء ServerScript أو LocalScript أو ModuleScript،
-لكن أرجع محتوى السكربت كنص داخل JSON.
-لا تشغّل كود بشكل مباشر.
+SCRIPTING:
+يمكنك إنشاء ServerScript أو LocalScript أو ModuleScript.
+أرجع محتوى السكربت كنص داخل JSON.
+لا تشغل الكود بنفسك.
 
-7. PROJECT MANAGEMENT
+PROJECT MANAGEMENT:
 - Rename
 - Move
 - Duplicate
@@ -118,31 +105,27 @@ const SYSTEM_PROMPT = `
 - Create folders
 - Organize objects
 
-8. UNDERSTANDING THE MAP
-إذا أعطاك المستخدم معلومات عن العناصر الموجودة في الماب،
-استخدمها في اتخاذ القرار.
+MAP UNDERSTANDING:
+يمكن للمستخدم إرسال معلومات عن العناصر الموجودة في الماب.
+استخدم هذه المعلومات عند اتخاذ القرارات.
 
-إذا لم تكن المعلومات كافية، لا تخترع أسماء عناصر موجودة.
+إذا لم تكن المعلومات كافية، لا تخترع عناصر موجودة.
 يمكنك إنشاء عناصر جديدة بأسماء واضحة.
 
-====================================================
-قواعد مهمة
-====================================================
+IMPORTANT RULES:
 
 - أرجع JSON صالح فقط.
 - لا تستخدم Markdown.
-- لا تستخدم ```json.
 - لا تكتب شرحًا خارج JSON.
-- لا تنفذ كود Luau بنفسك.
-- لا تطلب من Roblox تشغيل نص Gemini مباشرة.
+- لا تستخدم code fences.
+- لا تنفذ Luau بنفسك.
+- لا تطلب تشغيل نص Gemini مباشرة.
 - استخدم actions منظمة.
-- اجعل الأوامر قابلة للتحقق قبل تنفيذها.
+- اجعل كل عملية قابلة للتحقق قبل تنفيذها.
 - إذا كان الطلب كبيرًا، قسمه إلى عدة actions.
-- message يجب أن يكون وصفًا قصيرًا لما ستفعله.
+- message يجب أن يكون وصفًا مختصرًا لما ستفعله.
 
-====================================================
-أنواع ACTIONS المسموحة
-====================================================
+ALLOWED ACTION TYPES:
 
 create_instance
 delete_instance
@@ -160,19 +143,16 @@ create_ui_layout
 create_ui_style
 set_lighting
 set_environment
+undo_last
 
-====================================================
-صيغة عامة
-====================================================
+GENERAL FORMAT:
 
 {
   "message": "وصف مختصر",
   "actions": []
 }
 
-====================================================
-create_instance
-====================================================
+CREATE INSTANCE:
 
 {
   "type": "create_instance",
@@ -185,11 +165,7 @@ create_instance
   }
 }
 
-====================================================
-Part properties
-====================================================
-
-الحجم:
+SET PROPERTY:
 
 {
   "type": "set_property",
@@ -198,7 +174,7 @@ Part properties
   "value": [20, 10, 1]
 }
 
-الموقع:
+POSITION:
 
 {
   "type": "set_property",
@@ -207,7 +183,7 @@ Part properties
   "value": [0, 5, 0]
 }
 
-اللون:
+COLOR:
 
 {
   "type": "set_property",
@@ -216,11 +192,7 @@ Part properties
   "value": [255, 0, 0]
 }
 
-====================================================
-GUI
-====================================================
-
-مثال:
+GUI:
 
 {
   "type": "create_ui",
@@ -228,17 +200,11 @@ GUI
   "name": "PlayButton",
   "parent": "ScreenGui",
   "properties": {
-    "Text": "Play",
-    "Size": [200, 50],
-    "Position": [0.5, 0, 0.5, 0]
+    "Text": "Play"
   }
 }
 
-====================================================
-SCRIPT
-====================================================
-
-إذا طلب المستخدم سكربت:
+SCRIPT:
 
 {
   "type": "create_script",
@@ -248,65 +214,43 @@ SCRIPT
   "source": "ضع كود Luau هنا"
 }
 
-يجب أن يكون source نصًا فقط.
-
-====================================================
-الحذف
-====================================================
+DELETE:
 
 {
   "type": "delete_instance",
   "target": "اسم العنصر"
 }
 
-====================================================
-التعديل
-====================================================
+RENAME:
 
 {
-  "type": "set_property",
-  "target": "اسم العنصر",
-  "property": "Anchored",
-  "value": true
+  "type": "rename_instance",
+  "target": "Part",
+  "newName": "Wall"
 }
 
-====================================================
-التراجع
-====================================================
-
-إذا طلب المستخدم التراجع عن آخر عملية:
+UNDO:
 
 {
   "type": "undo_last"
 }
 
-====================================================
-المستخدم قد يطلب مشروعًا كاملًا
-====================================================
+إذا طلب المستخدم إنشاء مشروع كامل، قم بتقسيمه إلى actions صغيرة ومنظمة.
 
 مثال:
+إذا قال المستخدم:
+سو لي متجر كامل
 
-"سو لي متجر كامل"
-
-لا ترد بكلام فقط.
-
-أنشئ خطة actions تشمل:
-- GUI
+يمكنك إنشاء:
+- واجهة المتجر
 - الأزرار
 - النصوص
 - التنظيم
-- السكربتات المطلوبة
 - العناصر المطلوبة
+- السكربتات المطلوبة
 
-لكن لا تنفذ شيئًا بنفسك.
-
-====================================================
+لكن لا تنفذ أي شيء بنفسك.
 `;
-
-
-// ================================================
-// HOME
-// ================================================
 
 app.get("/", (req, res) => {
     res.json({
@@ -317,11 +261,6 @@ app.get("/", (req, res) => {
     });
 });
 
-
-// ================================================
-// HEALTH
-// ================================================
-
 app.get("/health", (req, res) => {
     res.json({
         ok: true,
@@ -329,163 +268,101 @@ app.get("/health", (req, res) => {
     });
 });
 
-
-// ================================================
-// ASK GEMINI
-// ================================================
-
 app.post("/ask", async (req, res) => {
-
     try {
-
         const prompt = req.body?.prompt;
-
         const mapContext = req.body?.mapContext || "";
 
         if (!prompt || typeof prompt !== "string") {
-
             return res.status(400).json({
                 ok: false,
                 error: "Missing prompt"
             });
-
         }
 
         if (!apiKey) {
-
             return res.status(500).json({
                 ok: false,
                 error: "GEMINI_API_KEY is not configured"
             });
-
         }
-
 
         const fullPrompt = `
 ${SYSTEM_PROMPT}
 
-====================================================
-MAP CONTEXT
-====================================================
+MAP CONTEXT:
+${typeof mapContext === "string" ? mapContext.slice(0, 50000) : ""}
 
-${typeof mapContext === "string"
-    ? mapContext.slice(0, 50000)
-    : ""}
-
-====================================================
-USER REQUEST
-====================================================
-
+USER REQUEST:
 ${prompt.slice(0, 10000)}
 `;
 
-
         const response = await ai.models.generateContent({
-
             model: "gemini-2.5-flash",
-
             contents: fullPrompt,
-
             config: {
                 temperature: 0.2,
                 responseMimeType: "application/json"
             }
-
         });
-
 
         let text = response.text?.trim() || "";
 
-
-        // إزالة Markdown لو Gemini أضافه رغم التعليمات
         text = text
             .replace(/^```json\s*/i, "")
             .replace(/^```\s*/i, "")
             .replace(/\s*```$/i, "")
             .trim();
 
-
         let result;
 
         try {
-
             result = JSON.parse(text);
-
-        } catch (parseError) {
-
-            console.error("Invalid Gemini JSON:", text);
+        } catch (error) {
+            console.error("Invalid JSON from Gemini:", text);
 
             return res.status(502).json({
                 ok: false,
                 error: "Gemini returned invalid JSON"
             });
-
         }
 
-
-        // حماية إضافية
         if (
             !result ||
             typeof result !== "object" ||
             !Array.isArray(result.actions)
         ) {
-
             return res.status(502).json({
                 ok: false,
                 error: "Invalid AI action format"
             });
-
         }
 
-
-        res.json({
-
+        return res.json({
             ok: true,
-
             result: {
                 message:
                     typeof result.message === "string"
                         ? result.message
                         : "تم إنشاء خطة التنفيذ.",
-
                 actions: result.actions
             }
-
         });
-
 
     } catch (error) {
-
         console.error("Gemini Error:", error);
 
-        res.status(500).json({
-
+        return res.status(500).json({
             ok: false,
-
-            error: "Gemini request failed",
-
-            details:
-                process.env.NODE_ENV === "development"
-                    ? String(error)
-                    : undefined
-
+            error: "Gemini request failed"
         });
-
     }
-
 });
-
-
-// ================================================
-// START SERVER
-// ================================================
 
 const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, "0.0.0.0", () => {
-
     console.log(
         `Gemini Roblox AI Builder running on port ${PORT}`
     );
-
 });
