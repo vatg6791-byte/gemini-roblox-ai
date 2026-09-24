@@ -1,424 +1,439 @@
 import express from "express";
 import { GoogleGenAI } from "@google/genai";
+import fs from "fs/promises";
+import path from "path";
+import { execFile } from "child_process";
+import { promisify } from "util";
 
 const app = express();
 
 app.use(express.json({ limit: "2mb" }));
 
+const execFileAsync = promisify(execFile);
+
+const PORT = process.env.PORT || 10000;
 const apiKey = process.env.GEMINI_API_KEY;
 
-if (!apiKey) {
-    console.error("ERROR: GEMINI_API_KEY is missing.");
-}
+const ai = apiKey
+    ? new GoogleGenAI({ apiKey })
+    : null;
 
-const ai = new GoogleGenAI({
-    apiKey: apiKey
+
+/* ========================================================
+   PROJECT SANDBOX
+======================================================== */
+
+const PROJECT_ROOT = path.resolve("./projects");
+
+await fs.mkdir(PROJECT_ROOT, {
+    recursive: true
 });
 
+
+function safeProjectName(name) {
+
+    const clean = String(name || "default")
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .slice(0, 50);
+
+    return clean || "default";
+}
+
+
+function getProjectPath(project) {
+
+    const clean = safeProjectName(project);
+
+    return path.join(PROJECT_ROOT, clean);
+}
+
+
+function safePath(project, filePath) {
+
+    const root = path.resolve(
+        getProjectPath(project)
+    );
+
+    const target = path.resolve(
+        root,
+        String(filePath || "")
+    );
+
+    if (
+        target !== root &&
+        !target.startsWith(root + path.sep)
+    ) {
+        throw new Error("Path outside project sandbox is not allowed.");
+    }
+
+    return target;
+}
+
+
+/* ========================================================
+   FILE TOOLS
+======================================================== */
+
+async function createProject(project) {
+
+    const root = getProjectPath(project);
+
+    await fs.mkdir(root, {
+        recursive: true
+    });
+
+    return `Project created: ${safeProjectName(project)}`;
+}
+
+
+async function writeFileTool(
+    project,
+    filePath,
+    content
+) {
+
+    const target = safePath(
+        project,
+        filePath
+    );
+
+    await fs.mkdir(
+        path.dirname(target),
+        {
+            recursive: true
+        }
+    );
+
+    await fs.writeFile(
+        target,
+        String(content ?? ""),
+        "utf8"
+    );
+
+    return `File written: ${filePath}`;
+}
+
+
+async function readFileTool(
+    project,
+    filePath
+) {
+
+    const target = safePath(
+        project,
+        filePath
+    );
+
+    const content = await fs.readFile(
+        target,
+        "utf8"
+    );
+
+    return content;
+}
+
+
+async function deleteFileTool(
+    project,
+    filePath
+) {
+
+    const target = safePath(
+        project,
+        filePath
+    );
+
+    await fs.rm(
+        target,
+        {
+            recursive: false,
+            force: true
+        }
+    );
+
+    return `File deleted: ${filePath}`;
+}
+
+
+/* ========================================================
+   TERMINAL SANDBOX
+======================================================== */
+
+const ALLOWED_COMMANDS = new Set([
+    "node",
+    "npm",
+    "npx",
+    "python",
+    "python3"
+]);
+
+
+async function terminalTool(
+    project,
+    command,
+    args = []
+) {
+
+    const cleanCommand = String(command || "");
+
+    if (!ALLOWED_COMMANDS.has(cleanCommand)) {
+
+        throw new Error(
+            `Command not allowed: ${cleanCommand}`
+        );
+    }
+
+    if (!Array.isArray(args)) {
+        throw new Error("Terminal args must be an array.");
+    }
+
+    const projectPath = getProjectPath(project);
+
+    await fs.mkdir(
+        projectPath,
+        {
+            recursive: true
+        }
+    );
+
+    const safeArgs = args.map(
+        value => String(value)
+    );
+
+    const result = await execFileAsync(
+        cleanCommand,
+        safeArgs,
+        {
+            cwd: projectPath,
+            timeout: 30000,
+            maxBuffer: 1024 * 1024
+        }
+    );
+
+    return {
+        stdout: result.stdout || "",
+        stderr: result.stderr || ""
+    };
+}
+
+
+/* ========================================================
+   GEMINI AGENT PROMPT
+======================================================== */
+
 const SYSTEM_PROMPT = `
-أنت Roblox Studio AI Builder متقدم.
+أنت Gemini AI Agent متقدم.
 
-مهمتك مساعدة المستخدم في بناء وتطوير مشروع Roblox.
+أنت لست مجرد Chatbot.
 
-افهم طلب المستخدم بالعربية أو الإنجليزية وحوله إلى خطة
-تنفيذ منظمة يمكن لبرنامج Roblox Executor تنفيذها.
+أنت Agent يستطيع التخطيط وتنفيذ المهام باستخدام أدوات.
 
-يمكنك التعامل مع:
+يمكنك مساعدة المستخدم في:
 
-BUILDING:
-- Parts
-- Models
-- Buildings
-- Walls
-- Floors
-- Roads
-- Stairs
-- Doors
-- Windows
-- Decorations
-- Spawn locations
-- Folders
+- إنشاء مواقع
+- إنشاء ألعاب
+- إنشاء مشاريع برمجية
+- تصميم UI
+- كتابة HTML
+- كتابة CSS
+- كتابة JavaScript
+- كتابة Python
+- إنشاء الملفات
+- تعديل الملفات
+- قراءة الملفات
+- تشغيل مشاريع
+- فحص الأخطاء
+- إصلاح الأخطاء
 
-PART EDITING:
-- Create
-- Delete
-- Move
-- Resize
-- Rotate
-- Rename
-- Color
-- Material
-- Transparency
-- Anchored
-- CanCollide
-- CanTouch
-- CanQuery
+لديك أدوات:
 
-USER INTERFACE:
-- ScreenGui
-- Frame
-- TextLabel
-- TextButton
-- ImageLabel
-- ImageButton
-- TextBox
-- ScrollingFrame
-- UIListLayout
-- UIGridLayout
-- UIPadding
-- UICorner
-- UIStroke
-- UIGradient
+1. create_project
+إنشاء مشروع جديد.
 
-LIGHTING:
-- Lighting
-- Atmosphere
-- Bloom
-- ColorCorrection
-- SunRays
-- DepthOfField
-- Sky
+2. write_file
+إنشاء أو تعديل ملف.
 
-GAME SYSTEMS:
-- Money
-- Leaderstats
-- Teams
-- Rounds
-- Checkpoints
-- Teleports
-- Shops
-- Doors
-- Interactions
-- NPC systems
-- Game settings
+3. read_file
+قراءة ملف.
 
-SCRIPTING:
-يمكنك إنشاء ServerScript أو LocalScript أو ModuleScript.
-أرجع محتوى السكربت كنص داخل JSON.
-لا تشغل الكود بنفسك.
+4. delete_file
+حذف ملف.
 
-PROJECT MANAGEMENT:
-- Rename
-- Move
-- Duplicate
-- Delete
-- Create folders
-- Organize objects
+5. terminal
+تشغيل أوامر Terminal المسموحة داخل المشروع.
 
-MAP UNDERSTANDING:
-يمكن للمستخدم إرسال معلومات عن العناصر الموجودة في الماب.
-استخدم هذه المعلومات عند اتخاذ القرارات.
+IMPORTANT:
 
-إذا لم تكن المعلومات كافية، لا تخترع عناصر موجودة.
-يمكنك إنشاء عناصر جديدة بأسماء واضحة.
+- لا تدّعي أنك نفذت شيئًا إذا لم تنفذه أداة فعلًا.
+- استخدم الأدوات عند الحاجة.
+- لا تخترع نتيجة Terminal.
+- إذا ظهر خطأ، اقرأ الخطأ وحاول إصلاحه.
+- جميع الملفات يجب أن تبقى داخل مجلد المشروع.
+- لا تحاول الوصول إلى ملفات النظام.
+- لا تستخدم أوامر خطيرة.
+- لا تحاول تجاوز Sandbox.
+- لا تكشف مفاتيح API أو الأسرار.
+- إذا طلب المستخدم بناء مشروع كامل، نفذ المهمة على مراحل.
 
-IMPORTANT RULES:
+أسلوبك:
 
-- أرجع JSON صالح فقط.
-- لا تستخدم Markdown.
-- لا تكتب شرحًا خارج JSON.
-- لا تستخدم code fences.
-- لا تنفذ Luau بنفسك.
-- لا تطلب تشغيل نص Gemini مباشرة.
-- استخدم actions منظمة.
-- اجعل كل عملية قابلة للتحقق قبل تنفيذها.
-- إذا كان الطلب كبيرًا، قسمه إلى عدة actions.
-- message يجب أن يكون وصفًا مختصرًا لما ستفعله.
-
-ALLOWED ACTION TYPES:
-
-create_instance
-delete_instance
-rename_instance
-move_instance
-resize_part
-rotate_instance
-set_property
-set_attribute
-clone_instance
-create_folder
-create_script
-create_ui
-create_ui_layout
-create_ui_style
-set_lighting
-set_environment
-undo_last
-
-GENERAL FORMAT:
-
-{
-  "message": "وصف مختصر",
-  "actions": []
-}
-
-CREATE INSTANCE:
-
-{
-  "type": "create_instance",
-  "className": "Part",
-  "name": "Wall",
-  "parent": "Workspace",
-  "properties": {
-    "Anchored": true,
-    "CanCollide": true
-  }
-}
-
-SET PROPERTY:
-
-{
-  "type": "set_property",
-  "target": "Wall",
-  "property": "Size",
-  "value": [20, 10, 1]
-}
-
-POSITION:
-
-{
-  "type": "set_property",
-  "target": "Wall",
-  "property": "Position",
-  "value": [0, 5, 0]
-}
-
-COLOR:
-
-{
-  "type": "set_property",
-  "target": "Wall",
-  "property": "Color",
-  "value": [255, 0, 0]
-}
-
-GUI:
-
-{
-  "type": "create_ui",
-  "className": "TextButton",
-  "name": "PlayButton",
-  "parent": "ScreenGui",
-  "properties": {
-    "Text": "Play"
-  }
-}
-
-SCRIPT:
-
-{
-  "type": "create_script",
-  "className": "Script",
-  "name": "MoneySystem",
-  "parent": "ServerScriptService",
-  "source": "ضع كود Luau هنا"
-}
-
-DELETE:
-
-{
-  "type": "delete_instance",
-  "target": "اسم العنصر"
-}
-
-RENAME:
-
-{
-  "type": "rename_instance",
-  "target": "Part",
-  "newName": "Wall"
-}
-
-UNDO:
-
-{
-  "type": "undo_last"
-}
-
-إذا طلب المستخدم إنشاء مشروع كامل، قم بتقسيمه إلى actions صغيرة ومنظمة.
-
-مثال:
-إذا قال المستخدم:
-سو لي متجر كامل
-
-يمكنك إنشاء:
-- واجهة المتجر
-- الأزرار
-- النصوص
-- التنظيم
-- العناصر المطلوبة
-- السكربتات المطلوبة
-
-لكن لا تنفذ أي شيء بنفسك.
+افهم طلب المستخدم.
+خطط.
+استخدم الأدوات.
+تحقق من النتيجة.
+أصلح الأخطاء.
+ثم أخبر المستخدم بما تم إنجازه.
 `;
 
 
 /* ========================================================
-   BASIC ROUTES
+   TOOL EXECUTION
 ======================================================== */
 
-app.get("/", (req, res) => {
-    res.json({
-        ok: true,
-        service: "Gemini Roblox AI Builder",
-        version: "1.0.0",
-        status: "online"
-    });
-});
+async function runAgentTool(
+    tool,
+    project,
+    input
+) {
 
-app.get("/health", (req, res) => {
-    res.json({
-        ok: true,
-        geminiConfigured: Boolean(apiKey)
-    });
-});
+    switch (tool) {
 
+        case "create_project":
 
-/* ========================================================
-   GEMINI REQUEST WITH AUTOMATIC RETRIES
-======================================================== */
-
-async function generateWithRetry(fullPrompt) {
-
-    const MAX_RETRIES = 4;
-
-    // 1 = المحاولة الأولى
-    // ثم انتظار 1.5 ثانية
-    // ثم 3 ثواني
-    // ثم 6 ثواني
-    // ثم 12 ثانية
-
-    const delays = [
-        1500,
-        3000,
-        6000,
-        12000
-    ];
-
-    for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
-
-        try {
-
-            console.log(
-                `Gemini request attempt ${attempt}/${MAX_RETRIES}`
+            return await createProject(
+                project
             );
 
-            const response = await ai.models.generateContent({
-                model: "gemini-3.6-flash",
-                contents: fullPrompt,
-                config: {
-                    temperature: 0.2,
-                    responseMimeType: "application/json"
-                }
-            });
 
-            console.log(
-                `Gemini request succeeded on attempt ${attempt}`
+        case "write_file":
+
+            return await writeFileTool(
+                project,
+                input.path,
+                input.content
             );
 
-            return response;
 
-        } catch (error) {
+        case "read_file":
 
-            const errorText = String(error);
-
-            const is503 =
-                errorText.includes("503") ||
-                errorText.includes("UNAVAILABLE") ||
-                errorText.includes("high demand");
-
-            const is429 =
-                errorText.includes("429") ||
-                errorText.includes("RESOURCE_EXHAUSTED") ||
-                errorText.includes("Too Many Requests");
-
-            const shouldRetry = is503 || is429;
-
-            console.error(
-                `Gemini attempt ${attempt} failed:`,
-                errorText
+            return await readFileTool(
+                project,
+                input.path
             );
 
-            // إذا كان الخطأ ليس 503 أو 429
-            // لا نعيد المحاولة
-            if (!shouldRetry) {
-                throw error;
-            }
 
-            // إذا كانت آخر محاولة
-            if (attempt === MAX_RETRIES) {
-                console.error(
-                    "Gemini failed after all retry attempts."
-                );
+        case "delete_file":
 
-                throw error;
-            }
-
-            const waitTime = delays[attempt - 1];
-
-            console.log(
-                `Temporary Gemini error detected. Retrying in ${waitTime}ms...`
+            return await deleteFileTool(
+                project,
+                input.path
             );
 
-            await new Promise(resolve =>
-                setTimeout(resolve, waitTime)
+
+        case "terminal":
+
+            return await terminalTool(
+                project,
+                input.command,
+                input.args || []
             );
-        }
+
+
+        default:
+
+            throw new Error(
+                `Unknown tool: ${tool}`
+            );
     }
-
-    throw new Error("Gemini retry system failed.");
 }
 
 
 /* ========================================================
-   ASK ENDPOINT
+   AGENT
 ======================================================== */
 
-app.post("/ask", async (req, res) => {
+app.post("/agent", async (req, res) => {
 
     try {
 
-        const prompt = req.body?.prompt;
-        const mapContext = req.body?.mapContext || "";
-
-        if (!prompt || typeof prompt !== "string") {
-
-            return res.status(400).json({
-                ok: false,
-                error: "Missing prompt"
-            });
-
-        }
-
-        if (!apiKey) {
+        if (!ai) {
 
             return res.status(500).json({
                 ok: false,
                 error: "GEMINI_API_KEY is not configured"
             });
-
         }
 
-        const fullPrompt = `
+
+        const userPrompt = req.body?.prompt;
+
+        const project =
+            safeProjectName(
+                req.body?.project || "default"
+            );
+
+
+        if (
+            !userPrompt ||
+            typeof userPrompt !== "string"
+        ) {
+
+            return res.status(400).json({
+                ok: false,
+                error: "Missing prompt"
+            });
+        }
+
+
+        await createProject(
+            project
+        );
+
+
+        const response =
+            await ai.models.generateContent({
+
+                model: "gemini-3.6-flash",
+
+                contents: `
 ${SYSTEM_PROMPT}
 
-MAP CONTEXT:
-${typeof mapContext === "string"
-    ? mapContext.slice(0, 50000)
-    : ""}
+PROJECT:
+${project}
 
 USER REQUEST:
-${prompt.slice(0, 10000)}
-`;
+${userPrompt.slice(0, 10000)}
 
-        /*
-         * Gemini request
-         * مع إعادة المحاولة تلقائيًا عند 503 / 429
-         */
+Respond with JSON:
 
-        const response = await generateWithRetry(fullPrompt);
+{
+  "message": "what you want to do",
+  "tool": null,
+  "input": {}
+}
 
-        let text = response.text?.trim() || "";
+Allowed tools:
+
+create_project
+write_file
+read_file
+delete_file
+terminal
+
+If no tool is required:
+
+{
+  "message": "your answer",
+  "tool": null,
+  "input": {}
+}
+`
+            });
+
+
+        let text =
+            response.text?.trim() || "";
+
 
         text = text
             .replace(/^```json\s*/i, "")
@@ -426,79 +441,154 @@ ${prompt.slice(0, 10000)}
             .replace(/\s*```$/i, "")
             .trim();
 
-        let result;
+
+        let action;
+
 
         try {
 
-            result = JSON.parse(text);
+            action = JSON.parse(text);
 
-        } catch (error) {
-
-            console.error(
-                "Invalid JSON from Gemini:",
-                text
-            );
+        } catch {
 
             return res.status(502).json({
+
                 ok: false,
-                error: "Gemini returned invalid JSON"
+
+                error:
+                    "Gemini returned invalid JSON",
+
+                raw: text
+
             });
         }
+
 
         if (
-            !result ||
-            typeof result !== "object" ||
-            !Array.isArray(result.actions)
+            action.tool &&
+            typeof action.tool === "string"
         ) {
 
-            return res.status(502).json({
-                ok: false,
-                error: "Invalid AI action format"
+            const result =
+                await runAgentTool(
+                    action.tool,
+                    project,
+                    action.input || {}
+                );
+
+
+            return res.json({
+
+                ok: true,
+
+                project,
+
+                executed: true,
+
+                tool: action.tool,
+
+                message:
+                    action.message ||
+                    "Tool executed.",
+
+                result
+
             });
+
         }
+
 
         return res.json({
 
             ok: true,
 
-            result: {
+            project,
 
-                message:
-                    typeof result.message === "string"
-                        ? result.message
-                        : "تم إنشاء خطة التنفيذ.",
+            executed: false,
 
-                actions: result.actions
-
-            }
+            message:
+                action.message ||
+                "تم."
 
         });
 
     } catch (error) {
 
         console.error(
-            "Gemini Error after retries:",
+            "Agent Error:",
             error
         );
 
         return res.status(500).json({
+
             ok: false,
-            error: "Gemini request failed after retries"
+
+            error:
+                error.message ||
+                "Agent request failed"
+
         });
     }
 });
 
 
 /* ========================================================
-   START SERVER
+   TEST ROUTES
 ======================================================== */
 
-const PORT = process.env.PORT || 10000;
+app.get("/", (req, res) => {
 
-app.listen(PORT, "0.0.0.0", () => {
+    res.json({
 
-    console.log(
-        `Gemini Roblox AI Builder running on port ${PORT}`
-    );
+        ok: true,
 
+        service:
+            "Gemini AI Agent",
+
+        version:
+            "1.0.0",
+
+        status:
+            "online"
+
+    });
 });
+
+
+app.get("/health", (req, res) => {
+
+    res.json({
+
+        ok: true,
+
+        geminiConfigured:
+            Boolean(apiKey),
+
+        agent:
+            true,
+
+        terminal:
+            true,
+
+        files:
+            true
+
+    });
+});
+
+
+/* ========================================================
+   START
+======================================================== */
+
+app.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
+
+        console.log(
+            `Gemini AI Agent running on port ${PORT}`
+        );
+
+    }
+);
