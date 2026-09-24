@@ -21,172 +21,205 @@ app.use(express.json({
 const execFileAsync = promisify(execFile);
 
 const PORT = process.env.PORT || 10000;
+const API_KEY = process.env.GEMINI_API_KEY || "";
 
-/* =========================================================
-   PRIMARY GEMINI KEY
-========================================================= */
+const PROJECT_ROOT = path.resolve("./projects");
+const CHAT_ROOT = path.resolve("./chats");
+const DATA_ROOT = path.resolve("./data");
+const KEY_STORE_PATH = path.join(DATA_ROOT, "api-keys.json");
 
-const PRIMARY_API_KEY =
-    process.env.GEMINI_API_KEY || "";
+await fs.mkdir(PROJECT_ROOT, { recursive: true });
+await fs.mkdir(CHAT_ROOT, { recursive: true });
+await fs.mkdir(DATA_ROOT, { recursive: true });
 
-/* =========================================================
-   DIRECTORIES
-========================================================= */
+const MODEL = "gemini-3.8-flash";
+const THINKING_LEVEL = "low";
+const MAX_AGENT_STEPS = 8;
 
-const PROJECT_ROOT =
-    path.resolve("./projects");
+const jobs = new Map();
 
-const CHAT_ROOT =
-    path.resolve("./chats");
 
-const KEY_ROOT =
-    path.resolve("./keys");
+// ============================================================
+// SAFE NAMES / PATHS
+// ============================================================
 
-const KEY_FILE =
-    path.join(
-        KEY_ROOT,
-        "keys.json"
+function safeName(value, fallback = "default") {
+    const clean = String(value || fallback)
+        .replace(/[^a-zA-Z0-9_-]/g, "_")
+        .slice(0, 80);
+
+    return clean || fallback;
+}
+
+function getProjectPath(project) {
+    return path.join(PROJECT_ROOT, safeName(project));
+}
+
+function getChatPath(chatId) {
+    return path.join(
+        CHAT_ROOT,
+        `${safeName(chatId)}.json`
+    );
+}
+
+function safeProjectPath(project, filePath) {
+    const root = path.resolve(
+        getProjectPath(project)
     );
 
-await fs.mkdir(
-    PROJECT_ROOT,
-    { recursive: true }
-);
+    const target = path.resolve(
+        root,
+        String(filePath || "")
+    );
 
-await fs.mkdir(
-    CHAT_ROOT,
-    { recursive: true }
-);
+    if (
+        target !== root &&
+        !target.startsWith(root + path.sep)
+    ) {
+        throw new Error(
+            "Path outside project sandbox is not allowed."
+        );
+    }
 
-await fs.mkdir(
-    KEY_ROOT,
-    { recursive: true }
-);
+    return target;
+}
 
-/* =========================================================
-   CONFIG
-========================================================= */
 
-const MODEL =
-    "gemini-3.8-flash";
+// ============================================================
+// KEY MANAGER
+// ============================================================
 
-const THINKING_LEVEL =
-    "low";
+let keyStore = null;
+let keyStoreWrite = Promise.resolve();
 
-const MAX_AGENT_STEPS =
-    8;
+async function loadKeyStore() {
 
-/* =========================================================
-   JOBS
-========================================================= */
-
-const jobs =
-    new Map();
-
-/* =========================================================
-   ACTIVE GEMINI KEY
-========================================================= */
-
-/*
- * null = استخدام المفتاح الأساسي من Render.
- *
- * إذا اختار المستخدم مفتاحًا محفوظًا:
- * currentKeyId يصبح ID المفتاح.
- */
-
-let currentKeyId =
-    null;
-
-/* =========================================================
-   KEY STORE
-========================================================= */
-
-async function loadKeys() {
+    if (keyStore) {
+        return keyStore;
+    }
 
     try {
 
-        const raw =
-            await fs.readFile(
-                KEY_FILE,
-                "utf8"
-            );
-
-        const data =
-            JSON.parse(raw);
-
-        if (
-            !Array.isArray(data.keys)
-        ) {
-
-            return {
-                keys: []
-            };
-        }
-
-        return data;
-
-    } catch {
-
-        const initial = {
-            keys: []
-        };
-
-        await fs.writeFile(
-            KEY_FILE,
-            JSON.stringify(
-                initial,
-                null,
-                2
-            ),
+        const raw = await fs.readFile(
+            KEY_STORE_PATH,
             "utf8"
         );
 
-        return initial;
-    }
-}
+        keyStore = JSON.parse(raw);
 
+    } catch {
 
-async function saveKeys(
-    data
-) {
-
-    await fs.writeFile(
-        KEY_FILE,
-        JSON.stringify(
-            data,
-            null,
-            2
-        ),
-        "utf8"
-    );
-}
-
-
-function makeKeyId() {
-
-    return (
-        "key_" +
-        Date.now() +
-        "_" +
-        Math.random()
-            .toString(36)
-            .slice(2, 9)
-    );
-}
-
-
-function maskKey(
-    key
-) {
-
-    const value =
-        String(key || "");
-
-    if (!value) {
-        return "••••";
+        keyStore = {
+            activeKeyId: "primary",
+            keys: []
+        };
     }
 
-    if (value.length <= 8) {
+    // Make sure primary Render key exists.
+    if (API_KEY) {
+
+        const primary =
+            keyStore.keys.find(
+                key => key.id === "primary"
+            );
+
+        if (primary) {
+
+            // Always take the actual primary key
+            // from Render environment.
+            primary.apiKey = API_KEY;
+            primary.enabled = true;
+            primary.primary = true;
+            primary.provider = "Google Gemini";
+
+        } else {
+
+            keyStore.keys.unshift({
+                id: "primary",
+                name: "Render Primary",
+                provider: "Google Gemini",
+                apiKey: API_KEY,
+                primary: true,
+                enabled: true,
+                status: "ready",
+                lastError: null,
+                lastErrorAt: null,
+                lastUsedAt: null,
+                createdAt: Date.now()
+            });
+        }
+    }
+
+    if (
+        !keyStore.activeKeyId ||
+        !keyStore.keys.some(
+            key =>
+                key.id === keyStore.activeKeyId &&
+                key.enabled
+        )
+    ) {
+
+        keyStore.activeKeyId =
+            API_KEY ? "primary" : null;
+    }
+
+    await saveKeyStore();
+
+    return keyStore;
+}
+
+
+async function saveKeyStore() {
+
+    if (!keyStore) {
+        return;
+    }
+
+    keyStoreWrite =
+        keyStoreWrite.then(async () => {
+
+            await fs.writeFile(
+                KEY_STORE_PATH,
+                JSON.stringify(
+                    keyStore,
+                    null,
+                    2
+                ),
+                "utf8"
+            );
+
+        });
+
+    await keyStoreWrite;
+}
+
+
+async function getActiveKeyRecord() {
+
+    const store =
+        await loadKeyStore();
+
+    const key =
+        store.keys.find(
+            item =>
+                item.id === store.activeKeyId &&
+                item.enabled &&
+                item.apiKey
+        );
+
+    return key || null;
+}
+
+
+function maskKey(apiKey) {
+
+    if (!apiKey) {
+        return "";
+    }
+
+    const value = String(apiKey);
+
+    if (value.length <= 10) {
         return "••••••••";
     }
 
@@ -198,396 +231,42 @@ function maskKey(
 }
 
 
-/*
- * بيانات المفتاح التي نرسلها للواجهة.
- *
- * NEVER نرسل المفتاح الحقيقي.
- */
-
-function publicKeyInfo(
-    key
-) {
+function publicKey(key, activeKeyId) {
 
     return {
-
-        id:
-            key.id,
-
-        name:
-            key.name,
-
-        masked:
-            maskKey(
-                key.value
-            ),
-
-        enabled:
-            key.enabled !== false,
-
-        createdAt:
-            key.createdAt,
-
-        lastUsedAt:
-            key.lastUsedAt || null
+        id: key.id,
+        name: key.name,
+        provider: key.provider,
+        primary: Boolean(key.primary),
+        enabled: Boolean(key.enabled),
+        active: key.id === activeKeyId,
+        maskedKey: maskKey(key.apiKey),
+        status: key.status || "ready",
+        lastError: key.lastError || null,
+        lastErrorAt: key.lastErrorAt || null,
+        lastUsedAt: key.lastUsedAt || null,
+        createdAt: key.createdAt || null
     };
 }
 
 
-/* =========================================================
-   GEMINI CLIENT
-========================================================= */
-
-function getActiveKeyRecord(
-    data
-) {
-
-    if (!currentKeyId) {
-
-        return {
-
-            id:
-                "primary",
-
-            name:
-                "Render Primary",
-
-            value:
-                PRIMARY_API_KEY,
-
-            enabled:
-                Boolean(
-                    PRIMARY_API_KEY
-                ),
-
-            primary:
-                true
-        };
-    }
-
-    const found =
-        data.keys.find(
-            key =>
-                key.id ===
-                currentKeyId
-        );
-
-    if (
-        !found ||
-        found.enabled === false
-    ) {
-
-        currentKeyId =
-            null;
-
-        return {
-
-            id:
-                "primary",
-
-            name:
-                "Render Primary",
-
-            value:
-                PRIMARY_API_KEY,
-
-            enabled:
-                Boolean(
-                    PRIMARY_API_KEY
-                ),
-
-            primary:
-                true
-        };
-    }
-
-    return found;
-}
-
-
-function getAIClient() {
-
-    /*
-     * هذه الدالة تنشئ Client للمفتاح المستخدم حاليًا.
-     */
-
-    return loadKeys()
-        .then(
-            data => {
-
-                const active =
-                    getActiveKeyRecord(
-                        data
-                    );
-
-                if (
-                    !active.value
-                ) {
-
-                    throw new Error(
-                        "لا يوجد مفتاح Gemini صالح حاليًا."
-                    );
-                }
-
-                return {
-                    ai:
-                        new GoogleGenAI({
-                            apiKey:
-                                active.value
-                        }),
-
-                    key:
-                        active
-                };
-            }
-        );
-}
-
-
-/* =========================================================
-   SAFE NAMES
-========================================================= */
-
-function safeName(
-    value,
-    fallback = "default"
-) {
-
-    const clean =
-        String(
-            value || fallback
-        )
-        .replace(
-            /[^a-zA-Z0-9_-]/g,
-            "_"
-        )
-        .slice(
-            0,
-            80
-        );
-
-    return clean || fallback;
-}
-
-
-/* =========================================================
-   PATHS
-========================================================= */
-
-function getProjectPath(
-    project
-) {
-
-    return path.join(
-        PROJECT_ROOT,
-        safeName(project)
-    );
-}
-
-
-function getChatPath(
-    chatId
-) {
-
-    return path.join(
-        CHAT_ROOT,
-        `${safeName(chatId)}.json`
-    );
-}
-
-
-/* =========================================================
-   PATH SECURITY
-========================================================= */
-
-function safeProjectPath(
-    project,
-    filePath
-) {
-
-    const root =
-        path.resolve(
-            getProjectPath(project)
-        );
-
-    const target =
-        path.resolve(
-            root,
-            String(filePath || "")
-        );
-
-    if (
-        target !== root &&
-        !target.startsWith(
-            root + path.sep
-        )
-    ) {
-
-        throw new Error(
-            "Path outside project sandbox is not allowed."
-        );
-    }
-
-    return target;
-}
-
-
-/* =========================================================
-   CHAT MEMORY
-========================================================= */
-
-async function loadChat(
-    chatId
-) {
-
-    try {
-
-        const raw =
-            await fs.readFile(
-                getChatPath(chatId),
-                "utf8"
-            );
-
-        return JSON.parse(
-            raw
-        );
-
-    } catch {
-
-        return {
-
-            id:
-                safeName(chatId),
-
-            title:
-                "New Chat",
-
-            project:
-                "default",
-
-            createdAt:
-                Date.now(),
-
-            updatedAt:
-                Date.now(),
-
-            messages:
-                []
-        };
-    }
-}
-
-
-async function saveChat(
-    chat
-) {
-
-    chat.updatedAt =
-        Date.now();
-
-    await fs.writeFile(
-        getChatPath(chat.id),
-        JSON.stringify(
-            chat,
-            null,
-            2
-        ),
-        "utf8"
-    );
-}
-
-
-/* =========================================================
-   CHAT LIST
-========================================================= */
-
-async function listChats() {
-
-    const files =
-        await fs.readdir(
-            CHAT_ROOT
-        );
-
-    const chats = [];
-
-    for (
-        const file of files
-    ) {
-
-        if (
-            !file.endsWith(".json")
-        ) {
-            continue;
-        }
-
-        try {
-
-            const raw =
-                await fs.readFile(
-                    path.join(
-                        CHAT_ROOT,
-                        file
-                    ),
-                    "utf8"
-                );
-
-            const chat =
-                JSON.parse(raw);
-
-            chats.push({
-
-                id:
-                    chat.id,
-
-                title:
-                    chat.title,
-
-                project:
-                    chat.project,
-
-                createdAt:
-                    chat.createdAt,
-
-                updatedAt:
-                    chat.updatedAt
-            });
-
-        } catch {}
-    }
-
-    chats.sort(
-        (a, b) =>
-            (b.updatedAt || 0) -
-            (a.updatedAt || 0)
-    );
-
-    return chats;
-}
-
-
-/* =========================================================
-   PROJECT
-========================================================= */
-
-async function createProject(
-    project
-) {
+// ============================================================
+// PROJECT TOOLS
+// ============================================================
+
+async function createProject(project) {
 
     await fs.mkdir(
         getProjectPath(project),
-        {
-            recursive: true
-        }
+        { recursive: true }
     );
 
     return {
-        ok: true
+        ok: true,
+        project: safeName(project)
     };
 }
 
-
-/* =========================================================
-   WRITE FILE
-========================================================= */
 
 async function writeFileTool(
     project,
@@ -603,15 +282,11 @@ async function writeFileTool(
 
     await fs.mkdir(
         path.dirname(target),
-        {
-            recursive: true
-        }
+        { recursive: true }
     );
 
     const text =
-        String(
-            content ?? ""
-        );
+        String(content ?? "");
 
     await fs.writeFile(
         target,
@@ -620,24 +295,15 @@ async function writeFileTool(
     );
 
     return {
-
         ok: true,
-
-        path:
-            filePath,
-
-        bytes:
-            Buffer.byteLength(
-                text,
-                "utf8"
-            )
+        path: filePath,
+        bytes: Buffer.byteLength(
+            text,
+            "utf8"
+        )
     };
 }
 
-
-/* =========================================================
-   READ FILE
-========================================================= */
 
 async function readFileTool(
     project,
@@ -657,20 +323,12 @@ async function readFileTool(
         );
 
     return {
-
         ok: true,
-
-        path:
-            filePath,
-
+        path: filePath,
         content
     };
 }
 
-
-/* =========================================================
-   DELETE FILE
-========================================================= */
 
 async function deleteFileTool(
     project,
@@ -691,142 +349,84 @@ async function deleteFileTool(
     );
 
     return {
-
         ok: true,
-
-        path:
-            filePath
+        path: filePath
     };
 }
 
 
-/* =========================================================
-   FILE LIST
-========================================================= */
+// ============================================================
+// FILE LIST
+// ============================================================
 
-async function getFiles(
-    project
+async function listFilesRecursive(
+    directory,
+    base = directory
 ) {
-
-    const root =
-        getProjectPath(project);
 
     const result = [];
 
-    async function walk(
-        directory,
-        relative
-    ) {
+    let entries = [];
 
-        let entries;
+    try {
 
-        try {
+        entries =
+            await fs.readdir(
+                directory,
+                {
+                    withFileTypes: true
+                }
+            );
 
-            entries =
-                await fs.readdir(
-                    directory,
-                    {
-                        withFileTypes:
-                            true
-                    }
-                );
+    } catch {
 
-        } catch {
-
-            return;
-        }
-
-        for (
-            const entry of entries
-        ) {
-
-            if (
-                entry.name ===
-                "node_modules"
-            ) {
-                continue;
-            }
-
-            if (
-                entry.name ===
-                ".git"
-            ) {
-                continue;
-            }
-
-            const rel =
-                path.join(
-                    relative,
-                    entry.name
-                );
-
-            const full =
-                path.join(
-                    directory,
-                    entry.name
-                );
-
-            if (
-                entry.isDirectory()
-            ) {
-
-                result.push({
-
-                    type:
-                        "folder",
-
-                    path:
-                        rel
-                });
-
-                await walk(
-                    full,
-                    rel
-                );
-
-            } else {
-
-                let size =
-                    0;
-
-                try {
-
-                    const stat =
-                        await fs.stat(
-                            full
-                        );
-
-                    size =
-                        stat.size;
-
-                } catch {}
-
-                result.push({
-
-                    type:
-                        "file",
-
-                    path:
-                        rel,
-
-                    size
-                });
-            }
-        }
+        return result;
     }
 
-    await walk(
-        root,
-        ""
-    );
+    for (const entry of entries) {
+
+        const full =
+            path.join(
+                directory,
+                entry.name
+            );
+
+        const relative =
+            path.relative(
+                base,
+                full
+            );
+
+        if (entry.isDirectory()) {
+
+            const children =
+                await listFilesRecursive(
+                    full,
+                    base
+                );
+
+            result.push(
+                ...children
+            );
+
+        } else {
+
+            result.push(
+                relative.replaceAll(
+                    path.sep,
+                    "/"
+                )
+            );
+        }
+    }
 
     return result;
 }
 
 
-/* =========================================================
-   TERMINAL
-========================================================= */
+// ============================================================
+// TERMINAL
+// ============================================================
 
 const ALLOWED_COMMANDS =
     new Set([
@@ -837,108 +437,71 @@ const ALLOWED_COMMANDS =
         "python3"
     ]);
 
+
 const BLOCKED_PATTERNS = [
-
     "rm -rf",
-
     "rm -r /",
-
     "shutdown",
-
     "reboot",
-
     "mkfs",
-
     "dd if=",
-
     ":(){",
-
     "fork bomb",
-
     "chmod 777",
-
     "chown",
-
     "/etc/",
-
     "/root/",
-
     "../"
 ];
-
-
-function checkTerminalCommand(
-    command,
-    args
-) {
-
-    const text =
-        [
-            command,
-            ...args
-        ]
-        .join(" ")
-        .toLowerCase();
-
-    for (
-        const pattern
-        of BLOCKED_PATTERNS
-    ) {
-
-        if (
-            text.includes(pattern)
-        ) {
-
-            throw new Error(
-                "Blocked terminal command."
-            );
-        }
-    }
-}
 
 
 async function terminalTool(
     project,
     command,
-    args,
-    job
+    args = []
 ) {
 
-    const cleanCommand =
-        String(command || "");
+    const commandName =
+        String(command || "")
+            .trim();
 
     if (
         !ALLOWED_COMMANDS.has(
-            cleanCommand
+            commandName
         )
     ) {
 
         throw new Error(
-            `Command not allowed: ${cleanCommand}`
+            `Command not allowed: ${commandName}`
         );
     }
 
-    if (
-        !Array.isArray(args)
+    const allText =
+        [
+            commandName,
+            ...args
+        ]
+        .map(String)
+        .join(" ");
+
+    const lower =
+        allText.toLowerCase();
+
+    for (
+        const blocked
+        of BLOCKED_PATTERNS
     ) {
 
-        throw new Error(
-            "Terminal args must be an array."
-        );
-    }
+        if (
+            lower.includes(
+                blocked.toLowerCase()
+            )
+        ) {
 
-    checkTerminalCommand(
-        cleanCommand,
-        args
-    );
-
-    if (
-        job?.stopped
-    ) {
-
-        throw new Error(
-            "Agent stopped."
-        );
+            throw new Error(
+                `Blocked terminal command: ${blocked}`
+            );
+        }
     }
 
     const cwd =
@@ -951,176 +514,98 @@ async function terminalTool(
         }
     );
 
-    const safeArgs =
-        args.map(
-            value =>
-                String(value)
-        );
+    try {
 
-    const result =
-        await execFileAsync(
-            cleanCommand,
-            safeArgs,
-            {
-                cwd,
-
-                timeout:
-                    30000,
-
-                maxBuffer:
-                    2 * 1024 * 1024
-            }
-        );
-
-    return {
-
-        ok: true,
-
-        stdout:
-            result.stdout ||
-            "",
-
-        stderr:
-            result.stderr ||
-            ""
-    };
-}
-
-
-/* =========================================================
-   TOOL EXECUTOR
-========================================================= */
-
-async function executeTool(
-    tool,
-    input,
-    project,
-    job
-) {
-
-    if (
-        job?.stopped
-    ) {
-
-        throw new Error(
-            "Agent stopped."
-        );
-    }
-
-    switch (tool) {
-
-        case "create_project":
-
-            return await createProject(
-                project
+        const result =
+            await execFileAsync(
+                commandName,
+                args.map(String),
+                {
+                    cwd,
+                    timeout: 30000,
+                    maxBuffer: 2 * 1024 * 1024
+                }
             );
 
-        case "write_file":
+        return {
+            ok: true,
+            command: commandName,
+            args,
+            stdout: result.stdout || "",
+            stderr: result.stderr || "",
+            exitCode: 0
+        };
 
-            return await writeFileTool(
-                project,
-                input.path,
-                input.content
-            );
+    } catch (error) {
 
-        case "read_file":
-
-            return await readFileTool(
-                project,
-                input.path
-            );
-
-        case "delete_file":
-
-            return await deleteFileTool(
-                project,
-                input.path
-            );
-
-        case "terminal":
-
-            return await terminalTool(
-                project,
-                input.command,
-                input.args || [],
-                job
-            );
-
-        default:
-
-            throw new Error(
-                `Unknown tool: ${tool}`
-            );
+        return {
+            ok: false,
+            command: commandName,
+            args,
+            stdout: error.stdout || "",
+            stderr:
+                error.stderr ||
+                error.message ||
+                "",
+            exitCode:
+                typeof error.code === "number"
+                    ? error.code
+                    : 1
+        };
     }
 }
 
 
-/* =========================================================
-   GEMINI ERROR
-========================================================= */
+// ============================================================
+// CHAT MEMORY
+// ============================================================
 
-function getGeminiErrorInfo(
-    error
-) {
+async function loadChat(chatId) {
 
-    const message =
-        String(
-            error?.message ||
-            error ||
-            ""
-        );
+    try {
 
-    const status =
-        String(
-            error?.status ||
-            error?.code ||
-            ""
-        );
+        const raw =
+            await fs.readFile(
+                getChatPath(chatId),
+                "utf8"
+            );
 
-    const lower =
-        message.toLowerCase();
+        return JSON.parse(raw);
 
-    const is429 =
-        status === "429" ||
-        status ===
-            "RESOURCE_EXHAUSTED" ||
-        lower.includes(
-            "resource_exhausted"
-        ) ||
-        lower.includes(
-            "quota exceeded"
-        ) ||
-        lower.includes(
-            "quota_exceeded"
-        );
+    } catch {
 
-    const is503 =
-        status === "503" ||
-        status ===
-            "UNAVAILABLE" ||
-        lower.includes(
-            "service unavailable"
-        ) ||
-        lower.includes(
-            "high demand"
-        );
-
-    return {
-
-        is429,
-
-        is503,
-
-        message,
-
-        status
-    };
+        return {
+            id: safeName(chatId),
+            title: "New Chat",
+            project: "default",
+            createdAt: Date.now(),
+            updatedAt: Date.now(),
+            messages: []
+        };
+    }
 }
 
 
-/* =========================================================
-   ASK GEMINI
-========================================================= */
+async function saveChat(chat) {
+
+    chat.updatedAt =
+        Date.now();
+
+    await fs.writeFile(
+        getChatPath(chat.id),
+        JSON.stringify(
+            chat,
+            null,
+            2
+        ),
+        "utf8"
+    );
+}
+
+
+// ============================================================
+// GEMINI
+// ============================================================
 
 async function askGemini(
     prompt,
@@ -1136,34 +621,44 @@ async function askGemini(
         );
     }
 
-    const {
-        ai,
-        key
-    } =
-        await getAIClient();
+    const activeKey =
+        await getActiveKeyRecord();
 
-    if (!ai) {
+    if (!activeKey) {
 
         throw new Error(
-            "Gemini client unavailable."
+            "No active Gemini API key."
         );
     }
+
+    if (!activeKey.apiKey) {
+
+        throw new Error(
+            "Active Gemini API key is empty."
+        );
+    }
+
+    const activeAI =
+        new GoogleGenAI({
+            apiKey: activeKey.apiKey
+        });
+
+    console.log(
+        `[GEMINI] Request started | key=${activeKey.name} | model=${MODEL}`
+    );
 
     try {
 
         const response =
-            await ai.models.generateContent({
+            await activeAI.models.generateContent({
 
-                model:
-                    MODEL,
+                model: MODEL,
 
-                contents:
-                    prompt,
+                contents: prompt,
 
                 config: {
 
                     thinkingConfig: {
-
                         thinkingLevel:
                             THINKING_LEVEL
                     },
@@ -1173,244 +668,187 @@ async function askGemini(
                 }
             });
 
+        const text =
+            response.text?.trim() || "";
 
-        /*
-         * نسجل آخر استخدام فقط.
-         */
+        console.log(
+            `[GEMINI] Success | key=${activeKey.name} | chars=${text.length}`
+        );
 
-        if (
-            key.id !== "primary"
-        ) {
+        activeKey.lastUsedAt =
+            Date.now();
 
-            try {
+        activeKey.lastError =
+            null;
 
-                const data =
-                    await loadKeys();
+        activeKey.status =
+            "ready";
 
-                const found =
-                    data.keys.find(
-                        item =>
-                            item.id ===
-                            key.id
-                    );
-
-                if (found) {
-
-                    found.lastUsedAt =
-                        Date.now();
-
-                    await saveKeys(
-                        data
-                    );
-                }
-
-            } catch {}
-        }
-
+        await saveKeyStore();
 
         return {
-
-            model:
-                MODEL,
-
-            keyId:
-                key.id,
-
-            keyName:
-                key.name,
-
-            text:
-                response.text?.trim() ||
-                ""
+            model: MODEL,
+            keyId: activeKey.id,
+            keyName: activeKey.name,
+            text
         };
 
     } catch (error) {
 
-        const info =
-            getGeminiErrorInfo(
-                error
-            );
+        const status =
+            error?.status ||
+            error?.code ||
+            error?.response?.status ||
+            "unknown";
 
+        const message =
+            error?.message ||
+            error?.response?.data?.error?.message ||
+            String(error);
+
+        console.error(
+            "========================================"
+        );
+
+        console.error(
+            "[GEMINI ERROR]"
+        );
+
+        console.error(
+            "Status:",
+            status
+        );
+
+        console.error(
+            "Key:",
+            activeKey.name
+        );
+
+        console.error(
+            "Model:",
+            MODEL
+        );
+
+        console.error(
+            "Message:",
+            message
+        );
+
+        console.error(
+            "========================================"
+        );
+
+        activeKey.lastError =
+            message;
+
+        activeKey.lastErrorAt =
+            Date.now();
+
+        const lower =
+            String(message)
+                .toLowerCase();
 
         if (
-            info.is429
+            status === 429 ||
+            String(status) === "RESOURCE_EXHAUSTED" ||
+            lower.includes("429") ||
+            lower.includes("quota") ||
+            lower.includes("resource_exhausted")
         ) {
 
-            throw new Error(
-                `QUOTA_EXCEEDED: انتهت الحصة أو تم تجاوز حد الطلبات للمفتاح الحالي (${key.name}). يمكنك اختيار مفتاح آخر يدويًا من Keys إذا كان من مشروع Gemini آخر ولديه حصة متاحة.`
-            );
+            activeKey.status =
+                "quota";
+
+        } else {
+
+            activeKey.status =
+                "error";
         }
 
+        await saveKeyStore();
 
-        if (
-            info.is503
-        ) {
-
-            await new Promise(
-                resolve =>
-                    setTimeout(
-                        resolve,
-                        2500
-                    )
-            );
-
-
-            if (
-                job?.stopped
-            ) {
-
-                throw new Error(
-                    "Agent stopped."
-                );
-            }
-
-
-            try {
-
-                const retry =
-                    await ai.models.generateContent({
-
-                        model:
-                            MODEL,
-
-                        contents:
-                            prompt,
-
-                        config: {
-
-                            thinkingConfig: {
-
-                                thinkingLevel:
-                                    THINKING_LEVEL
-                            },
-
-                            maxOutputTokens:
-                                12000
-                        }
-                    });
-
-
-                return {
-
-                    model:
-                        MODEL,
-
-                    keyId:
-                        key.id,
-
-                    keyName:
-                        key.name,
-
-                    text:
-                        retry.text?.trim() ||
-                        ""
-                };
-
-            } catch {
-
-                throw new Error(
-                    "Gemini غير متاح مؤقتًا. حاول مرة أخرى بعد قليل."
-                );
-            }
-        }
-
-
-        throw error;
+        throw new Error(
+            `Gemini request failed (${status}): ${message}`
+        );
     }
 }
 
 
-/* =========================================================
-   JSON PARSER
-========================================================= */
+// ============================================================
+// AGENT PROMPT
+// ============================================================
 
-function parseJSON(
-    text
+function buildAgentPrompt(
+    project,
+    userPrompt,
+    memory
 ) {
 
-    let clean =
-        String(
-            text || ""
-        )
-        .replace(
-            /^```json\s*/i,
-            ""
-        )
-        .replace(
-            /^```\s*/i,
-            ""
-        )
-        .replace(
-            /\s*```$/i,
-            ""
-        )
-        .trim();
+    return `
+You are an autonomous software development AI agent.
 
+Your job is to actually build, modify, test and fix projects.
 
-    try {
+PROJECT:
+${project}
 
-        return JSON.parse(
-            clean
-        );
+USER REQUEST:
+${userPrompt}
 
-    } catch {}
+AVAILABLE TOOLS:
 
+create_project(project)
 
-    const start =
-        clean.indexOf("{");
+write_file(project, path, content)
 
-    const end =
-        clean.lastIndexOf("}");
+read_file(project, path)
 
+delete_file(project, path)
 
-    if (
-        start !== -1 &&
-        end > start
-    ) {
+terminal(project, command, args)
 
-        return JSON.parse(
-            clean.slice(
-                start,
-                end + 1
-            )
-        );
+IMPORTANT RULES:
+
+1. Understand the user's request.
+2. Plan internally.
+3. Use the available tools to actually create files.
+4. Use Terminal when needed.
+5. Run the project when possible.
+6. Read errors.
+7. Fix errors.
+8. Verify the result.
+9. Do not stop after only describing code.
+10. Actually perform the work.
+11. Do not repeatedly reread files that you just wrote unless needed.
+12. Keep tool usage efficient.
+13. Never expose API keys or secrets.
+14. Work only inside the supplied project.
+15. Prefer complete working implementations.
+16. If something fails, diagnose and fix it.
+
+RECENT MEMORY:
+${JSON.stringify(
+    memory.slice(-12),
+    null,
+    2
+)}
+
+Return ONLY valid JSON.
+
+The JSON format must be:
+
+{
+  "message": "short explanation of what you are doing or finished",
+  "actions": [
+    {
+      "tool": "create_project",
+      "args": {}
     }
-
-
-    throw new Error(
-        "Gemini returned invalid JSON."
-    );
+  ],
+  "done": false
 }
 
-
-/* =========================================================
-   SYSTEM PROMPT
-========================================================= */
-
-const SYSTEM_PROMPT = `
-أنت AI Agent متخصص في بناء المشاريع البرمجية.
-
-أنت تنفذ المهمة، ولست مجرد Chatbot.
-
-يمكنك:
-
-- بناء مواقع
-- بناء ألعاب
-- بناء تطبيقات
-- إنشاء UI
-- كتابة HTML
-- كتابة CSS
-- كتابة JavaScript
-- كتابة Python
-- إنشاء ملفات
-- تعديل ملفات
-- قراءة ملفات
-- حذف ملفات عند الحاجة
-- تشغيل المشروع
-- فحص الأخطاء
-- إصلاح الأخطاء
-
-الأدوات:
+Allowed tools:
 
 create_project
 write_file
@@ -1418,166 +856,147 @@ read_file
 delete_file
 terminal
 
-========================
-
-قاعدة السرعة:
-
-لا تستخدم read_file بعد كل write_file.
-
-إذا كنت تعرف محتوى الملف الذي أنشأته، انتقل للخطوة التالية مباشرة.
-
-لا تستخدم Terminal إلا إذا كان هناك سبب حقيقي.
-
-لا تستدعِ أداة فقط لإظهار نشاط.
-
-========================
-
-قاعدة التنفيذ:
-
-إذا طلب المستخدم بناء مشروع:
-
-أنشئ الملفات المطلوبة مباشرة.
-
-إذا كانت عدة ملفات مطلوبة، نفذها بأقل عدد ممكن من الخطوات.
-
-========================
-
-قاعدة الأخطاء:
-
-إذا ظهر خطأ حقيقي:
-
-1. افهم الخطأ.
-2. أصلح الملف.
-3. أعد الفحص.
-
-========================
-
-قاعدة الملفات:
-
-كل الملفات داخل المشروع فقط.
-
-لا تصل إلى ملفات النظام.
-
-لا تستخدم أوامر Terminal خطيرة.
-
-لا تكشف الأسرار أو مفاتيح API.
-
-========================
-
-قاعدة الذاكرة:
-
-المحادثة الحالية جزء من ذاكرة المشروع.
-
-ملفات المشروع هي المصدر الأساسي لحالة المشروع.
-
-إذا كان المستخدم يكمل مشروعًا قديمًا:
-
-افهم الملفات الحالية أولًا.
-
-========================
-
-أعد JSON فقط.
-
-صيغة تنفيذ أداة:
+If the work is complete:
 
 {
-  "message": "ماذا سأفعل الآن",
-  "tool": "write_file",
-  "input": {
-    "path": "index.html",
-    "content": "..."
-  },
-  "finish": false
+  "message": "what was completed",
+  "actions": [],
+  "done": true
 }
-
-صيغة إنهاء:
-
-{
-  "message": "تم تنفيذ المهمة والتحقق منها.",
-  "tool": null,
-  "input": {},
-  "finish": true
-}
-
-========================
-
-مهم جدًا:
-
-في المهمة الواحدة حاول إنجاز أكبر قدر ممكن بأقل عدد من استدعاءات Gemini.
-
-لا تطلب من Gemini نفسه التفكير مرة أخرى لكل ملف.
 `;
+}
 
 
-/* =========================================================
-   BUILD CONTEXT
-========================================================= */
+// ============================================================
+// JSON EXTRACTION
+// ============================================================
 
-async function buildContext(
-    chat,
-    userPrompt
+function extractJSON(text) {
+
+    if (!text) {
+        throw new Error(
+            "Gemini returned an empty response."
+        );
+    }
+
+    let clean =
+        String(text)
+            .trim();
+
+    clean =
+        clean
+            .replace(/^```json/i, "")
+            .replace(/^```/i, "")
+            .replace(/```$/i, "")
+            .trim();
+
+    try {
+
+        return JSON.parse(clean);
+
+    } catch {}
+
+    const first =
+        clean.indexOf("{");
+
+    const last =
+        clean.lastIndexOf("}");
+
+    if (
+        first !== -1 &&
+        last !== -1 &&
+        last > first
+    ) {
+
+        const possible =
+            clean.slice(
+                first,
+                last + 1
+            );
+
+        return JSON.parse(
+            possible
+        );
+    }
+
+    throw new Error(
+        "Gemini returned invalid JSON."
+    );
+}
+
+
+// ============================================================
+// TOOL EXECUTION
+// ============================================================
+
+async function executeAction(
+    action,
+    project
 ) {
 
-    const files =
-        await getFiles(
-            chat.project
+    if (!action) {
+
+        throw new Error(
+            "Missing action."
         );
+    }
 
-    const history =
-        chat.messages
-            .slice(-12)
-            .map(
-                message =>
-                    `${message.role}: ${message.content}`
-            )
-            .join("\n");
+    const tool =
+        action.tool;
 
+    const args =
+        action.args || {};
 
-    const keys =
-        await loadKeys();
+    switch (tool) {
 
-    const active =
-        getActiveKeyRecord(
-            keys
-        );
+        case "create_project":
 
+            return await createProject(
+                args.project || project
+            );
 
-    return `
-${SYSTEM_PROMPT}
+        case "write_file":
 
-PROJECT:
-${chat.project}
+            return await writeFileTool(
+                args.project || project,
+                args.path,
+                args.content
+            );
 
-CHAT TITLE:
-${chat.title}
+        case "read_file":
 
-ACTIVE MODEL:
-${MODEL}
+            return await readFileTool(
+                args.project || project,
+                args.path
+            );
 
-ACTIVE KEY NAME:
-${active.name}
+        case "delete_file":
 
-PROJECT FILES:
-${JSON.stringify(
-    files,
-    null,
-    2
-)}
+            return await deleteFileTool(
+                args.project || project,
+                args.path
+            );
 
-RECENT MEMORY:
-${history || "No previous messages."}
+        case "terminal":
 
-CURRENT USER REQUEST:
-${userPrompt}
+            return await terminalTool(
+                args.project || project,
+                args.command,
+                args.args || []
+            );
 
-اختر الخطوة الضرورية التالية فقط.
-`;
+        default:
+
+            throw new Error(
+                `Unknown tool: ${tool}`
+            );
+    }
 }
 
 
-/* =========================================================
-   NDJSON
-========================================================= */
+// ============================================================
+// STREAM HELPER
+// ============================================================
 
 function sendEvent(
     res,
@@ -1585,1042 +1004,69 @@ function sendEvent(
 ) {
 
     res.write(
-        JSON.stringify(
-            event
-        ) + "\n"
+        JSON.stringify(event) +
+        "\n"
     );
 }
 
 
-/* =========================================================
-   AGENT LOOP
-========================================================= */
-
-async function runAgent(
-    res,
-    chat,
-    userPrompt,
-    job
-) {
-
-    await createProject(
-        chat.project
-    );
-
-
-    const keyData =
-        await loadKeys();
-
-    const activeKey =
-        getActiveKeyRecord(
-            keyData
-        );
-
-
-    sendEvent(
-        res,
-        {
-            type:
-                "start",
-
-            chatId:
-                chat.id,
-
-            project:
-                chat.project,
-
-            keyName:
-                activeKey.name
-        }
-    );
-
-
-    for (
-        let step = 1;
-        step <= MAX_AGENT_STEPS;
-        step++
-    ) {
-
-        if (
-            job.stopped
-        ) {
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "stopped",
-
-                    message:
-                        "تم إيقاف الـAgent."
-                }
-            );
-
-            return;
-        }
-
-
-        sendEvent(
-            res,
-            {
-                type:
-                    "thinking",
-
-                step,
-
-                message:
-                    `Planning next step — Step ${step}`
-            }
-        );
-
-
-        const context =
-            await buildContext(
-                chat,
-                userPrompt
-            );
-
-
-        let answer;
-
-        try {
-
-            answer =
-                await askGemini(
-                    context,
-                    job
-                );
-
-        } catch (error) {
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "error",
-
-                    message:
-                        error.message
-                }
-            );
-
-            return;
-        }
-
-
-        let action;
-
-        try {
-
-            action =
-                parseJSON(
-                    answer.text
-                );
-
-        } catch {
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "error",
-
-                    message:
-                        "Gemini returned invalid JSON."
-                }
-            );
-
-            return;
-        }
-
-
-        sendEvent(
-            res,
-            {
-                type:
-                    "planning",
-
-                step,
-
-                model:
-                    answer.model,
-
-                keyName:
-                    answer.keyName,
-
-                message:
-                    action.message ||
-                    "Planning next step"
-            }
-        );
-
-
-        if (
-            action.finish === true
-        ) {
-
-            const finalMessage =
-                action.message ||
-                "تم الانتهاء.";
-
-
-            chat.messages.push({
-
-                role:
-                    "assistant",
-
-                content:
-                    finalMessage,
-
-                time:
-                    Date.now()
-            });
-
-
-            await saveChat(
-                chat
-            );
-
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "final",
-
-                    message:
-                        finalMessage
-                }
-            );
-
-
-            return;
-        }
-
-
-        if (
-            !action.tool
-        ) {
-
-            const message =
-                action.message ||
-                "تم.";
-
-
-            chat.messages.push({
-
-                role:
-                    "assistant",
-
-                content:
-                    message,
-
-                time:
-                    Date.now()
-            });
-
-
-            await saveChat(
-                chat
-            );
-
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "final",
-
-                    message
-                }
-            );
-
-
-            return;
-        }
-
-
-        sendEvent(
-            res,
-            {
-                type:
-                    "tool_start",
-
-                step,
-
-                tool:
-                    action.tool,
-
-                input:
-                    action.input || {},
-
-                message:
-                    action.message ||
-                    `Running ${action.tool}`
-            }
-        );
-
-
-        try {
-
-            const result =
-                await executeTool(
-                    action.tool,
-                    action.input || {},
-                    chat.project,
-                    job
-                );
-
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "tool_result",
-
-                    step,
-
-                    tool:
-                        action.tool,
-
-                    result
-                }
-            );
-
-
-            let summary =
-                action.message ||
-                `Executed ${action.tool}`;
-
-
-            if (
-                action.tool ===
-                "write_file"
-            ) {
-
-                summary +=
-                    ` → ${action.input?.path || ""}`;
-            }
-
-
-            if (
-                action.tool ===
-                "terminal"
-            ) {
-
-                const stdout =
-                    String(
-                        result?.stdout ||
-                        ""
-                    )
-                    .slice(
-                        0,
-                        2000
-                    );
-
-                if (
-                    stdout
-                ) {
-
-                    summary +=
-                        ` → ${stdout}`;
-                }
-            }
-
-
-            chat.messages.push({
-
-                role:
-                    "agent",
-
-                content:
-                    summary,
-
-                time:
-                    Date.now()
-            });
-
-
-            await saveChat(
-                chat
-            );
-
-
-        } catch (error) {
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "tool_error",
-
-                    step,
-
-                    tool:
-                        action.tool,
-
-                    error:
-                        error.message
-                }
-            );
-
-
-            chat.messages.push({
-
-                role:
-                    "tool_error",
-
-                content:
-                    `${action.tool}: ${error.message}`,
-
-                time:
-                    Date.now()
-            });
-
-
-            await saveChat(
-                chat
-            );
-        }
-    }
-
-
-    sendEvent(
-        res,
-        {
-            type:
-                "error",
-
-            message:
-                "توقّف الـAgent بعد الوصول للحد الآمن للخطوات."
-        }
-    );
-}
-
-
-/* =========================================================
-   POST /agent
-========================================================= */
-
-app.post(
-    "/agent",
-    async (req, res) => {
-
-        try {
-
-            const prompt =
-                String(
-                    req.body?.prompt ||
-                    ""
-                )
-                .trim();
-
-
-            const chatId =
-                safeName(
-                    req.body?.chatId ||
-                    "default"
-                );
-
-
-            const project =
-                safeName(
-                    req.body?.project ||
-                    "default"
-                );
-
-
-            if (!prompt) {
-
-                return res.status(400).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "Missing prompt."
-                });
-            }
-
-
-            const chat =
-                await loadChat(
-                    chatId
-                );
-
-
-            chat.id =
-                chatId;
-
-            chat.project =
-                project;
-
-
-            if (
-                chat.title ===
-                    "New Chat" &&
-                chat.messages.length ===
-                    0
-            ) {
-
-                chat.title =
-                    prompt
-                        .replace(
-                            /\s+/g,
-                            " "
-                        )
-                        .slice(
-                            0,
-                            50
-                        );
-            }
-
-
-            chat.messages.push({
-
-                role:
-                    "user",
-
-                content:
-                    prompt,
-
-                time:
-                    Date.now()
-            });
-
-
-            await saveChat(
-                chat
-            );
-
-
-            const jobId =
-                `${chatId}_${Date.now()}`;
-
-
-            const job = {
-
-                id:
-                    jobId,
-
-                chatId,
-
-                project,
-
-                stopped:
-                    false
-            };
-
-
-            jobs.set(
-                jobId,
-                job
-            );
-
-
-            res.status(200);
-
-
-            res.setHeader(
-                "Content-Type",
-                "application/x-ndjson; charset=utf-8"
-            );
-
-
-            res.setHeader(
-                "Cache-Control",
-                "no-cache, no-transform"
-            );
-
-
-            res.setHeader(
-                "Connection",
-                "keep-alive"
-            );
-
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "connected",
-
-                    jobId,
-
-                    chatId
-                }
-            );
-
-
-            req.on(
-                "close",
-                () => {
-
-                    job.stopped =
-                        true;
-                }
-            );
-
-
-            await runAgent(
-                res,
-                chat,
-                prompt,
-                job
-            );
-
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "done",
-
-                    jobId
-                }
-            );
-
-
-            res.end();
-
-
-            jobs.delete(
-                jobId
-            );
-
-
-        } catch (error) {
-
-            console.error(
-                "Agent Error:",
-                error
-            );
-
-
-            if (
-                !res.headersSent
-            ) {
-
-                return res.status(500).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        error.message
-                });
-            }
-
-
-            sendEvent(
-                res,
-                {
-                    type:
-                        "error",
-
-                    message:
-                        error.message
-                }
-            );
-
-
-            res.end();
-        }
-    }
-);
-
-
-/* =========================================================
-   STOP AGENT
-========================================================= */
-
-app.post(
-    "/agent/stop",
-    async (req, res) => {
-
-        const jobId =
-            String(
-                req.body?.jobId ||
-                ""
-            );
-
-
-        const job =
-            jobs.get(
-                jobId
-            );
-
-
-        if (!job) {
-
-            return res.json({
-
-                ok:
-                    true,
-
-                stopped:
-                    false
-            });
-        }
-
-
-        job.stopped =
-            true;
-
-
-        res.json({
-
-            ok:
-                true,
-
-            stopped:
-                true
-        });
-    }
-);
-
-
-/* =========================================================
-   NEW CHAT
-========================================================= */
-
-app.post(
-    "/chats/new",
-    async (req, res) => {
-
-        try {
-
-            const id =
-                safeName(
-                    req.body?.id ||
-                    `chat_${Date.now()}`
-                );
-
-
-            const title =
-                String(
-                    req.body?.title ||
-                    "New Chat"
-                )
-                .slice(
-                    0,
-                    100
-                );
-
-
-            const project =
-                safeName(
-                    req.body?.project ||
-                    id
-                );
-
-
-            const chat = {
-
-                id,
-
-                title,
-
-                project,
-
-                createdAt:
-                    Date.now(),
-
-                updatedAt:
-                    Date.now(),
-
-                messages:
-                    []
-            };
-
-
-            await saveChat(
-                chat
-            );
-
-
-            await createProject(
-                project
-            );
-
-
-            res.json({
-
-                ok:
-                    true,
-
-                chat
-            });
-
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/* =========================================================
-   CHATS
-========================================================= */
+// ============================================================
+// HEALTH
+// ============================================================
 
 app.get(
-    "/chats",
+    "/health",
     async (req, res) => {
 
         try {
 
-            res.json({
-
-                ok:
-                    true,
-
-                chats:
-                    await listChats()
-            });
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/* =========================================================
-   GET CHAT
-========================================================= */
-
-app.get(
-    "/chat",
-    async (req, res) => {
-
-        try {
-
-            const id =
-                safeName(
-                    req.query?.id ||
-                    "default"
-                );
-
-
-            const chat =
-                await loadChat(
-                    id
-                );
-
-
-            res.json({
-
-                ok:
-                    true,
-
-                chat
-            });
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/* =========================================================
-   FILES
-========================================================= */
-
-app.get(
-    "/files",
-    async (req, res) => {
-
-        try {
-
-            const project =
-                safeName(
-                    req.query?.project ||
-                    "default"
-                );
-
-
-            await createProject(
-                project
-            );
-
-
-            res.json({
-
-                ok:
-                    true,
-
-                project,
-
-                files:
-                    await getFiles(
-                        project
-                    )
-            });
-
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/* =========================================================
-   FILE
-========================================================= */
-
-app.get(
-    "/file",
-    async (req, res) => {
-
-        try {
-
-            const project =
-                safeName(
-                    req.query?.project ||
-                    "default"
-                );
-
-
-            const filePath =
-                String(
-                    req.query?.path ||
-                    ""
-                );
-
-
-            const result =
-                await readFileTool(
-                    project,
-                    filePath
-                );
-
-
-            res.json(
-                result
-            );
-
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/* =========================================================
-   KEY API
-========================================================= */
-
-/*
- * GET /keys
- *
- * يعرض:
- * Primary
- * + المفاتيح المحفوظة
- *
- * بدون كشف المفاتيح الحقيقية.
- */
-
-app.get(
-    "/keys",
-    async (req, res) => {
-
-        try {
-
-            const data =
-                await loadKeys();
+            const store =
+                await loadKeyStore();
 
             const active =
-                getActiveKeyRecord(
-                    data
+                store.keys.find(
+                    key =>
+                        key.id ===
+                        store.activeKeyId
                 );
-
 
             res.json({
 
-                ok:
-                    true,
+                ok: true,
 
-                activeId:
-                    active.id,
+                geminiConfigured:
+                    Boolean(API_KEY),
 
-                primary: {
+                model: MODEL,
 
-                    id:
-                        "primary",
+                thinking:
+                    THINKING_LEVEL,
 
-                    name:
-                        "Render Primary",
+                activeKey:
+                    active?.name ||
+                    null,
 
-                    enabled:
-                        Boolean(
-                            PRIMARY_API_KEY
-                        ),
+                savedKeys:
+                    store.keys.length,
 
-                    masked:
-                        maskKey(
-                            PRIMARY_API_KEY
-                        ),
+                agent: true,
 
-                    primary:
-                        true
-                },
+                terminal: true,
 
-                keys:
-                    data.keys.map(
-                        publicKeyInfo
-                    )
+                files: true,
+
+                memory: true,
+
+                stop: true,
+
+                keyManager: true
             });
 
         } catch (error) {
 
             res.status(500).json({
 
-                ok:
-                    false,
+                ok: false,
 
                 error:
                     error.message
@@ -2630,574 +1076,17 @@ app.get(
 );
 
 
-/*
- * POST /keys
- *
- * إضافة مفتاح جديد.
- */
-
-app.post(
-    "/keys",
-    async (req, res) => {
-
-        try {
-
-            const name =
-                String(
-                    req.body?.name ||
-                    ""
-                )
-                .trim()
-                .slice(
-                    0,
-                    80
-                );
-
-
-            const value =
-                String(
-                    req.body?.key ||
-                    ""
-                )
-                .trim();
-
-
-            if (!name) {
-
-                return res.status(400).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "اكتب اسم المفتاح."
-                });
-            }
-
-
-            if (!value) {
-
-                return res.status(400).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "أدخل مفتاح Gemini."
-                });
-            }
-
-
-            if (
-                value.length < 20
-            ) {
-
-                return res.status(400).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "المفتاح يبدو غير صالح."
-                });
-            }
-
-
-            const data =
-                await loadKeys();
-
-
-            /*
-             * منع إضافة نفس المفتاح مرتين.
-             */
-
-            const duplicate =
-                data.keys.find(
-                    item =>
-                        item.value ===
-                        value
-                );
-
-
-            if (duplicate) {
-
-                return res.status(409).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "هذا المفتاح مضاف بالفعل."
-                });
-            }
-
-
-            const newKey = {
-
-                id:
-                    makeKeyId(),
-
-                name,
-
-                value,
-
-                enabled:
-                    true,
-
-                createdAt:
-                    Date.now(),
-
-                lastUsedAt:
-                    null
-            };
-
-
-            data.keys.push(
-                newKey
-            );
-
-
-            await saveKeys(
-                data
-            );
-
-
-            res.json({
-
-                ok:
-                    true,
-
-                key:
-                    publicKeyInfo(
-                        newKey
-                    )
-            });
-
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/*
- * POST /keys/use
- *
- * اختيار مفتاح يدويًا.
- */
-
-app.post(
-    "/keys/use",
-    async (req, res) => {
-
-        try {
-
-            const id =
-                String(
-                    req.body?.id ||
-                    ""
-                );
-
-
-            /*
-             * الرجوع إلى مفتاح Render.
-             */
-
-            if (
-                id === "primary"
-            ) {
-
-                currentKeyId =
-                    null;
-
-
-                return res.json({
-
-                    ok:
-                        true,
-
-                    activeId:
-                        "primary",
-
-                    activeName:
-                        "Render Primary"
-                });
-            }
-
-
-            const data =
-                await loadKeys();
-
-
-            const key =
-                data.keys.find(
-                    item =>
-                        item.id === id
-                );
-
-
-            if (!key) {
-
-                return res.status(404).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "المفتاح غير موجود."
-                });
-            }
-
-
-            if (
-                key.enabled === false
-            ) {
-
-                return res.status(400).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "هذا المفتاح متوقف. فعّله أولًا."
-                });
-            }
-
-
-            currentKeyId =
-                key.id;
-
-
-            key.lastUsedAt =
-                Date.now();
-
-
-            await saveKeys(
-                data
-            );
-
-
-            res.json({
-
-                ok:
-                    true,
-
-                activeId:
-                    key.id,
-
-                activeName:
-                    key.name
-            });
-
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/*
- * POST /keys/stop
- *
- * إيقاف/تعطيل مفتاح محفوظ.
- */
-
-app.post(
-    "/keys/stop",
-    async (req, res) => {
-
-        try {
-
-            const id =
-                String(
-                    req.body?.id ||
-                    ""
-                );
-
-
-            const data =
-                await loadKeys();
-
-
-            const key =
-                data.keys.find(
-                    item =>
-                        item.id === id
-                );
-
-
-            if (!key) {
-
-                return res.status(404).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "المفتاح غير موجود."
-                });
-            }
-
-
-            key.enabled =
-                false;
-
-
-            /*
-             * إذا كان هو المستخدم حاليًا
-             * نرجع للـPrimary.
-             */
-
-            if (
-                currentKeyId ===
-                key.id
-            ) {
-
-                currentKeyId =
-                    null;
-            }
-
-
-            await saveKeys(
-                data
-            );
-
-
-            res.json({
-
-                ok:
-                    true,
-
-                activeId:
-                    currentKeyId ||
-                    "primary"
-            });
-
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/*
- * POST /keys/enable
- *
- * إعادة تشغيل مفتاح محفوظ.
- */
-
-app.post(
-    "/keys/enable",
-    async (req, res) => {
-
-        try {
-
-            const id =
-                String(
-                    req.body?.id ||
-                    ""
-                );
-
-
-            const data =
-                await loadKeys();
-
-
-            const key =
-                data.keys.find(
-                    item =>
-                        item.id === id
-                );
-
-
-            if (!key) {
-
-                return res.status(404).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "المفتاح غير موجود."
-                });
-            }
-
-
-            key.enabled =
-                true;
-
-
-            await saveKeys(
-                data
-            );
-
-
-            res.json({
-
-                ok:
-                    true,
-
-                key:
-                    publicKeyInfo(
-                        key
-                    )
-            });
-
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/*
- * DELETE /keys/:id
- *
- * حذف مفتاح محفوظ.
- */
-
-app.delete(
-    "/keys/:id",
-    async (req, res) => {
-
-        try {
-
-            const id =
-                String(
-                    req.params.id ||
-                    ""
-                );
-
-
-            const data =
-                await loadKeys();
-
-
-            const before =
-                data.keys.length;
-
-
-            data.keys =
-                data.keys.filter(
-                    item =>
-                        item.id !== id
-                );
-
-
-            if (
-                data.keys.length ===
-                before
-            ) {
-
-                return res.status(404).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "المفتاح غير موجود."
-                });
-            }
-
-
-            if (
-                currentKeyId ===
-                id
-            ) {
-
-                currentKeyId =
-                    null;
-            }
-
-
-            await saveKeys(
-                data
-            );
-
-
-            res.json({
-
-                ok:
-                    true,
-
-                activeId:
-                    currentKeyId ||
-                    "primary"
-            });
-
-
-        } catch (error) {
-
-            res.status(500).json({
-
-                ok:
-                    false,
-
-                error:
-                    error.message
-            });
-        }
-    }
-);
-
-
-/* =========================================================
-   ROOT
-========================================================= */
+// ============================================================
+// ROOT
+// ============================================================
 
 app.get(
     "/",
-    async (req, res) => {
-
-        const data =
-            await loadKeys();
-
-        const active =
-            getActiveKeyRecord(
-                data
-            );
-
+    (req, res) => {
 
         res.json({
 
-            ok:
-                true,
+            ok: true,
 
             service:
                 "Gemini AI Agent",
@@ -3211,9 +1100,6 @@ app.get(
             thinking:
                 THINKING_LEVEL,
 
-            activeKey:
-                active.name,
-
             status:
                 "online"
         });
@@ -3221,79 +1107,1298 @@ app.get(
 );
 
 
-/* =========================================================
-   HEALTH
-========================================================= */
+// ============================================================
+// KEY API
+// ============================================================
 
 app.get(
-    "/health",
+    "/keys",
     async (req, res) => {
 
-        const data =
-            await loadKeys();
+        try {
 
-        const active =
-            getActiveKeyRecord(
-                data
+            const store =
+                await loadKeyStore();
+
+            res.json({
+
+                ok: true,
+
+                activeKeyId:
+                    store.activeKeyId,
+
+                keys:
+                    store.keys.map(
+                        key =>
+                            publicKey(
+                                key,
+                                store.activeKeyId
+                            )
+                    )
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ADD KEY
+app.post(
+    "/keys",
+    async (req, res) => {
+
+        try {
+
+            const name =
+                String(
+                    req.body?.name ||
+                    ""
+                ).trim();
+
+            const apiKey =
+                String(
+                    req.body?.apiKey ||
+                    ""
+                ).trim();
+
+            if (!name) {
+
+                return res.status(400).json({
+
+                    ok: false,
+
+                    error:
+                        "Key name is required."
+                });
+            }
+
+            if (!apiKey) {
+
+                return res.status(400).json({
+
+                    ok: false,
+
+                    error:
+                        "Gemini API key is required."
+                });
+            }
+
+            if (apiKey.length < 20) {
+
+                return res.status(400).json({
+
+                    ok: false,
+
+                    error:
+                        "The API key looks too short."
+                });
+            }
+
+            const store =
+                await loadKeyStore();
+
+            const id =
+                `key_${Date.now()}_${Math.random()
+                    .toString(36)
+                    .slice(2, 8)}`;
+
+            const newKey = {
+
+                id,
+
+                name:
+                    name.slice(0, 80),
+
+                provider:
+                    "Google Gemini",
+
+                apiKey,
+
+                primary:
+                    false,
+
+                enabled:
+                    true,
+
+                status:
+                    "ready",
+
+                lastError:
+                    null,
+
+                lastErrorAt:
+                    null,
+
+                lastUsedAt:
+                    null,
+
+                createdAt:
+                    Date.now()
+            };
+
+            store.keys.push(
+                newKey
             );
 
+            // New key becomes active immediately.
+            store.activeKeyId =
+                id;
 
-        res.json({
+            await saveKeyStore();
 
-            ok:
-                true,
+            console.log(
+                `[KEYS] Added key: ${newKey.name}`
+            );
 
-            geminiConfigured:
-                Boolean(
-                    PRIMARY_API_KEY
+            res.json({
+
+                ok: true,
+
+                message:
+                    "Gemini key added and activated.",
+
+                key:
+                    publicKey(
+                        newKey,
+                        store.activeKeyId
+                    )
+            });
+
+        } catch (error) {
+
+            console.error(
+                "[KEY ADD ERROR]",
+                error.message
+            );
+
+            res.status(500).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// USE KEY
+app.post(
+    "/keys/use",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                String(
+                    req.body?.id ||
+                    ""
+                ).trim();
+
+            const store =
+                await loadKeyStore();
+
+            const key =
+                store.keys.find(
+                    item =>
+                        item.id === id
+                );
+
+            if (!key) {
+
+                return res.status(404).json({
+
+                    ok: false,
+
+                    error:
+                        "Key not found."
+                });
+            }
+
+            if (!key.apiKey) {
+
+                return res.status(400).json({
+
+                    ok: false,
+
+                    error:
+                        "This key has no API key."
+                });
+            }
+
+            key.enabled =
+                true;
+
+            store.activeKeyId =
+                key.id;
+
+            await saveKeyStore();
+
+            console.log(
+                `[KEYS] Activated key: ${key.name}`
+            );
+
+            res.json({
+
+                ok: true,
+
+                activeKeyId:
+                    store.activeKeyId,
+
+                key:
+                    publicKey(
+                        key,
+                        store.activeKeyId
+                    )
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// STOP KEY
+app.post(
+    "/keys/stop",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                String(
+                    req.body?.id ||
+                    ""
+                ).trim();
+
+            const store =
+                await loadKeyStore();
+
+            const key =
+                store.keys.find(
+                    item =>
+                        item.id === id
+                );
+
+            if (!key) {
+
+                return res.status(404).json({
+
+                    ok: false,
+
+                    error:
+                        "Key not found."
+                });
+            }
+
+            if (key.primary) {
+
+                return res.status(400).json({
+
+                    ok: false,
+
+                    error:
+                        "The Render Primary key cannot be stopped."
+                });
+            }
+
+            key.enabled =
+                false;
+
+            key.status =
+                "stopped";
+
+            if (
+                store.activeKeyId ===
+                key.id
+            ) {
+
+                const primary =
+                    store.keys.find(
+                        item =>
+                            item.primary &&
+                            item.enabled &&
+                            item.apiKey
+                    );
+
+                store.activeKeyId =
+                    primary?.id ||
+                    null;
+            }
+
+            await saveKeyStore();
+
+            console.log(
+                `[KEYS] Stopped key: ${key.name}`
+            );
+
+            res.json({
+
+                ok: true,
+
+                activeKeyId:
+                    store.activeKeyId
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// DELETE KEY
+app.delete(
+    "/keys/:id",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                String(
+                    req.params.id ||
+                    ""
+                ).trim();
+
+            const store =
+                await loadKeyStore();
+
+            const index =
+                store.keys.findIndex(
+                    item =>
+                        item.id === id
+                );
+
+            if (index === -1) {
+
+                return res.status(404).json({
+
+                    ok: false,
+
+                    error:
+                        "Key not found."
+                });
+            }
+
+            const key =
+                store.keys[index];
+
+            if (key.primary) {
+
+                return res.status(400).json({
+
+                    ok: false,
+
+                    error:
+                        "The Render Primary key cannot be deleted."
+                });
+            }
+
+            store.keys.splice(
+                index,
+                1
+            );
+
+            if (
+                store.activeKeyId ===
+                id
+            ) {
+
+                const primary =
+                    store.keys.find(
+                        item =>
+                            item.primary &&
+                            item.enabled &&
+                            item.apiKey
+                    );
+
+                store.activeKeyId =
+                    primary?.id ||
+                    null;
+            }
+
+            await saveKeyStore();
+
+            console.log(
+                `[KEYS] Deleted key: ${key.name}`
+            );
+
+            res.json({
+
+                ok: true,
+
+                activeKeyId:
+                    store.activeKeyId
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// NEW CHAT
+// ============================================================
+
+app.post(
+    "/chats/new",
+    async (req, res) => {
+
+        const id =
+            `chat_${Date.now()}_${Math.random()
+                .toString(36)
+                .slice(2, 8)}`;
+
+        const chat = {
+
+            id,
+
+            title:
+                "New Chat",
+
+            project:
+                safeName(
+                    req.body?.project ||
+                    "default"
                 ),
 
-            model:
-                MODEL,
+            createdAt:
+                Date.now(),
 
-            thinking:
-                THINKING_LEVEL,
+            updatedAt:
+                Date.now(),
 
-            activeKey:
-                active.name,
+            messages: []
+        };
 
-            savedKeys:
-                data.keys.length,
+        await saveChat(
+            chat
+        );
 
-            agent:
-                true,
-
-            terminal:
-                true,
-
-            files:
-                true,
-
-            memory:
-                true,
-
-            stop:
-                true,
-
-            keyManager:
-                true
+        res.json({
+            ok: true,
+            chat
         });
     }
 );
 
 
-/* =========================================================
-   START SERVER
-========================================================= */
+// ============================================================
+// CHATS
+// ============================================================
+
+app.get(
+    "/chats",
+    async (req, res) => {
+
+        try {
+
+            const files =
+                await fs.readdir(
+                    CHAT_ROOT
+                );
+
+            const chats = [];
+
+            for (
+                const file
+                of files
+            ) {
+
+                if (
+                    !file.endsWith(
+                        ".json"
+                    )
+                ) {
+                    continue;
+                }
+
+                try {
+
+                    const raw =
+                        await fs.readFile(
+                            path.join(
+                                CHAT_ROOT,
+                                file
+                            ),
+                            "utf8"
+                        );
+
+                    const chat =
+                        JSON.parse(raw);
+
+                    chats.push({
+                        id: chat.id,
+                        title:
+                            chat.title ||
+                            "New Chat",
+                        project:
+                            chat.project ||
+                            "default",
+                        createdAt:
+                            chat.createdAt,
+                        updatedAt:
+                            chat.updatedAt
+                    });
+
+                } catch {}
+            }
+
+            chats.sort(
+                (a, b) =>
+                    (b.updatedAt || 0) -
+                    (a.updatedAt || 0)
+            );
+
+            res.json({
+
+                ok: true,
+
+                chats
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// GET CHAT
+// ============================================================
+
+app.get(
+    "/chat",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                String(
+                    req.query.id ||
+                    ""
+                ).trim();
+
+            if (!id) {
+
+                return res.status(400).json({
+
+                    ok: false,
+
+                    error:
+                        "Chat id is required."
+                });
+            }
+
+            const chat =
+                await loadChat(id);
+
+            res.json({
+
+                ok: true,
+
+                chat
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// FILES
+// ============================================================
+
+app.get(
+    "/files",
+    async (req, res) => {
+
+        try {
+
+            const project =
+                safeName(
+                    req.query.project ||
+                    "default"
+                );
+
+            const files =
+                await listFilesRecursive(
+                    getProjectPath(
+                        project
+                    )
+                );
+
+            res.json({
+
+                ok: true,
+
+                project,
+
+                files
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// SINGLE FILE
+// ============================================================
+
+app.get(
+    "/file",
+    async (req, res) => {
+
+        try {
+
+            const project =
+                safeName(
+                    req.query.project ||
+                    "default"
+                );
+
+            const filePath =
+                String(
+                    req.query.path ||
+                    ""
+                );
+
+            if (!filePath) {
+
+                return res.status(400).json({
+
+                    ok: false,
+
+                    error:
+                        "File path is required."
+                });
+            }
+
+            const result =
+                await readFileTool(
+                    project,
+                    filePath
+                );
+
+            res.json(result);
+
+        } catch (error) {
+
+            res.status(404).json({
+
+                ok: false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+// ============================================================
+// STOP AGENT
+// ============================================================
+
+app.post(
+    "/agent/stop",
+    async (req, res) => {
+
+        const jobId =
+            String(
+                req.body?.jobId ||
+                ""
+            ).trim();
+
+        const job =
+            jobs.get(jobId);
+
+        if (job) {
+
+            job.stopped =
+                true;
+        }
+
+        res.json({
+
+            ok: true,
+
+            stopped:
+                Boolean(job)
+        });
+    }
+);
+
+
+// ============================================================
+// AGENT
+// ============================================================
+
+app.post(
+    "/agent",
+    async (req, res) => {
+
+        res.setHeader(
+            "Content-Type",
+            "application/x-ndjson; charset=utf-8"
+        );
+
+        res.setHeader(
+            "Cache-Control",
+            "no-cache"
+        );
+
+        res.setHeader(
+            "Connection",
+            "keep-alive"
+        );
+
+        const chatId =
+            String(
+                req.body?.chatId ||
+                ""
+            ).trim();
+
+        const project =
+            safeName(
+                req.body?.project ||
+                "default"
+            );
+
+        const userPrompt =
+            String(
+                req.body?.prompt ||
+                ""
+            ).trim();
+
+        if (!userPrompt) {
+
+            sendEvent(
+                res,
+                {
+                    type: "error",
+                    error:
+                        "Prompt is required."
+                }
+            );
+
+            sendEvent(
+                res,
+                {
+                    type: "done"
+                }
+            );
+
+            return res.end();
+        }
+
+        const jobId =
+            `job_${Date.now()}_${Math.random()
+                .toString(36)
+                .slice(2, 8)}`;
+
+        const job = {
+
+            id: jobId,
+
+            stopped:
+                false,
+
+            startedAt:
+                Date.now()
+        };
+
+        jobs.set(
+            jobId,
+            job
+        );
+
+        let chat;
+
+        if (chatId) {
+
+            chat =
+                await loadChat(
+                    chatId
+                );
+
+        } else {
+
+            chat = {
+
+                id:
+                    `chat_${Date.now()}_${Math.random()
+                        .toString(36)
+                        .slice(2, 8)}`,
+
+                title:
+                    userPrompt
+                        .slice(0, 60),
+
+                project,
+
+                createdAt:
+                    Date.now(),
+
+                updatedAt:
+                    Date.now(),
+
+                messages: []
+            };
+        }
+
+        chat.project =
+            project;
+
+        chat.messages.push({
+
+            role:
+                "user",
+
+            content:
+                userPrompt,
+
+            createdAt:
+                Date.now()
+        });
+
+        try {
+
+            await createProject(
+                project
+            );
+
+            const activeKey =
+                await getActiveKeyRecord();
+
+            sendEvent(
+                res,
+                {
+
+                    type:
+                        "connected",
+
+                    jobId,
+
+                    chatId:
+                        chat.id,
+
+                    project,
+
+                    keyName:
+                        activeKey?.name ||
+                        null
+                }
+            );
+
+            sendEvent(
+                res,
+                {
+
+                    type:
+                        "start",
+
+                    message:
+                        "Agent started."
+                }
+            );
+
+            let memory =
+                chat.messages
+                    .slice(-12);
+
+            let finalMessage =
+                "";
+
+            for (
+                let step = 1;
+                step <= MAX_AGENT_STEPS;
+                step++
+            ) {
+
+                if (job.stopped) {
+
+                    sendEvent(
+                        res,
+                        {
+                            type:
+                                "stopped",
+                            jobId
+                        }
+                    );
+
+                    break;
+                }
+
+                sendEvent(
+                    res,
+                    {
+
+                        type:
+                            "thinking",
+
+                        step
+                    }
+                );
+
+                const prompt =
+                    buildAgentPrompt(
+                        project,
+                        userPrompt,
+                        memory
+                    );
+
+                const result =
+                    await askGemini(
+                        prompt,
+                        job
+                    );
+
+                const plan =
+                    extractJSON(
+                        result.text
+                    );
+
+                if (
+                    plan.message
+                ) {
+
+                    sendEvent(
+                        res,
+                        {
+
+                            type:
+                                "planning",
+
+                            step,
+
+                            message:
+                                plan.message
+                        }
+                    );
+                }
+
+                const actions =
+                    Array.isArray(
+                        plan.actions
+                    )
+                        ? plan.actions
+                        : [];
+
+                if (
+                    actions.length === 0
+                ) {
+
+                    finalMessage =
+                        plan.message ||
+                        "Task completed.";
+
+                    break;
+                }
+
+                for (
+                    const action
+                    of actions
+                ) {
+
+                    if (
+                        job.stopped
+                    ) {
+                        break;
+                    }
+
+                    sendEvent(
+                        res,
+                        {
+
+                            type:
+                                "tool_start",
+
+                            step,
+
+                            tool:
+                                action.tool,
+
+                            args:
+                                {
+                                    ...action.args,
+                                    apiKey:
+                                        undefined
+                                }
+                        }
+                    );
+
+                    try {
+
+                        const toolResult =
+                            await executeAction(
+                                action,
+                                project
+                            );
+
+                        let safeResult =
+                            toolResult;
+
+                        // Don't send full file content
+                        // back into the UI if read_file
+                        // is used.
+                        if (
+                            action.tool ===
+                            "read_file"
+                        ) {
+
+                            safeResult = {
+
+                                ok:
+                                    toolResult.ok,
+
+                                path:
+                                    toolResult.path,
+
+                                contentLength:
+                                    String(
+                                        toolResult.content ||
+                                        ""
+                                    ).length,
+
+                                content:
+                                    toolResult.content
+                            };
+                        }
+
+                        sendEvent(
+                            res,
+                            {
+
+                                type:
+                                    "tool_result",
+
+                                step,
+
+                                tool:
+                                    action.tool,
+
+                                result:
+                                    safeResult
+                            }
+                        );
+
+                        memory.push({
+
+                            role:
+                                "tool",
+
+                            content:
+                                `${action.tool}: success`
+                        });
+
+                    } catch (error) {
+
+                        sendEvent(
+                            res,
+                            {
+
+                                type:
+                                    "tool_error",
+
+                                step,
+
+                                tool:
+                                    action.tool,
+
+                                error:
+                                    error.message
+                            }
+                        );
+
+                        memory.push({
+
+                            role:
+                                "tool",
+
+                            content:
+                                `${action.tool}: error: ${error.message}`
+                        });
+                    }
+                }
+
+                if (
+                    plan.done
+                ) {
+
+                    finalMessage =
+                        plan.message ||
+                        "Task completed.";
+
+                    break;
+                }
+
+                memory =
+                    memory.slice(-12);
+            }
+
+            if (!finalMessage) {
+
+                finalMessage =
+                    "Agent finished its available steps.";
+            }
+
+            chat.messages.push({
+
+                role:
+                    "assistant",
+
+                content:
+                    finalMessage,
+
+                createdAt:
+                    Date.now()
+            });
+
+            await saveChat(
+                chat
+            );
+
+            sendEvent(
+                res,
+                {
+
+                    type:
+                        "final",
+
+                    jobId,
+
+                    chatId:
+                        chat.id,
+
+                    message:
+                        finalMessage
+                }
+            );
+
+        } catch (error) {
+
+            console.error(
+                "[AGENT ERROR]",
+                error.message
+            );
+
+            sendEvent(
+                res,
+                {
+
+                    type:
+                        "error",
+
+                    jobId,
+
+                    error:
+                        error.message
+                }
+            );
+
+        } finally {
+
+            jobs.delete(
+                jobId
+            );
+
+            sendEvent(
+                res,
+                {
+
+                    type:
+                        "done",
+
+                    jobId
+                }
+            );
+
+            res.end();
+        }
+    }
+);
+
+
+// ============================================================
+// START
+// ============================================================
 
 app.listen(
     PORT,
-    "0.0.0.0",
     () => {
 
         console.log(
             `Gemini AI Agent running on port ${PORT}`
         );
 
+        console.log(
+            `[CONFIG] Gemini configured: ${Boolean(API_KEY)}`
+        );
+
+        console.log(
+            `[CONFIG] Model: ${MODEL}`
+        );
     }
 );
