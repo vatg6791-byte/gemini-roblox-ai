@@ -62,13 +62,14 @@ button{
     position:fixed;
     top:0;
     right:0;
-    width:290px;
+    width:310px;
+    max-width:88%;
     height:100%;
     z-index:100;
     background:
         linear-gradient(
             180deg,
-            rgba(18,20,31,.98),
+            rgba(18,20,31,.99),
             rgba(8,9,15,.99)
         );
     border-left:1px solid rgba(255,255,255,.08);
@@ -133,8 +134,7 @@ button{
     cursor:pointer;
 }
 
-.nav button.active,
-.nav button:active{
+.nav button.active{
     background:rgba(255,255,255,.08);
 }
 
@@ -157,6 +157,10 @@ button{
     background:rgba(255,255,255,.04);
     cursor:pointer;
     overflow:hidden;
+}
+
+.chat-item:active{
+    background:rgba(255,255,255,.09);
 }
 
 .chat-item-title{
@@ -228,6 +232,10 @@ button{
     background:rgba(255,255,255,.06);
     cursor:pointer;
     font-size:21px;
+}
+
+.menu-btn:active{
+    transform:scale(.94);
 }
 
 .status{
@@ -424,6 +432,14 @@ button{
     margin-bottom:12px;
 }
 
+.file-toolbar button{
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    background:rgba(255,255,255,.06);
+    cursor:pointer;
+}
+
 .file-list{
     display:flex;
     flex-direction:column;
@@ -439,8 +455,8 @@ button{
     text-align:left;
 }
 
-.file:hover{
-    background:rgba(255,255,255,.07);
+.file:active{
+    background:rgba(255,255,255,.08);
 }
 
 .file-size{
@@ -534,6 +550,152 @@ pre{
     font-family:monospace;
     font-size:12px;
     white-space:pre-wrap;
+}
+
+
+/* =====================================================
+   KEYS
+===================================================== */
+
+.keys-header{
+    margin-bottom:15px;
+}
+
+.keys-header h2{
+    margin:
+        0 0 7px;
+}
+
+.keys-header p{
+    margin:0;
+    opacity:.45;
+    font-size:12px;
+    line-height:1.6;
+}
+
+.key-card{
+    padding:14px;
+    border-radius:16px;
+    background:rgba(255,255,255,.045);
+    border:1px solid rgba(255,255,255,.07);
+    margin-bottom:10px;
+}
+
+.key-card.active{
+    border-color:rgba(124,92,255,.7);
+    box-shadow:
+        0 0 25px rgba(100,70,255,.08);
+}
+
+.key-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.key-name{
+    font-weight:800;
+}
+
+.key-badge{
+    padding:5px 8px;
+    border-radius:8px;
+    font-size:9px;
+    background:rgba(124,92,255,.15);
+    color:#b9afff;
+}
+
+.key-value{
+    margin-top:7px;
+    direction:ltr;
+    text-align:left;
+    font-family:monospace;
+    font-size:11px;
+    opacity:.5;
+}
+
+.key-actions{
+    display:flex;
+    gap:7px;
+    margin-top:12px;
+}
+
+.key-actions button{
+    flex:1;
+    min-height:40px;
+    border-radius:11px;
+    background:rgba(255,255,255,.07);
+    cursor:pointer;
+    font-size:12px;
+}
+
+.key-actions .use{
+    background:
+        linear-gradient(
+            135deg,
+            #6d5dfc,
+            #8d4cff
+        );
+}
+
+.key-actions .danger{
+    background:rgba(239,68,68,.12);
+    color:#ff8d8d;
+}
+
+.key-actions .success{
+    background:rgba(34,197,94,.12);
+    color:#8ff0ad;
+}
+
+
+/* =====================================================
+   ADD KEY
+===================================================== */
+
+.add-key-box{
+    margin-top:16px;
+    padding:15px;
+    border-radius:17px;
+    background:rgba(255,255,255,.035);
+    border:1px solid rgba(255,255,255,.07);
+}
+
+.add-key-box h3{
+    margin:
+        0 0 12px;
+    font-size:14px;
+}
+
+.key-input{
+    width:100%;
+    height:44px;
+    border-radius:11px;
+    border:1px solid rgba(255,255,255,.08);
+    outline:none;
+    background:rgba(0,0,0,.25);
+    color:white;
+    padding:0 12px;
+    margin-bottom:8px;
+}
+
+.key-input:focus{
+    border-color:rgba(124,92,255,.65);
+}
+
+.add-key-btn{
+    width:100%;
+    height:44px;
+    border-radius:12px;
+    background:
+        linear-gradient(
+            135deg,
+            #6d5dfc,
+            #8c4dff
+        );
+    font-weight:800;
+    cursor:pointer;
 }
 
 
@@ -720,6 +882,12 @@ body.running .stop-btn{
             ⌘ Terminal
         </button>
 
+        <button
+            data-page="keys"
+        >
+            🔑 Keys
+        </button>
+
     </div>
 
 
@@ -735,9 +903,7 @@ body.running .stop-btn{
 </aside>
 
 
-<div
-    id="overlay"
-></div>
+<div id="overlay"></div>
 
 
 <!-- ===================================================
@@ -776,7 +942,9 @@ body.running .stop-btn{
 <div id="workspace">
 
 
-<!-- HOME -->
+<!-- ===================================================
+     HOME
+=================================================== -->
 
 <section
     class="page active"
@@ -816,7 +984,9 @@ body.running .stop-btn{
 </section>
 
 
-<!-- CHATS -->
+<!-- ===================================================
+     CHATS
+=================================================== -->
 
 <section
     class="page"
@@ -835,7 +1005,9 @@ body.running .stop-btn{
 </section>
 
 
-<!-- FILES -->
+<!-- ===================================================
+     FILES
+=================================================== -->
 
 <section
     class="page"
@@ -849,7 +1021,7 @@ body.running .stop-btn{
         </strong>
 
         <button
-            onclick="refreshFiles()"
+            id="refreshFilesBtn"
         >
             ↻
         </button>
@@ -868,7 +1040,9 @@ body.running .stop-btn{
 </section>
 
 
-<!-- ACTIVITY -->
+<!-- ===================================================
+     ACTIVITY
+=================================================== -->
 
 <section
     class="page"
@@ -886,7 +1060,9 @@ body.running .stop-btn{
 </section>
 
 
-<!-- TERMINAL -->
+<!-- ===================================================
+     TERMINAL
+=================================================== -->
 
 <section
     class="page"
@@ -916,6 +1092,67 @@ body.running .stop-btn{
         <div
             id="terminalOutput"
         ></div>
+
+    </div>
+
+</section>
+
+
+<!-- ===================================================
+     KEYS
+=================================================== -->
+
+<section
+    class="page"
+    id="page-keys"
+>
+
+    <div class="keys-header">
+
+        <h2>
+            🔑 API Keys
+        </h2>
+
+        <p>
+            مفتاح Render الأساسي يبقى Primary.
+            يمكنك إضافة مفاتيح Gemini أخرى واختيارها يدويًا.
+        </p>
+
+    </div>
+
+
+    <div
+        id="keysList"
+    ></div>
+
+
+    <div class="add-key-box">
+
+        <h3>
+            ＋ Add Gemini Key
+        </h3>
+
+        <input
+            class="key-input"
+            id="keyName"
+            type="text"
+            placeholder="اسم المفتاح — مثال: Gemini Project 2"
+        >
+
+        <input
+            class="key-input"
+            id="keyValue"
+            type="password"
+            placeholder="ضع Gemini API Key هنا"
+            dir="ltr"
+        >
+
+        <button
+            class="add-key-btn"
+            id="addKeyBtn"
+        >
+            Add & Save Key
+        </button>
 
     </div>
 
@@ -1096,6 +1333,26 @@ const fullActivity =
         "fullActivity"
     );
 
+const keysList =
+    document.getElementById(
+        "keysList"
+    );
+
+const keyName =
+    document.getElementById(
+        "keyName"
+    );
+
+const keyValue =
+    document.getElementById(
+        "keyValue"
+    );
+
+const addKeyBtn =
+    document.getElementById(
+        "addKeyBtn"
+    );
+
 
 /* =====================================================
    SIDEBAR
@@ -1112,6 +1369,8 @@ function openSidebar(){
     );
 
     loadChats();
+
+    loadKeys();
 }
 
 
@@ -1154,10 +1413,12 @@ function showPage(
                 )
         );
 
+
     const target =
         document.getElementById(
             `page-${page}`
         );
+
 
     if(target){
 
@@ -1182,9 +1443,8 @@ function showPage(
 
 
     /*
-     * مهم:
-     * مربع الكتابة لا يختفي أثناء تشغيل الـAgent.
-     * وفي الصفحات الأخرى نخليه ظاهر فقط في Home.
+     * مهم جدًا:
+     * مربع الكتابة Home فقط.
      */
 
     const composer =
@@ -1192,9 +1452,9 @@ function showPage(
             "composer"
         );
 
+
     if(
-        page === "home" ||
-        running
+        page === "home"
     ){
 
         composer.style.display =
@@ -1210,28 +1470,44 @@ function showPage(
     closeSidebarMenu();
 
 
-    if(page === "files"){
+    if(
+        page === "files"
+    ){
 
         refreshFiles();
     }
 
 
-    if(page === "chats"){
+    if(
+        page === "chats"
+    ){
 
         loadChats();
     }
 
 
-    if(page === "activity"){
+    if(
+        page === "activity"
+    ){
 
         renderFullActivity();
     }
 
 
-    if(page === "terminal"){
+    if(
+        page === "terminal"
+    ){
 
         terminalOutput.scrollTop =
             terminalOutput.scrollHeight;
+    }
+
+
+    if(
+        page === "keys"
+    ){
+
+        loadKeys();
     }
 }
 
@@ -1272,17 +1548,24 @@ function makeChatId(){
 
 async function newChat(){
 
-    stopCurrentAgent();
+    if(running){
+
+        await stopCurrentAgent();
+    }
+
 
     const id =
         makeChatId();
 
+
     const title =
         "New Chat";
+
 
     const project =
         "project_" +
         Date.now();
+
 
     try {
 
@@ -1291,20 +1574,27 @@ async function newChat(){
                 `${API_URL}/chats/new`,
                 {
                     method:"POST",
+
                     headers:{
                         "Content-Type":
                             "application/json"
                     },
+
                     body:JSON.stringify({
+
                         id,
+
                         title,
+
                         project
                     })
                 }
             );
 
+
         const data =
             await response.json();
+
 
         if(!data.ok){
 
@@ -1314,18 +1604,16 @@ async function newChat(){
             );
         }
 
+
         currentChatId =
             data.chat.id;
+
 
         currentProject =
             data.chat.project;
 
-    } catch(error){
 
-        /*
-         * حتى لو السيرفر غير متاح،
-         * نقدر نجهز Chat ID محلي.
-         */
+    } catch(error){
 
         currentChatId =
             id;
@@ -1339,6 +1627,7 @@ async function newChat(){
         "currentChatId",
         currentChatId
     );
+
 
     localStorage.setItem(
         "currentProject",
@@ -1368,24 +1657,28 @@ async function newChat(){
     homeEmpty.style.display =
         "flex";
 
+
     topTitle.textContent =
         "New Chat";
 
+
     statusEl.textContent =
         "Ready";
+
+
+    running =
+        false;
 
 
     document.body.classList.remove(
         "running"
     );
 
-    running =
-        false;
-
 
     showPage(
         "home"
     );
+
 
     loadChats();
 }
@@ -1408,23 +1701,28 @@ async function loadChats(){
                 `${API_URL}/chats`
             );
 
+
         const data =
             await response.json();
+
 
         if(!data.ok){
 
             return;
         }
 
+
         renderChatList(
             chatList,
             data.chats
         );
 
+
         renderChatList(
             fullChatList,
             data.chats
         );
+
 
     } catch {}
 }
@@ -1438,7 +1736,11 @@ function renderChatList(
     element.innerHTML =
         "";
 
-    if(!chats.length){
+
+    if(
+        !chats ||
+        !chats.length
+    ){
 
         element.innerHTML =
             `<div style="opacity:.4;font-size:12px;padding:10px">
@@ -1457,8 +1759,10 @@ function renderChatList(
                     "div"
                 );
 
+
             item.className =
                 "chat-item";
+
 
             item.innerHTML = `
 
@@ -1475,6 +1779,7 @@ function renderChatList(
                         "default"
                     )}
                 </div>
+
             `;
 
 
@@ -1511,8 +1816,10 @@ async function openChat(
                 )}`
             );
 
+
         const data =
             await response.json();
+
 
         if(!data.ok){
 
@@ -1522,19 +1829,24 @@ async function openChat(
             );
         }
 
+
         const chat =
             data.chat;
+
 
         currentChatId =
             chat.id;
 
+
         currentProject =
             chat.project;
+
 
         localStorage.setItem(
             "currentChatId",
             currentChatId
         );
+
 
         localStorage.setItem(
             "currentProject",
@@ -1551,6 +1863,7 @@ async function openChat(
         activityItems =
             [];
 
+
         topTitle.textContent =
             chat.title ||
             "Chat";
@@ -1566,6 +1879,7 @@ async function openChat(
 
             homeEmpty.style.display =
                 "none";
+
         }else{
 
             homeEmpty.style.display =
@@ -1577,7 +1891,8 @@ async function openChat(
             message => {
 
                 if(
-                    message.role === "user"
+                    message.role ===
+                    "user"
                 ){
 
                     addMessage(
@@ -1586,7 +1901,8 @@ async function openChat(
                     );
 
                 }else if(
-                    message.role === "assistant"
+                    message.role ===
+                    "assistant"
                 ){
 
                     addMessage(
@@ -1603,7 +1919,6 @@ async function openChat(
             "home"
         );
 
-        closeSidebarMenu();
 
     } catch(error){
 
@@ -1627,31 +1942,35 @@ function addMessage(
     homeEmpty.style.display =
         "none";
 
+
     const element =
         document.createElement(
             "div"
         );
 
+
     element.className =
         `message ${role}`;
 
+
     element.textContent =
         text;
+
 
     messages.appendChild(
         element
     );
 
-    document
-        .getElementById(
+
+    const workspace =
+        document.getElementById(
             "workspace"
-        )
-        .scrollTop =
-        document
-            .getElementById(
-                "workspace"
-            )
-            .scrollHeight;
+        );
+
+
+    workspace.scrollTop =
+        workspace.scrollHeight;
+
 
     return element;
 }
@@ -1667,33 +1986,27 @@ function addActivity(
 ){
 
     const item = {
+
         text,
+
         tool,
-        time: new Date()
+
+        time:
+            new Date()
     };
+
 
     activityItems.push(
         item
     );
 
+
     renderActivity(
         activityContainer
     );
 
+
     renderFullActivity();
-
-
-    const page =
-        document.getElementById(
-            "page-activity"
-        );
-
-    if(page){
-
-        /*
-         * nothing
-         */
-    }
 }
 
 
@@ -1701,7 +2014,9 @@ function renderActivity(
     target
 ){
 
-    if(!activityItems.length){
+    if(
+        !activityItems.length
+    ){
 
         target.innerHTML =
             "";
@@ -1772,6 +2087,7 @@ function renderActivity(
             </div>
 
         </div>
+
     `;
 }
 
@@ -1794,6 +2110,7 @@ function terminalLog(
 
     terminalOutput.textContent +=
         `${text}\n`;
+
 
     terminalOutput.scrollTop =
         terminalOutput.scrollHeight;
@@ -1821,10 +2138,12 @@ async function sendPrompt(){
     const text =
         prompt.value.trim();
 
+
     if(!text){
 
         return;
     }
+
 
     if(running){
 
@@ -1841,6 +2160,7 @@ async function sendPrompt(){
     prompt.value =
         "";
 
+
     autoResize();
 
 
@@ -1853,12 +2173,14 @@ async function sendPrompt(){
     activityItems =
         [];
 
+
     activityContainer.innerHTML =
         "";
 
 
     running =
         true;
+
 
     document.body.classList.add(
         "running"
@@ -1880,16 +2202,22 @@ async function sendPrompt(){
             await fetch(
                 `${API_URL}/agent`,
                 {
+
                     method:"POST",
+
                     headers:{
                         "Content-Type":
                             "application/json"
                     },
+
                     body:JSON.stringify({
+
                         chatId:
                             currentChatId,
+
                         project:
                             currentProject,
+
                         prompt:
                             text
                     })
@@ -1902,6 +2230,7 @@ async function sendPrompt(){
             const errorText =
                 await response.text();
 
+
             throw new Error(
                 errorText ||
                 `HTTP ${response.status}`
@@ -1909,22 +2238,27 @@ async function sendPrompt(){
         }
 
 
+        if(!response.body){
+
+            throw new Error(
+                "المتصفح لم يستلم Stream من السيرفر."
+            );
+        }
+
+
         const reader =
             response.body.getReader();
 
+
         const decoder =
             new TextDecoder();
+
 
         let buffer =
             "";
 
 
         while(true){
-
-            if(!running){
-
-                break;
-            }
 
             const {
                 value,
@@ -1951,6 +2285,7 @@ async function sendPrompt(){
             const lines =
                 buffer.split("\n");
 
+
             buffer =
                 lines.pop() ||
                 "";
@@ -1967,6 +2302,7 @@ async function sendPrompt(){
 
 
                 let event;
+
 
                 try {
 
@@ -1985,7 +2321,14 @@ async function sendPrompt(){
                     event
                 );
             }
+
+
+            if(!running){
+
+                break;
+            }
         }
+
 
     } catch(error){
 
@@ -1995,11 +2338,11 @@ async function sendPrompt(){
                 "حدث خطأ أثناء الاتصال بالـAgent"
             );
 
+
             addMessage(
                 "assistant",
                 error.message
             );
-
         }
 
     } finally {
@@ -2007,16 +2350,24 @@ async function sendPrompt(){
         running =
             false;
 
+
         document.body.classList.remove(
             "running"
         );
 
+
         statusEl.textContent =
             "Ready";
+
+
+        currentJobId =
+            null;
+
 
         showPage(
             "home"
         );
+
 
         loadChats();
     }
@@ -2040,6 +2391,7 @@ function handleAgentEvent(
             currentJobId =
                 event.jobId;
 
+
             addActivity(
                 "Agent connected"
             );
@@ -2050,10 +2402,18 @@ function handleAgentEvent(
         case "start":
 
             addActivity(
-                `Project: ${
-                    event.project
-                }`
+                `Project: ${event.project}`
             );
+
+
+            if(
+                event.keyName
+            ){
+
+                addActivity(
+                    `Active AI Key: ${event.keyName}`
+                );
+            }
 
             break;
 
@@ -2095,8 +2455,10 @@ function handleAgentEvent(
                 event.tool
             );
 
+
             if(
-                event.tool === "terminal" &&
+                event.tool ===
+                "terminal" &&
                 event.result
             ){
 
@@ -2108,6 +2470,7 @@ function handleAgentEvent(
                         event.result.stdout
                     );
                 }
+
 
                 if(
                     event.result.stderr
@@ -2129,6 +2492,7 @@ function handleAgentEvent(
                 event.tool
             );
 
+
             terminalLog(
                 `[ERROR] ${
                     event.error
@@ -2140,13 +2504,16 @@ function handleAgentEvent(
 
         case "final":
 
-            if(event.message){
+            if(
+                event.message
+            ){
 
                 addMessage(
                     "assistant",
                     event.message
                 );
             }
+
 
             addActivity(
                 "Agent finished"
@@ -2161,6 +2528,7 @@ function handleAgentEvent(
                 "Agent stopped by user"
             );
 
+
             addMessage(
                 "assistant",
                 "تم إيقاف المهمة."
@@ -2174,6 +2542,7 @@ function handleAgentEvent(
             addActivity(
                 `Error: ${event.message}`
             );
+
 
             addMessage(
                 "assistant",
@@ -2202,22 +2571,38 @@ async function stopCurrentAgent(){
 
     if(!currentJobId){
 
+        running =
+            false;
+
+        document.body.classList.remove(
+            "running"
+        );
+
         return;
     }
+
+
+    const oldJob =
+        currentJobId;
+
 
     try {
 
         await fetch(
             `${API_URL}/agent/stop`,
             {
+
                 method:"POST",
+
                 headers:{
                     "Content-Type":
                         "application/json"
                 },
+
                 body:JSON.stringify({
+
                     jobId:
-                        currentJobId
+                        oldJob
                 })
             }
         );
@@ -2228,17 +2613,15 @@ async function stopCurrentAgent(){
     running =
         false;
 
+
     document.body.classList.remove(
         "running"
     );
 
+
     statusEl.textContent =
         "Stopped";
 
-
-    addActivity(
-        "تم طلب إيقاف الـAgent"
-    );
 
     currentJobId =
         null;
@@ -2284,6 +2667,7 @@ function autoResize(){
     prompt.style.height =
         "auto";
 
+
     prompt.style.height =
         Math.min(
             prompt.scrollHeight,
@@ -2313,8 +2697,10 @@ async function refreshFiles(){
                 )}`
             );
 
+
         const data =
             await response.json();
+
 
         if(!data.ok){
 
@@ -2328,7 +2714,9 @@ async function refreshFiles(){
             "";
 
 
-        if(!data.files.length){
+        if(
+            !data.files.length
+        ){
 
             fileList.innerHTML =
                 `<div style="opacity:.4">
@@ -2347,14 +2735,17 @@ async function refreshFiles(){
                         "div"
                     );
 
+
                 element.className =
                     "file";
+
 
                 element.innerHTML = `
 
                     <div>
                         ${
-                            file.type === "folder"
+                            file.type ===
+                            "folder"
                             ? "📁 "
                             : "📄 "
                         }
@@ -2365,7 +2756,8 @@ async function refreshFiles(){
                     </div>
 
                     ${
-                        file.size !== undefined
+                        file.size !==
+                        undefined
                         ?
                         `<div class="file-size">
                             ${file.size} bytes
@@ -2378,7 +2770,8 @@ async function refreshFiles(){
 
 
                 if(
-                    file.type === "file"
+                    file.type ===
+                    "file"
                 ){
 
                     element.onclick =
@@ -2392,8 +2785,10 @@ async function refreshFiles(){
                 fileList.appendChild(
                     element
                 );
+
             }
         );
+
 
     } catch(error){
 
@@ -2405,6 +2800,14 @@ async function refreshFiles(){
              </div>`;
     }
 }
+
+
+document
+    .getElementById(
+        "refreshFilesBtn"
+    )
+    .onclick =
+    refreshFiles;
 
 
 /* =====================================================
@@ -2426,8 +2829,10 @@ async function openFile(
                 )}`
             );
 
+
         const data =
             await response.json();
+
 
         if(!data.ok){
 
@@ -2462,6 +2867,598 @@ async function openFile(
         );
     }
 }
+
+
+/* =====================================================
+   KEYS
+===================================================== */
+
+async function loadKeys(){
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/keys`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error ||
+                "Failed to load keys"
+            );
+        }
+
+
+        renderKeys(
+            data
+        );
+
+
+    } catch(error){
+
+        keysList.innerHTML =
+            `<div style="opacity:.5">
+                ${escapeHTML(
+                    error.message
+                )}
+             </div>`;
+    }
+}
+
+
+function renderKeys(
+    data
+){
+
+    keysList.innerHTML =
+        "";
+
+
+    /*
+     * PRIMARY
+     */
+
+    const primaryActive =
+        data.activeId ===
+        "primary";
+
+
+    const primary =
+        document.createElement(
+            "div"
+        );
+
+
+    primary.className =
+        "key-card" +
+        (
+            primaryActive
+            ? " active"
+            : ""
+        );
+
+
+    primary.innerHTML = `
+
+        <div class="key-top">
+
+            <div class="key-name">
+                Render Primary
+            </div>
+
+            <div class="key-badge">
+                PRIMARY
+            </div>
+
+        </div>
+
+        <div class="key-value">
+            ${escapeHTML(
+                data.primary.masked
+            )}
+        </div>
+
+        <div class="key-actions">
+
+            <button
+                class="use"
+                onclick="useKey('primary')"
+            >
+                ${
+                    primaryActive
+                    ? "✓ Using"
+                    : "Use Primary"
+                }
+            </button>
+
+        </div>
+
+    `;
+
+
+    keysList.appendChild(
+        primary
+    );
+
+
+    /*
+     * SAVED KEYS
+     */
+
+    if(
+        !data.keys ||
+        !data.keys.length
+    ){
+
+        return;
+    }
+
+
+    data.keys.forEach(
+        key => {
+
+            const active =
+                data.activeId ===
+                key.id;
+
+
+            const card =
+                document.createElement(
+                    "div"
+                );
+
+
+            card.className =
+                "key-card" +
+                (
+                    active
+                    ? " active"
+                    : ""
+                );
+
+
+            const isEnabled =
+                key.enabled !== false;
+
+
+            card.innerHTML = `
+
+                <div class="key-top">
+
+                    <div class="key-name">
+                        ${escapeHTML(
+                            key.name
+                        )}
+                    </div>
+
+                    <div class="key-badge">
+                        ${
+                            active
+                            ? "ACTIVE"
+                            : (
+                                isEnabled
+                                ? "SAVED"
+                                : "STOPPED"
+                            )
+                        }
+                    </div>
+
+                </div>
+
+                <div class="key-value">
+                    ${escapeHTML(
+                        key.masked
+                    )}
+                </div>
+
+                <div class="key-actions">
+
+                    ${
+                        isEnabled
+                        ?
+                        `
+                        <button
+                            class="use"
+                            onclick="useKey('${key.id}')"
+                        >
+                            ${
+                                active
+                                ? "✓ Using"
+                                : "Use"
+                            }
+                        </button>
+
+                        <button
+                            class="danger"
+                            onclick="stopKey('${key.id}')"
+                        >
+                            Stop
+                        </button>
+                        `
+                        :
+                        `
+                        <button
+                            class="success"
+                            onclick="enableKey('${key.id}')"
+                        >
+                            Enable
+                        </button>
+                        `
+                    }
+
+                    <button
+                        class="danger"
+                        onclick="deleteKey('${key.id}')"
+                    >
+                        Delete
+                    </button>
+
+                </div>
+
+            `;
+
+
+            keysList.appendChild(
+                card
+            );
+        }
+    );
+}
+
+
+/* =====================================================
+   USE KEY
+===================================================== */
+
+async function useKey(
+    id
+){
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/keys/use`,
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+                        id
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error
+            );
+        }
+
+
+        statusEl.textContent =
+            data.activeName ||
+            "Key active";
+
+
+        addActivity(
+            `Active AI Key: ${
+                data.activeName
+            }`
+        );
+
+
+        await loadKeys();
+
+
+    } catch(error){
+
+        alert(
+            error.message
+        );
+    }
+}
+
+
+/* =====================================================
+   STOP KEY
+===================================================== */
+
+async function stopKey(
+    id
+){
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/keys/stop`,
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+                        id
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error
+            );
+        }
+
+
+        await loadKeys();
+
+
+        statusEl.textContent =
+            "Render Primary";
+
+
+    } catch(error){
+
+        alert(
+            error.message
+        );
+    }
+}
+
+
+/* =====================================================
+   ENABLE KEY
+===================================================== */
+
+async function enableKey(
+    id
+){
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/keys/enable`,
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+                        id
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error
+            );
+        }
+
+
+        await loadKeys();
+
+
+    } catch(error){
+
+        alert(
+            error.message
+        );
+    }
+}
+
+
+/* =====================================================
+   DELETE KEY
+===================================================== */
+
+async function deleteKey(
+    id
+){
+
+    if(
+        !confirm(
+            "هل تريد حذف هذا المفتاح نهائيًا؟"
+        )
+    ){
+
+        return;
+    }
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/keys/${encodeURIComponent(
+                    id
+                )}`,
+                {
+                    method:"DELETE"
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error
+            );
+        }
+
+
+        await loadKeys();
+
+
+    } catch(error){
+
+        alert(
+            error.message
+        );
+    }
+}
+
+
+/* =====================================================
+   ADD KEY
+===================================================== */
+
+async function addKey(){
+
+    const name =
+        keyName.value.trim();
+
+
+    const key =
+        keyValue.value.trim();
+
+
+    if(!name){
+
+        alert(
+            "اكتب اسم المفتاح."
+        );
+
+        keyName.focus();
+
+        return;
+    }
+
+
+    if(!key){
+
+        alert(
+            "ضع Gemini API Key."
+        );
+
+        keyValue.focus();
+
+        return;
+    }
+
+
+    addKeyBtn.disabled =
+        true;
+
+
+    addKeyBtn.textContent =
+        "Saving...";
+
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/keys`,
+                {
+
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        name,
+
+                        key
+                    })
+                }
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error
+            );
+        }
+
+
+        keyName.value =
+            "";
+
+        keyValue.value =
+            "";
+
+
+        await loadKeys();
+
+
+        alert(
+            "تم حفظ المفتاح بنجاح."
+        );
+
+
+    } catch(error){
+
+        alert(
+            error.message
+        );
+
+    } finally {
+
+        addKeyBtn.disabled =
+            false;
+
+        addKeyBtn.textContent =
+            "Add & Save Key";
+    }
+}
+
+
+addKeyBtn.onclick =
+    addKey;
 
 
 /* =====================================================
@@ -2503,11 +3500,6 @@ function escapeHTML(
 ===================================================== */
 
 (async function(){
-
-    /*
-     * إذا عنده Chat محفوظ نفتحه.
-     * إذا ما عنده، نخليه فارغ تمامًا.
-     */
 
     if(currentChatId){
 
