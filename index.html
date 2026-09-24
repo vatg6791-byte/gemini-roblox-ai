@@ -19,8 +19,7 @@
     -webkit-tap-highlight-color:transparent;
 }
 
-html,
-body{
+html,body{
     margin:0;
     width:100%;
     height:100%;
@@ -35,9 +34,7 @@ body{
     color:#f5f7ff;
 }
 
-button,
-textarea,
-input{
+button,input,textarea{
     font:inherit;
 }
 
@@ -54,9 +51,7 @@ button{
 }
 
 
-/* =====================================================
-   SIDEBAR
-===================================================== */
+/* ================= SIDEBAR ================= */
 
 #sidebar{
     position:fixed;
@@ -141,8 +136,7 @@ button{
 .section-title{
     font-size:12px;
     opacity:.45;
-    margin:
-        22px 6px 9px;
+    margin:22px 6px 9px;
 }
 
 .chat-list{
@@ -178,9 +172,7 @@ button{
 }
 
 
-/* =====================================================
-   OVERLAY
-===================================================== */
+/* ================= OVERLAY ================= */
 
 #overlay{
     position:fixed;
@@ -196,9 +188,7 @@ button{
 }
 
 
-/* =====================================================
-   MAIN
-===================================================== */
+/* ================= MAIN ================= */
 
 #main{
     width:100%;
@@ -213,8 +203,7 @@ button{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:
-        0 14px;
+    padding:0 14px;
     border-bottom:1px solid rgba(255,255,255,.07);
     background:rgba(8,9,14,.85);
     backdrop-filter:blur(20px);
@@ -244,9 +233,7 @@ button{
 }
 
 
-/* =====================================================
-   WORKSPACE
-===================================================== */
+/* ================= WORKSPACE ================= */
 
 #workspace{
     flex:1;
@@ -266,13 +253,10 @@ button{
 }
 
 
-/* =====================================================
-   HOME
-===================================================== */
+/* ================= HOME ================= */
 
 .home-empty{
-    min-height:
-        calc(100vh - 240px);
+    min-height:calc(100vh - 240px);
     display:flex;
     align-items:center;
     justify-content:center;
@@ -311,9 +295,7 @@ button{
 }
 
 
-/* =====================================================
-   MESSAGES
-===================================================== */
+/* ================= MESSAGES ================= */
 
 .messages{
     display:flex;
@@ -349,9 +331,7 @@ button{
 }
 
 
-/* =====================================================
-   ACTIVITY
-===================================================== */
+/* ================= ACTIVITY ================= */
 
 .activity-card{
     margin-top:14px;
@@ -421,9 +401,7 @@ button{
 }
 
 
-/* =====================================================
-   FILES
-===================================================== */
+/* ================= FILES ================= */
 
 .file-toolbar{
     display:flex;
@@ -466,9 +444,7 @@ button{
 }
 
 
-/* =====================================================
-   CODE VIEW
-===================================================== */
+/* ================= CODE ================= */
 
 .code-view{
     margin-top:14px;
@@ -502,9 +478,7 @@ pre{
 }
 
 
-/* =====================================================
-   TERMINAL
-===================================================== */
+/* ================= TERMINAL ================= */
 
 .terminal-box{
     border-radius:17px;
@@ -553,17 +527,14 @@ pre{
 }
 
 
-/* =====================================================
-   KEYS
-===================================================== */
+/* ================= KEYS ================= */
 
 .keys-header{
     margin-bottom:15px;
 }
 
 .keys-header h2{
-    margin:
-        0 0 7px;
+    margin:0 0 7px;
 }
 
 .keys-header p{
@@ -583,8 +554,15 @@ pre{
 
 .key-card.active{
     border-color:rgba(124,92,255,.7);
-    box-shadow:
-        0 0 25px rgba(100,70,255,.08);
+    box-shadow:0 0 25px rgba(100,70,255,.08);
+}
+
+.key-card.quota{
+    border-color:rgba(245,158,11,.55);
+}
+
+.key-card.error{
+    border-color:rgba(239,68,68,.5);
 }
 
 .key-top{
@@ -606,6 +584,21 @@ pre{
     color:#b9afff;
 }
 
+.key-badge.quota{
+    background:rgba(245,158,11,.12);
+    color:#fbbf24;
+}
+
+.key-badge.error{
+    background:rgba(239,68,68,.12);
+    color:#ff8d8d;
+}
+
+.key-badge.stopped{
+    background:rgba(255,255,255,.07);
+    color:#aaa;
+}
+
 .key-value{
     margin-top:7px;
     direction:ltr;
@@ -613,6 +606,25 @@ pre{
     font-family:monospace;
     font-size:11px;
     opacity:.5;
+}
+
+.key-provider{
+    margin-top:6px;
+    font-size:10px;
+    opacity:.4;
+}
+
+.key-error{
+    margin-top:8px;
+    padding:8px;
+    border-radius:9px;
+    background:rgba(239,68,68,.07);
+    color:#ff9a9a;
+    font-size:10px;
+    line-height:1.5;
+    direction:ltr;
+    text-align:left;
+    word-break:break-word;
 }
 
 .key-actions{
@@ -650,9 +662,7 @@ pre{
 }
 
 
-/* =====================================================
-   ADD KEY
-===================================================== */
+/* ================= ADD KEY ================= */
 
 .add-key-box{
     margin-top:16px;
@@ -663,8 +673,7 @@ pre{
 }
 
 .add-key-box h3{
-    margin:
-        0 0 12px;
+    margin:0 0 12px;
     font-size:14px;
 }
 
@@ -698,10 +707,12 @@ pre{
     cursor:pointer;
 }
 
+.add-key-btn:disabled{
+    opacity:.5;
+}
 
-/* =====================================================
-   COMPOSER
-===================================================== */
+
+/* ================= COMPOSER ================= */
 
 #composer{
     position:fixed;
@@ -728,11 +739,9 @@ pre{
     align-items:flex-end;
     gap:8px;
     border-radius:20px;
-    background:
-        rgba(20,21,31,.94);
+    background:rgba(20,21,31,.94);
     border:1px solid rgba(255,255,255,.1);
-    box-shadow:
-        0 15px 50px rgba(0,0,0,.4);
+    box-shadow:0 15px 50px rgba(0,0,0,.4);
     backdrop-filter:blur(22px);
 }
 
@@ -745,8 +754,7 @@ pre{
     outline:0;
     background:transparent;
     color:white;
-    padding:
-        11px 8px;
+    padding:11px 8px;
     line-height:1.5;
 }
 
@@ -791,13 +799,7 @@ body.running .stop-btn{
 }
 
 
-/* =====================================================
-   RESPONSIVE
-===================================================== */
-
-@media(
-    min-width:800px
-){
+@media(min-width:800px){
 
     #workspace{
         padding-left:20%;
@@ -819,9 +821,7 @@ body.running .stop-btn{
 <div id="app">
 
 
-<!-- ===================================================
-     SIDEBAR
-=================================================== -->
+<!-- ================= SIDEBAR ================= -->
 
 <aside id="sidebar">
 
@@ -840,14 +840,12 @@ body.running .stop-btn{
 
     </div>
 
-
     <button
         class="new-chat"
         id="newChat"
     >
         ＋ New Chat
     </button>
-
 
     <div class="nav">
 
@@ -858,38 +856,27 @@ body.running .stop-btn{
             🏠 Home
         </button>
 
-        <button
-            data-page="chats"
-        >
+        <button data-page="chats">
             💬 Chats
         </button>
 
-        <button
-            data-page="files"
-        >
+        <button data-page="files">
             📁 Files
         </button>
 
-        <button
-            data-page="activity"
-        >
+        <button data-page="activity">
             ⚡ Agent Activity
         </button>
 
-        <button
-            data-page="terminal"
-        >
+        <button data-page="terminal">
             ⌘ Terminal
         </button>
 
-        <button
-            data-page="keys"
-        >
-            🔑 Keys
+        <button data-page="keys">
+            🔑 API Keys
         </button>
 
     </div>
-
 
     <div class="section-title">
         Recent Chats
@@ -902,16 +889,12 @@ body.running .stop-btn{
 
 </aside>
 
-
 <div id="overlay"></div>
 
 
-<!-- ===================================================
-     MAIN
-=================================================== -->
+<!-- ================= MAIN ================= -->
 
 <main id="main">
-
 
 <header class="topbar">
 
@@ -942,9 +925,7 @@ body.running .stop-btn{
 <div id="workspace">
 
 
-<!-- ===================================================
-     HOME
-=================================================== -->
+<!-- ================= HOME ================= -->
 
 <section
     class="page active"
@@ -970,12 +951,10 @@ body.running .stop-btn{
 
     </div>
 
-
     <div
         class="messages"
         id="messages"
     ></div>
-
 
     <div
         id="activityContainer"
@@ -984,9 +963,7 @@ body.running .stop-btn{
 </section>
 
 
-<!-- ===================================================
-     CHATS
-=================================================== -->
+<!-- ================= CHATS ================= -->
 
 <section
     class="page"
@@ -1005,9 +982,7 @@ body.running .stop-btn{
 </section>
 
 
-<!-- ===================================================
-     FILES
-=================================================== -->
+<!-- ================= FILES ================= -->
 
 <section
     class="page"
@@ -1040,9 +1015,7 @@ body.running .stop-btn{
 </section>
 
 
-<!-- ===================================================
-     ACTIVITY
-=================================================== -->
+<!-- ================= ACTIVITY ================= -->
 
 <section
     class="page"
@@ -1060,9 +1033,7 @@ body.running .stop-btn{
 </section>
 
 
-<!-- ===================================================
-     TERMINAL
-=================================================== -->
+<!-- ================= TERMINAL ================= -->
 
 <section
     class="page"
@@ -1098,9 +1069,7 @@ body.running .stop-btn{
 </section>
 
 
-<!-- ===================================================
-     KEYS
-=================================================== -->
+<!-- ================= KEYS ================= -->
 
 <section
     class="page"
@@ -1114,17 +1083,13 @@ body.running .stop-btn{
         </h2>
 
         <p>
-            مفتاح Render الأساسي يبقى Primary.
-            يمكنك إضافة مفاتيح Gemini أخرى واختيارها يدويًا.
+            مفتاح Render الأساسي محفوظ في السيرفر.
+            يمكنك إضافة مفاتيح Gemini أخرى وتفعيل أي مفتاح وقت الحاجة.
         </p>
 
     </div>
 
-
-    <div
-        id="keysList"
-    ></div>
-
+    <div id="keysList"></div>
 
     <div class="add-key-box">
 
@@ -1136,7 +1101,7 @@ body.running .stop-btn{
             class="key-input"
             id="keyName"
             type="text"
-            placeholder="اسم المفتاح — مثال: Gemini Project 2"
+            placeholder="اسم المفتاح — مثال: Gemini 2"
         >
 
         <input
@@ -1145,13 +1110,14 @@ body.running .stop-btn{
             type="password"
             placeholder="ضع Gemini API Key هنا"
             dir="ltr"
+            autocomplete="off"
         >
 
         <button
             class="add-key-btn"
             id="addKeyBtn"
         >
-            Add & Save Key
+            Add & Activate
         </button>
 
     </div>
@@ -1162,9 +1128,7 @@ body.running .stop-btn{
 </div>
 
 
-<!-- ===================================================
-     COMPOSER
-=================================================== -->
+<!-- ================= COMPOSER ================= -->
 
 <div id="composer">
 
@@ -1194,7 +1158,6 @@ body.running .stop-btn{
 
 </div>
 
-
 </main>
 
 </div>
@@ -1215,14 +1178,11 @@ const API_URL =
 ===================================================== */
 
 let currentChatId =
-    localStorage.getItem(
-        "currentChatId"
-    );
+    localStorage.getItem("currentChatId");
 
 let currentProject =
-    localStorage.getItem(
-        "currentProject"
-    ) || "default";
+    localStorage.getItem("currentProject") ||
+    "default";
 
 let currentJobId =
     null;
@@ -1239,119 +1199,73 @@ let activityItems =
 ===================================================== */
 
 const sidebar =
-    document.getElementById(
-        "sidebar"
-    );
+    document.getElementById("sidebar");
 
 const overlay =
-    document.getElementById(
-        "overlay"
-    );
+    document.getElementById("overlay");
 
 const menuBtn =
-    document.getElementById(
-        "menuBtn"
-    );
+    document.getElementById("menuBtn");
 
 const closeSidebar =
-    document.getElementById(
-        "closeSidebar"
-    );
+    document.getElementById("closeSidebar");
 
 const newChatBtn =
-    document.getElementById(
-        "newChat"
-    );
+    document.getElementById("newChat");
 
 const prompt =
-    document.getElementById(
-        "prompt"
-    );
+    document.getElementById("prompt");
 
 const sendBtn =
-    document.getElementById(
-        "sendBtn"
-    );
+    document.getElementById("sendBtn");
 
 const stopBtn =
-    document.getElementById(
-        "stopBtn"
-    );
+    document.getElementById("stopBtn");
 
 const messages =
-    document.getElementById(
-        "messages"
-    );
+    document.getElementById("messages");
 
 const homeEmpty =
-    document.getElementById(
-        "homeEmpty"
-    );
+    document.getElementById("homeEmpty");
 
 const statusEl =
-    document.getElementById(
-        "status"
-    );
+    document.getElementById("status");
 
 const topTitle =
-    document.getElementById(
-        "topTitle"
-    );
+    document.getElementById("topTitle");
 
 const chatList =
-    document.getElementById(
-        "chatList"
-    );
+    document.getElementById("chatList");
 
 const fullChatList =
-    document.getElementById(
-        "fullChatList"
-    );
+    document.getElementById("fullChatList");
 
 const fileList =
-    document.getElementById(
-        "fileList"
-    );
+    document.getElementById("fileList");
 
 const codeView =
-    document.getElementById(
-        "codeView"
-    );
+    document.getElementById("codeView");
 
 const terminalOutput =
-    document.getElementById(
-        "terminalOutput"
-    );
+    document.getElementById("terminalOutput");
 
 const activityContainer =
-    document.getElementById(
-        "activityContainer"
-    );
+    document.getElementById("activityContainer");
 
 const fullActivity =
-    document.getElementById(
-        "fullActivity"
-    );
+    document.getElementById("fullActivity");
 
 const keysList =
-    document.getElementById(
-        "keysList"
-    );
+    document.getElementById("keysList");
 
 const keyName =
-    document.getElementById(
-        "keyName"
-    );
+    document.getElementById("keyName");
 
 const keyValue =
-    document.getElementById(
-        "keyValue"
-    );
+    document.getElementById("keyValue");
 
 const addKeyBtn =
-    document.getElementById(
-        "addKeyBtn"
-    );
+    document.getElementById("addKeyBtn");
 
 
 /* =====================================================
@@ -1360,31 +1274,21 @@ const addKeyBtn =
 
 function openSidebar(){
 
-    sidebar.classList.add(
-        "open"
-    );
+    sidebar.classList.add("open");
 
-    overlay.classList.add(
-        "show"
-    );
+    overlay.classList.add("show");
 
     loadChats();
 
     loadKeys();
 }
 
-
 function closeSidebarMenu(){
 
-    sidebar.classList.remove(
-        "open"
-    );
+    sidebar.classList.remove("open");
 
-    overlay.classList.remove(
-        "show"
-    );
+    overlay.classList.remove("show");
 }
-
 
 menuBtn.onclick =
     openSidebar;
@@ -1400,135 +1304,83 @@ overlay.onclick =
    NAVIGATION
 ===================================================== */
 
-function showPage(
-    page
-){
+function showPage(page){
 
     document
         .querySelectorAll(".page")
-        .forEach(
-            item =>
-                item.classList.remove(
-                    "active"
-                )
+        .forEach(item =>
+            item.classList.remove("active")
         );
-
 
     const target =
         document.getElementById(
             `page-${page}`
         );
 
-
     if(target){
-
-        target.classList.add(
-            "active"
-        );
+        target.classList.add("active");
     }
-
 
     document
         .querySelectorAll(".nav button")
-        .forEach(
-            button => {
+        .forEach(button => {
 
-                button.classList.toggle(
-                    "active",
-                    button.dataset.page === page
-                );
+            button.classList.toggle(
+                "active",
+                button.dataset.page === page
+            );
 
-            }
-        );
-
-
-    /*
-     * مهم جدًا:
-     * مربع الكتابة Home فقط.
-     */
+        });
 
     const composer =
-        document.getElementById(
-            "composer"
-        );
+        document.getElementById("composer");
 
-
-    if(
-        page === "home"
-    ){
-
-        composer.style.display =
-            "block";
-
+    // الكتابة تظهر في Home فقط.
+    if(page === "home"){
+        composer.style.display = "block";
     }else{
-
-        composer.style.display =
-            "none";
+        composer.style.display = "none";
     }
-
 
     closeSidebarMenu();
 
-
-    if(
-        page === "files"
-    ){
-
+    if(page === "files"){
         refreshFiles();
     }
 
-
-    if(
-        page === "chats"
-    ){
-
+    if(page === "chats"){
         loadChats();
     }
 
-
-    if(
-        page === "activity"
-    ){
-
+    if(page === "activity"){
         renderFullActivity();
     }
 
-
-    if(
-        page === "terminal"
-    ){
-
-        terminalOutput.scrollTop =
-            terminalOutput.scrollHeight;
+    if(page === "keys"){
+        loadKeys();
     }
 
-
-    if(
-        page === "keys"
-    ){
-
-        loadKeys();
+    if(page === "terminal"){
+        terminalOutput.scrollTop =
+            terminalOutput.scrollHeight;
     }
 }
 
 
 document
     .querySelectorAll(".nav button")
-    .forEach(
-        button => {
+    .forEach(button => {
 
-            button.onclick =
-                () =>
-                    showPage(
-                        button.dataset.page
-                    );
+        button.onclick = () =>
+            showPage(
+                button.dataset.page
+            );
 
-        }
-    );
+    });
 
 
 /* =====================================================
-   CHAT ID
+   CHAT
 ===================================================== */
 
 function makeChatId(){
@@ -1538,147 +1390,96 @@ function makeChatId(){
         "_" +
         Math.random()
             .toString(36)
-            .slice(2, 8);
+            .slice(2,8);
 }
 
-
-/* =====================================================
-   NEW CHAT
-===================================================== */
 
 async function newChat(){
 
     if(running){
-
         await stopCurrentAgent();
     }
 
-
-    const id =
-        makeChatId();
-
-
-    const title =
-        "New Chat";
-
-
-    const project =
-        "project_" +
-        Date.now();
-
-
-    try {
+    try{
 
         const response =
             await fetch(
                 `${API_URL}/chats/new`,
                 {
                     method:"POST",
-
                     headers:{
                         "Content-Type":
                             "application/json"
                     },
-
                     body:JSON.stringify({
-
-                        id,
-
-                        title,
-
-                        project
+                        project:
+                            "project_" +
+                            Date.now()
                     })
                 }
             );
 
-
         const data =
             await response.json();
 
-
         if(!data.ok){
-
             throw new Error(
                 data.error ||
                 "Failed to create chat"
             );
         }
 
-
         currentChatId =
             data.chat.id;
-
 
         currentProject =
             data.chat.project;
 
-
-    } catch(error){
+    }catch{
 
         currentChatId =
-            id;
+            makeChatId();
 
         currentProject =
-            project;
+            "project_" +
+            Date.now();
     }
-
 
     localStorage.setItem(
         "currentChatId",
         currentChatId
     );
 
-
     localStorage.setItem(
         "currentProject",
         currentProject
     );
 
+    messages.innerHTML = "";
 
-    messages.innerHTML =
-        "";
+    activityContainer.innerHTML = "";
 
-    activityContainer.innerHTML =
-        "";
+    fullActivity.innerHTML = "";
 
-    fullActivity.innerHTML =
-        "";
+    activityItems = [];
 
-    activityItems =
-        [];
+    codeView.innerHTML = "";
 
-    codeView.innerHTML =
-        "";
+    terminalOutput.textContent = "";
 
-    terminalOutput.textContent =
-        "";
+    homeEmpty.style.display = "flex";
 
+    topTitle.textContent = "New Chat";
 
-    homeEmpty.style.display =
-        "flex";
+    statusEl.textContent = "Ready";
 
-
-    topTitle.textContent =
-        "New Chat";
-
-
-    statusEl.textContent =
-        "Ready";
-
-
-    running =
-        false;
-
+    running = false;
 
     document.body.classList.remove(
         "running"
     );
 
-
-    showPage(
-        "home"
-    );
-
+    showPage("home");
 
     loadChats();
 }
@@ -1689,42 +1490,36 @@ newChatBtn.onclick =
 
 
 /* =====================================================
-   LOAD CHATS
+   CHATS
 ===================================================== */
 
 async function loadChats(){
 
-    try {
+    try{
 
         const response =
             await fetch(
                 `${API_URL}/chats`
             );
 
-
         const data =
             await response.json();
 
-
         if(!data.ok){
-
             return;
         }
-
 
         renderChatList(
             chatList,
             data.chats
         );
 
-
         renderChatList(
             fullChatList,
             data.chats
         );
 
-
-    } catch {}
+    }catch{}
 }
 
 
@@ -1733,9 +1528,7 @@ function renderChatList(
     chats
 ){
 
-    element.innerHTML =
-        "";
-
+    element.innerHTML = "";
 
     if(
         !chats ||
@@ -1750,64 +1543,43 @@ function renderChatList(
         return;
     }
 
+    chats.forEach(chat => {
 
-    chats.forEach(
-        chat => {
+        const item =
+            document.createElement("div");
 
-            const item =
-                document.createElement(
-                    "div"
-                );
+        item.className =
+            "chat-item";
 
+        item.innerHTML = `
+            <div class="chat-item-title">
+                ${escapeHTML(
+                    chat.title ||
+                    "Untitled"
+                )}
+            </div>
 
-            item.className =
-                "chat-item";
+            <div class="chat-item-project">
+                ${escapeHTML(
+                    chat.project ||
+                    "default"
+                )}
+            </div>
+        `;
 
+        item.onclick =
+            () =>
+                openChat(chat.id);
 
-            item.innerHTML = `
+        element.appendChild(item);
 
-                <div class="chat-item-title">
-                    ${escapeHTML(
-                        chat.title ||
-                        "Untitled"
-                    )}
-                </div>
-
-                <div class="chat-item-project">
-                    ${escapeHTML(
-                        chat.project ||
-                        "default"
-                    )}
-                </div>
-
-            `;
-
-
-            item.onclick =
-                () =>
-                    openChat(
-                        chat.id
-                    );
-
-
-            element.appendChild(
-                item
-            );
-
-        }
-    );
+    });
 }
 
 
-/* =====================================================
-   OPEN CHAT
-===================================================== */
+async function openChat(chatId){
 
-async function openChat(
-    chatId
-){
-
-    try {
+    try{
 
         const response =
             await fetch(
@@ -1816,111 +1588,71 @@ async function openChat(
                 )}`
             );
 
-
         const data =
             await response.json();
 
-
         if(!data.ok){
-
             throw new Error(
                 data.error ||
                 "Chat unavailable"
             );
         }
 
-
         const chat =
             data.chat;
-
 
         currentChatId =
             chat.id;
 
-
         currentProject =
             chat.project;
-
 
         localStorage.setItem(
             "currentChatId",
             currentChatId
         );
 
-
         localStorage.setItem(
             "currentProject",
             currentProject
         );
 
+        messages.innerHTML = "";
 
-        messages.innerHTML =
-            "";
+        activityContainer.innerHTML = "";
 
-        activityContainer.innerHTML =
-            "";
-
-        activityItems =
-            [];
-
+        activityItems = [];
 
         topTitle.textContent =
             chat.title ||
             "Chat";
 
-
         const visibleMessages =
             chat.messages || [];
 
-
-        if(
+        homeEmpty.style.display =
             visibleMessages.length
-        ){
+                ? "none"
+                : "flex";
 
-            homeEmpty.style.display =
-                "none";
+        visibleMessages.forEach(message => {
 
-        }else{
+            if(
+                message.role === "user" ||
+                message.role === "assistant"
+            ){
 
-            homeEmpty.style.display =
-                "flex";
-        }
-
-
-        visibleMessages.forEach(
-            message => {
-
-                if(
-                    message.role ===
-                    "user"
-                ){
-
-                    addMessage(
-                        "user",
-                        message.content
-                    );
-
-                }else if(
-                    message.role ===
-                    "assistant"
-                ){
-
-                    addMessage(
-                        "assistant",
-                        message.content
-                    );
-                }
-
+                addMessage(
+                    message.role,
+                    message.content
+                );
             }
-        );
 
+        });
 
-        showPage(
-            "home"
-        );
+        showPage("home");
 
-
-    } catch(error){
+    }catch(error){
 
         alert(
             "تعذر فتح الدردشة: " +
@@ -1942,35 +1674,26 @@ function addMessage(
     homeEmpty.style.display =
         "none";
 
-
     const element =
-        document.createElement(
-            "div"
-        );
-
+        document.createElement("div");
 
     element.className =
         `message ${role}`;
 
-
     element.textContent =
-        text;
-
+        text || "";
 
     messages.appendChild(
         element
     );
-
 
     const workspace =
         document.getElementById(
             "workspace"
         );
 
-
     workspace.scrollTop =
         workspace.scrollHeight;
-
 
     return element;
 }
@@ -1985,45 +1708,35 @@ function addActivity(
     tool = ""
 ){
 
-    const item = {
+    activityItems.push({
 
-        text,
+        text:
+            String(text || ""),
 
-        tool,
+        tool:
+            String(tool || ""),
 
         time:
             new Date()
-    };
 
-
-    activityItems.push(
-        item
-    );
-
+    });
 
     renderActivity(
         activityContainer
     );
 
-
     renderFullActivity();
 }
 
 
-function renderActivity(
-    target
-){
+function renderActivity(target){
 
-    if(
-        !activityItems.length
-    ){
+    if(!activityItems.length){
 
-        target.innerHTML =
-            "";
+        target.innerHTML = "";
 
         return;
     }
-
 
     target.innerHTML = `
 
@@ -2047,47 +1760,44 @@ function renderActivity(
             <div class="activity-body">
 
                 ${
-                    activityItems
-                        .map(
-                            item => `
+                    activityItems.map(item => `
 
-                            <div class="activity-row">
+                        <div class="activity-row">
 
-                                <div class="activity-dot"></div>
+                            <div class="activity-dot"></div>
 
-                                <div>
+                            <div>
 
-                                    <div class="activity-text">
+                                <div class="activity-text">
+                                    ${escapeHTML(
+                                        item.text
+                                    )}
+                                </div>
+
+                                ${
+                                    item.tool
+                                    ?
+                                    `
+                                    <div class="activity-tool">
                                         ${escapeHTML(
-                                            item.text
+                                            item.tool
                                         )}
                                     </div>
-
-                                    ${
-                                        item.tool
-                                        ?
-                                        `<div class="activity-tool">
-                                            ${escapeHTML(
-                                                item.tool
-                                            )}
-                                        </div>`
-                                        :
-                                        ""
-                                    }
-
-                                </div>
+                                    `
+                                    :
+                                    ""
+                                }
 
                             </div>
 
-                        `
-                        )
-                        .join("")
+                        </div>
+
+                    `).join("")
                 }
 
             </div>
 
         </div>
-
     `;
 }
 
@@ -2104,13 +1814,10 @@ function renderFullActivity(){
    TERMINAL
 ===================================================== */
 
-function terminalLog(
-    text
-){
+function terminalLog(text){
 
     terminalOutput.textContent +=
-        `${text}\n`;
-
+        `${String(text || "")}\n`;
 
     terminalOutput.scrollTop =
         terminalOutput.scrollHeight;
@@ -2118,14 +1825,12 @@ function terminalLog(
 
 
 document
-    .getElementById(
-        "clearTerminal"
-    )
-    .onclick =
-    () => {
+    .getElementById("clearTerminal")
+    .onclick = () => {
 
         terminalOutput.textContent =
             "";
+
     };
 
 
@@ -2138,71 +1843,45 @@ async function sendPrompt(){
     const text =
         prompt.value.trim();
 
-
-    if(!text){
-
+    if(!text || running){
         return;
     }
-
-
-    if(running){
-
-        return;
-    }
-
 
     if(!currentChatId){
-
         await newChat();
     }
 
-
-    prompt.value =
-        "";
-
+    prompt.value = "";
 
     autoResize();
-
 
     addMessage(
         "user",
         text
     );
 
-
-    activityItems =
-        [];
-
+    activityItems = [];
 
     activityContainer.innerHTML =
         "";
 
-
-    running =
-        true;
-
+    running = true;
 
     document.body.classList.add(
         "running"
     );
 
-
     statusEl.textContent =
         "Agent running";
 
+    showPage("home");
 
-    showPage(
-        "home"
-    );
-
-
-    try {
+    try{
 
         const response =
             await fetch(
                 `${API_URL}/agent`,
                 {
-
                     method:"POST",
 
                     headers:{
@@ -2224,19 +1903,16 @@ async function sendPrompt(){
                 }
             );
 
-
         if(!response.ok){
 
             const errorText =
                 await response.text();
-
 
             throw new Error(
                 errorText ||
                 `HTTP ${response.status}`
             );
         }
-
 
         if(!response.body){
 
@@ -2245,18 +1921,13 @@ async function sendPrompt(){
             );
         }
 
-
         const reader =
             response.body.getReader();
-
 
         const decoder =
             new TextDecoder();
 
-
-        let buffer =
-            "";
-
+        let buffer = "";
 
         while(true){
 
@@ -2266,12 +1937,9 @@ async function sendPrompt(){
             } =
                 await reader.read();
 
-
             if(done){
-
                 break;
             }
-
 
             buffer +=
                 decoder.decode(
@@ -2281,56 +1949,34 @@ async function sendPrompt(){
                     }
                 );
 
-
             const lines =
                 buffer.split("\n");
 
-
             buffer =
-                lines.pop() ||
-                "";
-
+                lines.pop() || "";
 
             for(
                 const line of lines
             ){
 
                 if(!line.trim()){
-
                     continue;
                 }
 
+                try{
 
-                let event;
+                    const event =
+                        JSON.parse(line);
 
+                    handleAgentEvent(
+                        event
+                    );
 
-                try {
-
-                    event =
-                        JSON.parse(
-                            line
-                        );
-
-                } catch {
-
-                    continue;
-                }
-
-
-                handleAgentEvent(
-                    event
-                );
-            }
-
-
-            if(!running){
-
-                break;
+                }catch{}
             }
         }
 
-
-    } catch(error){
+    }catch(error){
 
         if(running){
 
@@ -2338,59 +1984,58 @@ async function sendPrompt(){
                 "حدث خطأ أثناء الاتصال بالـAgent"
             );
 
-
             addMessage(
                 "assistant",
-                error.message
+                error.message ||
+                "حدث خطأ."
             );
         }
 
-    } finally {
+    }finally{
 
-        running =
-            false;
-
+        running = false;
 
         document.body.classList.remove(
             "running"
         );
 
-
         statusEl.textContent =
             "Ready";
 
+        currentJobId = null;
 
-        currentJobId =
-            null;
-
-
-        showPage(
-            "home"
-        );
-
+        showPage("home");
 
         loadChats();
+
+        loadKeys();
     }
 }
 
 
 /* =====================================================
-   HANDLE EVENTS
+   AGENT EVENTS
 ===================================================== */
 
-function handleAgentEvent(
-    event
-){
+function handleAgentEvent(event){
 
-    switch(
-        event.type
-    ){
+    switch(event.type){
 
         case "connected":
 
             currentJobId =
-                event.jobId;
+                event.jobId ||
+                null;
 
+            if(event.project){
+                currentProject =
+                    event.project;
+
+                localStorage.setItem(
+                    "currentProject",
+                    currentProject
+                );
+            }
 
             addActivity(
                 "Agent connected"
@@ -2402,16 +2047,19 @@ function handleAgentEvent(
         case "start":
 
             addActivity(
-                `Project: ${event.project}`
+                `Project: ${
+                    event.project ||
+                    currentProject ||
+                    "default"
+                }`
             );
 
-
-            if(
-                event.keyName
-            ){
+            if(event.keyName){
 
                 addActivity(
-                    `Active AI Key: ${event.keyName}`
+                    `Active AI Key: ${
+                        event.keyName
+                    }`
                 );
             }
 
@@ -2421,7 +2069,10 @@ function handleAgentEvent(
         case "thinking":
 
             addActivity(
-                `Planning next step — Step ${event.step}`
+                `Planning next step — Step ${
+                    event.step ??
+                    "?"
+                }`
             );
 
             break;
@@ -2441,8 +2092,11 @@ function handleAgentEvent(
 
             addActivity(
                 event.message ||
-                `Running ${event.tool}`,
-                event.tool
+                `Running ${
+                    event.tool ||
+                    "tool"
+                }`,
+                event.tool || ""
             );
 
             break;
@@ -2451,14 +2105,15 @@ function handleAgentEvent(
         case "tool_result":
 
             addActivity(
-                `Completed: ${event.tool}`,
-                event.tool
+                `Completed: ${
+                    event.tool ||
+                    "tool"
+                }`,
+                event.tool || ""
             );
 
-
             if(
-                event.tool ===
-                "terminal" &&
+                event.tool === "terminal" &&
                 event.result
             ){
 
@@ -2470,7 +2125,6 @@ function handleAgentEvent(
                         event.result.stdout
                     );
                 }
-
 
                 if(
                     event.result.stderr
@@ -2488,14 +2142,17 @@ function handleAgentEvent(
         case "tool_error":
 
             addActivity(
-                `Error: ${event.error}`,
-                event.tool
+                `Error: ${
+                    event.error ||
+                    "Unknown tool error"
+                }`,
+                event.tool || ""
             );
-
 
             terminalLog(
                 `[ERROR] ${
-                    event.error
+                    event.error ||
+                    "Unknown error"
                 }`
             );
 
@@ -2504,16 +2161,13 @@ function handleAgentEvent(
 
         case "final":
 
-            if(
-                event.message
-            ){
+            if(event.message){
 
                 addMessage(
                     "assistant",
                     event.message
                 );
             }
-
 
             addActivity(
                 "Agent finished"
@@ -2528,29 +2182,44 @@ function handleAgentEvent(
                 "Agent stopped by user"
             );
 
-
-            addMessage(
-                "assistant",
-                "تم إيقاف المهمة."
-            );
-
             break;
 
 
-        case "error":
+        case "error":{
+
+            const errorText =
+                event.error ||
+                event.message ||
+                "حدث خطأ غير معروف.";
 
             addActivity(
-                `Error: ${event.message}`
+                `Error: ${errorText}`
             );
-
 
             addMessage(
                 "assistant",
-                event.message ||
-                "حدث خطأ."
+                errorText
             );
 
+            if(
+                String(errorText)
+                    .toLowerCase()
+                    .includes("429") ||
+                String(errorText)
+                    .toLowerCase()
+                    .includes("quota") ||
+                String(errorText)
+                    .toLowerCase()
+                    .includes("resource_exhausted")
+            ){
+
+                addActivity(
+                    "⚠️ المفتاح الحالي وصل إلى حد الاستخدام. يمكنك تبديله من API Keys."
+                );
+            }
+
             break;
+        }
 
 
         case "done":
@@ -2564,15 +2233,14 @@ function handleAgentEvent(
 
 
 /* =====================================================
-   STOP
+   STOP AGENT
 ===================================================== */
 
 async function stopCurrentAgent(){
 
     if(!currentJobId){
 
-        running =
-            false;
+        running = false;
 
         document.body.classList.remove(
             "running"
@@ -2581,17 +2249,14 @@ async function stopCurrentAgent(){
         return;
     }
 
-
     const oldJob =
         currentJobId;
 
-
-    try {
+    try{
 
         await fetch(
             `${API_URL}/agent/stop`,
             {
-
                 method:"POST",
 
                 headers:{
@@ -2600,31 +2265,23 @@ async function stopCurrentAgent(){
                 },
 
                 body:JSON.stringify({
-
-                    jobId:
-                        oldJob
+                    jobId:oldJob
                 })
             }
         );
 
-    } catch {}
+    }catch{}
 
-
-    running =
-        false;
-
+    running = false;
 
     document.body.classList.remove(
         "running"
     );
 
-
     statusEl.textContent =
         "Stopped";
 
-
-    currentJobId =
-        null;
+    currentJobId = null;
 }
 
 
@@ -2667,7 +2324,6 @@ function autoResize(){
     prompt.style.height =
         "auto";
 
-
     prompt.style.height =
         Math.min(
             prompt.scrollHeight,
@@ -2688,7 +2344,7 @@ prompt.addEventListener(
 
 async function refreshFiles(){
 
-    try {
+    try{
 
         const response =
             await fetch(
@@ -2697,24 +2353,21 @@ async function refreshFiles(){
                 )}`
             );
 
-
         const data =
             await response.json();
-
 
         if(!data.ok){
 
             throw new Error(
-                data.error
+                data.error ||
+                "Failed to load files"
             );
         }
 
-
-        fileList.innerHTML =
-            "";
-
+        fileList.innerHTML = "";
 
         if(
+            !data.files ||
             !data.files.length
         ){
 
@@ -2726,71 +2379,71 @@ async function refreshFiles(){
             return;
         }
 
+        data.files.forEach(file => {
 
-        data.files.forEach(
-            file => {
+            const element =
+                document.createElement("div");
 
-                const element =
-                    document.createElement(
-                        "div"
-                    );
+            element.className =
+                "file";
 
+            const filePath =
+                typeof file === "string"
+                    ? file
+                    : file.path;
 
-                element.className =
-                    "file";
+            const fileType =
+                typeof file === "object"
+                    ? file.type
+                    : "file";
 
+            element.innerHTML = `
 
-                element.innerHTML = `
-
-                    <div>
-                        ${
-                            file.type ===
-                            "folder"
-                            ? "📁 "
-                            : "📄 "
-                        }
-
-                        ${escapeHTML(
-                            file.path
-                        )}
-                    </div>
-
+                <div>
                     ${
-                        file.size !==
-                        undefined
-                        ?
-                        `<div class="file-size">
-                            ${file.size} bytes
-                         </div>`
-                        :
-                        ""
+                        fileType === "folder"
+                        ? "📁 "
+                        : "📄 "
                     }
 
-                `;
+                    ${escapeHTML(
+                        filePath
+                    )}
+                </div>
 
-
-                if(
-                    file.type ===
-                    "file"
-                ){
-
-                    element.onclick =
-                        () =>
-                            openFile(
-                                file.path
-                            );
+                ${
+                    typeof file === "object" &&
+                    file.size !== undefined
+                    ?
+                    `
+                    <div class="file-size">
+                        ${file.size} bytes
+                    </div>
+                    `
+                    :
+                    ""
                 }
 
+            `;
 
-                fileList.appendChild(
-                    element
-                );
+            if(
+                fileType !== "folder"
+            ){
 
+                element.onclick =
+                    () =>
+                        openFile(
+                            filePath
+                        );
             }
-        );
 
+            fileList.appendChild(
+                element
+            );
 
-    } catch(error){
+        });
+
+    }catch(error){
 
         fileList.innerHTML =
             `<div style="opacity:.5">
@@ -2803,9 +2456,7 @@ async function refreshFiles(){
 
 
 document
-    .getElementById(
-        "refreshFilesBtn"
-    )
+    .getElementById("refreshFilesBtn")
     .onclick =
     refreshFiles;
 
@@ -2814,11 +2465,9 @@ document
    OPEN FILE
 ===================================================== */
 
-async function openFile(
-    filePath
-){
+async function openFile(filePath){
 
-    try {
+    try{
 
         const response =
             await fetch(
@@ -2829,18 +2478,16 @@ async function openFile(
                 )}`
             );
 
-
         const data =
             await response.json();
-
 
         if(!data.ok){
 
             throw new Error(
-                data.error
+                data.error ||
+                "Unable to open file"
             );
         }
-
 
         codeView.innerHTML = `
 
@@ -2857,10 +2504,9 @@ async function openFile(
                 )}</pre>
 
             </div>
-
         `;
 
-    } catch(error){
+    }catch(error){
 
         alert(
             error.message
@@ -2870,214 +2516,246 @@ async function openFile(
 
 
 /* =====================================================
-   KEYS
+   API KEYS
 ===================================================== */
 
 async function loadKeys(){
 
-    try {
+    try{
 
         const response =
             await fetch(
                 `${API_URL}/keys`
             );
 
-
         const data =
             await response.json();
 
-
-        if(!data.ok){
+        if(!response.ok || !data.ok){
 
             throw new Error(
                 data.error ||
-                "Failed to load keys"
+                `HTTP ${response.status}`
             );
         }
-
 
         renderKeys(
             data
         );
 
-
-    } catch(error){
+    }catch(error){
 
         keysList.innerHTML =
-            `<div style="opacity:.5">
+            `
+            <div style="
+                padding:12px;
+                border-radius:12px;
+                background:rgba(239,68,68,.08);
+                color:#ff9a9a;
+                font-size:12px;
+            ">
+                تعذر تحميل المفاتيح:
                 ${escapeHTML(
                     error.message
                 )}
-             </div>`;
+            </div>
+            `;
     }
 }
 
 
-function renderKeys(
-    data
-){
+function renderKeys(data){
 
-    keysList.innerHTML =
-        "";
+    keysList.innerHTML = "";
 
+    const keys =
+        Array.isArray(data.keys)
+            ? data.keys
+            : [];
 
-    /*
-     * PRIMARY
-     */
-
-    const primaryActive =
-        data.activeId ===
-        "primary";
-
-
-    const primary =
-        document.createElement(
-            "div"
-        );
-
-
-    primary.className =
-        "key-card" +
-        (
-            primaryActive
-            ? " active"
-            : ""
-        );
-
-
-    primary.innerHTML = `
-
-        <div class="key-top">
-
-            <div class="key-name">
-                Render Primary
-            </div>
-
-            <div class="key-badge">
-                PRIMARY
-            </div>
-
-        </div>
-
-        <div class="key-value">
-            ${escapeHTML(
-                data.primary.masked
-            )}
-        </div>
-
-        <div class="key-actions">
-
-            <button
-                class="use"
-                onclick="useKey('primary')"
-            >
-                ${
-                    primaryActive
-                    ? "✓ Using"
-                    : "Use Primary"
-                }
-            </button>
-
-        </div>
-
-    `;
-
-
-    keysList.appendChild(
-        primary
-    );
+    const activeId =
+        data.activeKeyId ||
+        null;
 
 
     /*
-     * SAVED KEYS
+     * كل المفاتيح تأتي من السيرفر.
+     * Primary أيضًا موجود داخل keys.
      */
 
-    if(
-        !data.keys ||
-        !data.keys.length
-    ){
+    if(!keys.length){
+
+        keysList.innerHTML =
+            `
+            <div style="opacity:.45;font-size:12px">
+                لا توجد مفاتيح محفوظة.
+            </div>
+            `;
 
         return;
     }
 
 
-    data.keys.forEach(
-        key => {
+    keys.forEach(key => {
 
-            const active =
-                data.activeId ===
-                key.id;
+        const active =
+            key.id === activeId;
+
+        const enabled =
+            key.enabled !== false;
+
+        const status =
+            key.status ||
+            "ready";
+
+        const card =
+            document.createElement("div");
+
+        card.className =
+            "key-card" +
+            (active ? " active" : "") +
+            (status === "quota"
+                ? " quota"
+                : "") +
+            (status === "error"
+                ? " error"
+                : "");
 
 
-            const card =
-                document.createElement(
-                    "div"
-                );
+        let badgeText =
+            "SAVED";
+
+        if(key.primary){
+
+            badgeText =
+                active
+                    ? "PRIMARY • ACTIVE"
+                    : "PRIMARY";
+        }else if(!enabled){
+
+            badgeText =
+                "STOPPED";
+        }else if(status === "quota"){
+
+            badgeText =
+                "QUOTA";
+        }else if(status === "error"){
+
+            badgeText =
+                "ERROR";
+        }else if(active){
+
+            badgeText =
+                "ACTIVE";
+        }
 
 
-            card.className =
-                "key-card" +
-                (
-                    active
-                    ? " active"
-                    : ""
-                );
+        let badgeClass = "";
+
+        if(status === "quota"){
+            badgeClass = "quota";
+        }
+
+        if(status === "error"){
+            badgeClass = "error";
+        }
+
+        if(!enabled){
+            badgeClass = "stopped";
+        }
 
 
-            const isEnabled =
-                key.enabled !== false;
+        card.innerHTML = `
 
+            <div class="key-top">
 
-            card.innerHTML = `
-
-                <div class="key-top">
-
-                    <div class="key-name">
-                        ${escapeHTML(
-                            key.name
-                        )}
-                    </div>
-
-                    <div class="key-badge">
-                        ${
-                            active
-                            ? "ACTIVE"
-                            : (
-                                isEnabled
-                                ? "SAVED"
-                                : "STOPPED"
-                            )
-                        }
-                    </div>
-
-                </div>
-
-                <div class="key-value">
+                <div class="key-name">
                     ${escapeHTML(
-                        key.masked
+                        key.name ||
+                        "Unnamed Key"
                     )}
                 </div>
 
-                <div class="key-actions">
+                <div
+                    class="key-badge ${badgeClass}"
+                >
+                    ${escapeHTML(
+                        badgeText
+                    )}
+                </div>
 
+            </div>
+
+            <div class="key-value">
+                ${escapeHTML(
+                    key.maskedKey ||
+                    "••••••••"
+                )}
+            </div>
+
+            <div class="key-provider">
+                ${escapeHTML(
+                    key.provider ||
+                    "Google Gemini"
+                )}
+            </div>
+
+            ${
+                key.lastError
+                ?
+                `
+                <div class="key-error">
+                    ${escapeHTML(
+                        key.lastError
+                    )}
+                </div>
+                `
+                :
+                ""
+            }
+
+            <div class="key-actions">
+
+                ${
+                    active
+                    ?
+                    `
+                    <button
+                        class="use"
+                        disabled
+                        style="opacity:.55"
+                    >
+                        ✓ Using
+                    </button>
+                    `
+                    :
+                    `
+                    <button
+                        class="use"
+                        onclick="useKey('${escapeJS(
+                            key.id
+                        )}')"
+                    >
+                        Use
+                    </button>
+                    `
+                }
+
+                ${
+                    key.primary
+                    ?
+                    ""
+                    :
+                    `
                     ${
-                        isEnabled
+                        enabled
                         ?
                         `
                         <button
-                            class="use"
-                            onclick="useKey('${key.id}')"
-                        >
-                            ${
-                                active
-                                ? "✓ Using"
-                                : "Use"
-                            }
-                        </button>
-
-                        <button
                             class="danger"
-                            onclick="stopKey('${key.id}')"
+                            onclick="stopKey('${escapeJS(
+                                key.id
+                            )}')"
                         >
                             Stop
                         </button>
@@ -3086,30 +2764,34 @@ function renderKeys(
                         `
                         <button
                             class="success"
-                            onclick="enableKey('${key.id}')"
+                            onclick="enableKey('${escapeJS(
+                                key.id
+                            )}')"
                         >
-                            Enable
+                            Use Again
                         </button>
                         `
                     }
 
                     <button
                         class="danger"
-                        onclick="deleteKey('${key.id}')"
+                        onclick="deleteKey('${escapeJS(
+                            key.id
+                        )}')"
                     >
                         Delete
                     </button>
+                    `
+                }
 
-                </div>
+            </div>
+        `;
 
-            `;
+        keysList.appendChild(
+            card
+        );
 
-
-            keysList.appendChild(
-                card
-            );
-        }
-    );
+    });
 }
 
 
@@ -3117,17 +2799,17 @@ function renderKeys(
    USE KEY
 ===================================================== */
 
-async function useKey(
-    id
-){
+async function useKey(id){
 
-    try {
+    try{
+
+        statusEl.textContent =
+            "Switching key...";
 
         const response =
             await fetch(
                 `${API_URL}/keys/use`,
                 {
-
                     method:"POST",
 
                     headers:{
@@ -3141,37 +2823,37 @@ async function useKey(
                 }
             );
 
-
         const data =
             await response.json();
 
-
-        if(!data.ok){
+        if(!response.ok || !data.ok){
 
             throw new Error(
-                data.error
+                data.error ||
+                `HTTP ${response.status}`
             );
         }
 
+        const name =
+            data.key?.name ||
+            "Selected key";
 
         statusEl.textContent =
-            data.activeName ||
-            "Key active";
-
+            name;
 
         addActivity(
-            `Active AI Key: ${
-                data.activeName
-            }`
+            `Active AI Key: ${name}`
         );
-
 
         await loadKeys();
 
+    }catch(error){
 
-    } catch(error){
+        statusEl.textContent =
+            "Ready";
 
         alert(
+            "تعذر تفعيل المفتاح:\n" +
             error.message
         );
     }
@@ -3182,17 +2864,14 @@ async function useKey(
    STOP KEY
 ===================================================== */
 
-async function stopKey(
-    id
-){
+async function stopKey(id){
 
-    try {
+    try{
 
         const response =
             await fetch(
                 `${API_URL}/keys/stop`,
                 {
-
                     method:"POST",
 
                     headers:{
@@ -3206,29 +2885,26 @@ async function stopKey(
                 }
             );
 
-
         const data =
             await response.json();
 
-
-        if(!data.ok){
+        if(!response.ok || !data.ok){
 
             throw new Error(
-                data.error
+                data.error ||
+                `HTTP ${response.status}`
             );
         }
 
-
         await loadKeys();
-
 
         statusEl.textContent =
             "Render Primary";
 
-
-    } catch(error){
+    }catch(error){
 
         alert(
+            "تعذر إيقاف المفتاح:\n" +
             error.message
         );
     }
@@ -3239,52 +2915,14 @@ async function stopKey(
    ENABLE KEY
 ===================================================== */
 
-async function enableKey(
-    id
-){
+async function enableKey(id){
 
-    try {
+    /*
+     * السيرفر الحالي لا يحتاج /keys/enable.
+     * /keys/use يقوم بإعادة تفعيل المفتاح وتشغيله.
+     */
 
-        const response =
-            await fetch(
-                `${API_URL}/keys/enable`,
-                {
-
-                    method:"POST",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:JSON.stringify({
-                        id
-                    })
-                }
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if(!data.ok){
-
-            throw new Error(
-                data.error
-            );
-        }
-
-
-        await loadKeys();
-
-
-    } catch(error){
-
-        alert(
-            error.message
-        );
-    }
+    await useKey(id);
 }
 
 
@@ -3292,9 +2930,7 @@ async function enableKey(
    DELETE KEY
 ===================================================== */
 
-async function deleteKey(
-    id
-){
+async function deleteKey(id){
 
     if(
         !confirm(
@@ -3305,8 +2941,7 @@ async function deleteKey(
         return;
     }
 
-
-    try {
+    try{
 
         const response =
             await fetch(
@@ -3318,25 +2953,23 @@ async function deleteKey(
                 }
             );
 
-
         const data =
             await response.json();
 
-
-        if(!data.ok){
+        if(!response.ok || !data.ok){
 
             throw new Error(
-                data.error
+                data.error ||
+                `HTTP ${response.status}`
             );
         }
 
-
         await loadKeys();
 
-
-    } catch(error){
+    }catch(error){
 
         alert(
+            "تعذر حذف المفتاح:\n" +
             error.message
         );
     }
@@ -3352,8 +2985,7 @@ async function addKey(){
     const name =
         keyName.value.trim();
 
-
-    const key =
+    const apiKey =
         keyValue.value.trim();
 
 
@@ -3369,7 +3001,7 @@ async function addKey(){
     }
 
 
-    if(!key){
+    if(!apiKey){
 
         alert(
             "ضع Gemini API Key."
@@ -3384,12 +3016,11 @@ async function addKey(){
     addKeyBtn.disabled =
         true;
 
-
     addKeyBtn.textContent =
-        "Saving...";
+        "Adding...";
 
 
-    try {
+    try{
 
         const response =
             await fetch(
@@ -3407,7 +3038,9 @@ async function addKey(){
 
                         name,
 
-                        key
+                        // السيرفر ينتظر apiKey
+                        apiKey
+
                     })
                 }
             );
@@ -3417,10 +3050,14 @@ async function addKey(){
             await response.json();
 
 
-        if(!data.ok){
+        if(
+            !response.ok ||
+            !data.ok
+        ){
 
             throw new Error(
-                data.error
+                data.error ||
+                `HTTP ${response.status}`
             );
         }
 
@@ -3435,24 +3072,30 @@ async function addKey(){
         await loadKeys();
 
 
+        statusEl.textContent =
+            data.key?.name ||
+            "New key active";
+
+
         alert(
-            "تم حفظ المفتاح بنجاح."
+            "تمت إضافة المفتاح وتفعيله بنجاح ✅"
         );
 
 
-    } catch(error){
+    }catch(error){
 
         alert(
+            "تعذر إضافة المفتاح:\n\n" +
             error.message
         );
 
-    } finally {
+    }finally{
 
         addKeyBtn.disabled =
             false;
 
         addKeyBtn.textContent =
-            "Add & Save Key";
+            "Add & Activate";
     }
 }
 
@@ -3465,9 +3108,7 @@ addKeyBtn.onclick =
    ESCAPE
 ===================================================== */
 
-function escapeHTML(
-    value
-){
+function escapeHTML(value){
 
     return String(
         value ?? ""
@@ -3495,34 +3136,60 @@ function escapeHTML(
 }
 
 
+function escapeJS(value){
+
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /\\/g,
+        "\\\\"
+    )
+    .replace(
+        /'/g,
+        "\\'"
+    )
+    .replace(
+        /"/g,
+        '\\"'
+    );
+}
+
+
 /* =====================================================
    INITIAL LOAD
 ===================================================== */
 
 (async function(){
 
+    showPage("home");
+
+    loadChats();
+
+    loadKeys();
+
     if(currentChatId){
 
-        try {
+        try{
 
             await openChat(
                 currentChatId
             );
 
-        } catch {
+        }catch{
 
             currentChatId =
                 null;
+
+            localStorage.removeItem(
+                "currentChatId"
+            );
         }
     }
-
-
-    loadChats();
 
 })();
 
 </script>
 
 </body>
-
 </html>
