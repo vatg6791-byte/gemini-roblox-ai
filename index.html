@@ -2,15 +2,11 @@
 <html lang="ar" dir="rtl">
 
 <head>
-
 <meta charset="UTF-8">
+<meta name="viewport"
+      content="width=device-width,initial-scale=1,maximum-scale=1">
 
-<meta
-    name="viewport"
-    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
->
-
-<title>AI Agent</title>
+<title>Gemini AI Agent</title>
 
 <style>
 
@@ -19,1297 +15,1018 @@
     -webkit-tap-highlight-color:transparent;
 }
 
-html,body{
+html,
+body{
     margin:0;
     width:100%;
     height:100%;
     overflow:hidden;
+    background:#050507;
+    color:#fff;
     font-family:
+        Inter,
+        system-ui,
         -apple-system,
         BlinkMacSystemFont,
-        "SF Pro Display",
-        Arial,
         sans-serif;
-    background:#07080d;
-    color:#f5f7ff;
 }
 
-button,input,textarea{
+button,
+input,
+textarea{
     font:inherit;
 }
 
 button{
-    border:0;
-    color:inherit;
+    cursor:pointer;
 }
 
-#app{
+.app{
     width:100%;
     height:100%;
     display:flex;
-    overflow:hidden;
-}
-
-
-/* ================= SIDEBAR ================= */
-
-#sidebar{
-    position:fixed;
-    top:0;
-    right:0;
-    width:310px;
-    max-width:88%;
-    height:100%;
-    z-index:100;
+    flex-direction:column;
     background:
-        linear-gradient(
-            180deg,
-            rgba(18,20,31,.99),
-            rgba(8,9,15,.99)
-        );
-    border-left:1px solid rgba(255,255,255,.08);
-    transform:translateX(100%);
-    transition:.25s ease;
-    padding:18px;
-    overflow-y:auto;
+        radial-gradient(
+            circle at 50% -10%,
+            rgba(110,70,255,.18),
+            transparent 35%
+        ),
+        #050507;
 }
 
-#sidebar.open{
-    transform:translateX(0);
-}
+/* =========================================================
+   TOP
+========================================================= */
 
-.sidebar-top{
+.topbar{
+    height:64px;
+    flex-shrink:0;
     display:flex;
     align-items:center;
-    justify-content:space-between;
-    margin-bottom:18px;
+    gap:12px;
+    padding:10px 14px;
+    border-bottom:1px solid rgba(255,255,255,.07);
+    background:rgba(7,7,10,.75);
+    backdrop-filter:blur(20px);
+}
+
+.menuBtn{
+    width:44px;
+    height:44px;
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:14px;
+    background:rgba(255,255,255,.06);
+    color:white;
+    font-size:22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    touch-action:manipulation;
+}
+
+.menuBtn:active{
+    transform:scale(.94);
 }
 
 .logo{
-    font-size:20px;
+    font-size:18px;
+    font-weight:800;
+    letter-spacing:.3px;
+}
+
+.status{
+    margin-right:auto;
+    font-size:11px;
+    color:#8d8d98;
+}
+
+.statusDot{
+    display:inline-block;
+    width:7px;
+    height:7px;
+    border-radius:50%;
+    background:#55ff9b;
+    margin-left:5px;
+    box-shadow:0 0 10px #55ff9b;
+}
+
+/* =========================================================
+   SIDEBAR
+========================================================= */
+
+.overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    z-index:20;
+    display:none;
+}
+
+.overlay.show{
+    display:block;
+}
+
+.sidebar{
+    position:fixed;
+    top:0;
+    right:0;
+    width:min(320px,88vw);
+    height:100%;
+    z-index:30;
+    transform:translateX(105%);
+    transition:.25s ease;
+    background:
+        linear-gradient(
+            180deg,
+            #111116,
+            #08080c
+        );
+    border-left:1px solid rgba(255,255,255,.08);
+    box-shadow:-20px 0 70px rgba(0,0,0,.5);
+    padding:18px;
+    overflow:auto;
+}
+
+.sidebar.open{
+    transform:translateX(0);
+}
+
+.sideHead{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:20px;
+}
+
+.sideTitle{
+    font-size:19px;
     font-weight:800;
 }
 
-.close-btn{
+.closeSide{
     width:40px;
     height:40px;
     border-radius:12px;
-    background:rgba(255,255,255,.06);
-    cursor:pointer;
-}
-
-.new-chat{
-    width:100%;
-    height:48px;
-    border-radius:14px;
-    background:
-        linear-gradient(
-            135deg,
-            #6d5dfc,
-            #8c4dff
-        );
-    font-weight:800;
-    cursor:pointer;
-    margin-bottom:16px;
+    border:1px solid rgba(255,255,255,.08);
+    background:rgba(255,255,255,.05);
+    color:white;
 }
 
 .nav{
     display:flex;
     flex-direction:column;
-    gap:7px;
+    gap:8px;
 }
 
-.nav button{
+.navBtn{
     width:100%;
-    height:46px;
-    padding:0 14px;
-    border-radius:13px;
-    background:transparent;
+    min-height:48px;
+    border:1px solid rgba(255,255,255,.06);
+    border-radius:14px;
+    background:rgba(255,255,255,.035);
+    color:#ddd;
     text-align:right;
-    cursor:pointer;
+    padding:0 15px;
 }
 
-.nav button.active{
-    background:rgba(255,255,255,.08);
+.navBtn:active{
+    transform:scale(.98);
 }
 
-.section-title{
-    font-size:12px;
-    opacity:.45;
-    margin:22px 6px 9px;
+.navBtn.active{
+    background:rgba(120,80,255,.15);
+    border-color:rgba(140,100,255,.35);
+    color:white;
 }
 
-.chat-list{
-    display:flex;
-    flex-direction:column;
-    gap:6px;
+.sideSection{
+    margin-top:24px;
+    padding-top:18px;
+    border-top:1px solid rgba(255,255,255,.06);
 }
 
-.chat-item{
-    padding:11px;
-    border-radius:12px;
-    background:rgba(255,255,255,.04);
-    cursor:pointer;
-    overflow:hidden;
-}
-
-.chat-item:active{
-    background:rgba(255,255,255,.09);
-}
-
-.chat-item-title{
-    font-size:13px;
-    font-weight:700;
-    white-space:nowrap;
-    overflow:hidden;
-    text-overflow:ellipsis;
-}
-
-.chat-item-project{
-    margin-top:4px;
-    font-size:10px;
-    opacity:.45;
-}
-
-
-/* ================= OVERLAY ================= */
-
-#overlay{
-    position:fixed;
-    inset:0;
-    background:rgba(0,0,0,.55);
-    backdrop-filter:blur(4px);
-    z-index:90;
-    display:none;
-}
-
-#overlay.show{
-    display:block;
-}
-
-
-/* ================= MAIN ================= */
-
-#main{
-    width:100%;
-    height:100%;
-    display:flex;
-    flex-direction:column;
-}
-
-.topbar{
-    height:62px;
-    flex:none;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 14px;
-    border-bottom:1px solid rgba(255,255,255,.07);
-    background:rgba(8,9,14,.85);
-    backdrop-filter:blur(20px);
-}
-
-.topbar-title{
-    font-weight:800;
-    font-size:16px;
-}
-
-.menu-btn{
-    width:42px;
-    height:42px;
-    border-radius:13px;
-    background:rgba(255,255,255,.06);
-    cursor:pointer;
-    font-size:21px;
-}
-
-.menu-btn:active{
-    transform:scale(.94);
-}
-
-.status{
+.sideLabel{
+    color:#777783;
     font-size:11px;
-    opacity:.55;
+    margin-bottom:10px;
 }
 
+/* =========================================================
+   CONTENT
+========================================================= */
 
-/* ================= WORKSPACE ================= */
-
-#workspace{
+.content{
     flex:1;
-    overflow-y:auto;
-    overflow-x:hidden;
-    padding:16px;
-    padding-bottom:170px;
+    min-height:0;
+    position:relative;
 }
 
 .page{
+    width:100%;
+    height:100%;
+    overflow:auto;
+    padding:18px 14px 120px;
     display:none;
-    min-height:100%;
 }
 
 .page.active{
     display:block;
 }
 
+.home{
+    max-width:850px;
+    margin:auto;
+}
 
-/* ================= HOME ================= */
-
-.home-empty{
-    min-height:calc(100vh - 240px);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex-direction:column;
+.hero{
+    padding-top:10vh;
     text-align:center;
-    opacity:.9;
 }
 
-.home-icon{
-    width:76px;
-    height:76px;
-    border-radius:25px;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:
-        linear-gradient(
-            135deg,
-            rgba(112,92,255,.28),
-            rgba(155,70,255,.18)
-        );
-    border:1px solid rgba(255,255,255,.1);
-    font-size:30px;
-    margin-bottom:18px;
-}
-
-.home-empty h1{
+.hero h1{
     margin:0;
-    font-size:25px;
-}
-
-.home-empty p{
-    margin-top:9px;
-    opacity:.45;
-    font-size:13px;
-}
-
-
-/* ================= MESSAGES ================= */
-
-.messages{
-    display:flex;
-    flex-direction:column;
-    gap:13px;
-}
-
-.message{
-    max-width:92%;
-    padding:13px 15px;
-    border-radius:17px;
-    line-height:1.65;
-    white-space:pre-wrap;
-    word-break:break-word;
-}
-
-.message.user{
-    align-self:flex-start;
+    font-size:clamp(30px,8vw,52px);
+    line-height:1.05;
+    font-weight:900;
     background:
         linear-gradient(
-            135deg,
-            #5d4de9,
-            #7846df
+            90deg,
+            #fff,
+            #a98cff,
+            #fff
         );
-    border-bottom-left-radius:5px;
+    -webkit-background-clip:text;
+    background-clip:text;
+    color:transparent;
 }
 
-.message.assistant{
-    align-self:flex-end;
-    background:rgba(255,255,255,.055);
-    border:1px solid rgba(255,255,255,.07);
-    border-bottom-right-radius:5px;
+.hero p{
+    margin:15px auto 0;
+    max-width:580px;
+    color:#888895;
+    line-height:1.7;
 }
 
-
-/* ================= ACTIVITY ================= */
-
-.activity-card{
-    margin-top:14px;
-    border:1px solid rgba(255,255,255,.08);
-    border-radius:17px;
-    background:rgba(255,255,255,.035);
-    overflow:hidden;
-}
-
-.activity-head{
-    padding:14px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    cursor:pointer;
-}
-
-.activity-title{
-    font-weight:800;
-}
-
-.activity-arrow{
-    transition:.2s;
-}
-
-.activity-card.closed .activity-arrow{
-    transform:rotate(180deg);
-}
-
-.activity-body{
-    border-top:1px solid rgba(255,255,255,.06);
-    padding:12px;
-    display:flex;
-    flex-direction:column;
-    gap:9px;
-}
-
-.activity-card.closed .activity-body{
-    display:none;
-}
-
-.activity-row{
-    display:flex;
-    align-items:flex-start;
-    gap:10px;
-    font-size:12px;
-}
-
-.activity-dot{
-    width:8px;
-    height:8px;
-    border-radius:50%;
-    background:#7d6cff;
-    margin-top:6px;
-    flex:none;
-}
-
-.activity-text{
-    opacity:.75;
-}
-
-.activity-tool{
-    font-family:monospace;
-    direction:ltr;
-    text-align:left;
-    opacity:.55;
-}
-
-
-/* ================= FILES ================= */
-
-.file-toolbar{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:12px;
-}
-
-.file-toolbar button{
-    width:38px;
-    height:38px;
-    border-radius:11px;
-    background:rgba(255,255,255,.06);
-    cursor:pointer;
-}
-
-.file-list{
-    display:flex;
-    flex-direction:column;
-    gap:7px;
-}
-
-.file{
-    padding:12px;
-    border-radius:12px;
-    background:rgba(255,255,255,.04);
-    cursor:pointer;
-    direction:ltr;
-    text-align:left;
-}
-
-.file:active{
-    background:rgba(255,255,255,.08);
-}
-
-.file-size{
-    opacity:.4;
-    font-size:10px;
-    margin-top:3px;
-}
-
-
-/* ================= CODE ================= */
-
-.code-view{
-    margin-top:14px;
-    border-radius:16px;
-    background:#05060a;
-    border:1px solid rgba(255,255,255,.08);
-    overflow:hidden;
-}
-
-.code-head{
-    padding:10px 13px;
-    border-bottom:1px solid rgba(255,255,255,.06);
-    font-size:12px;
-    direction:ltr;
-    text-align:left;
-}
-
-pre{
-    margin:0;
-    padding:15px;
-    overflow:auto;
-    direction:ltr;
-    text-align:left;
-    font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        monospace;
-    font-size:12px;
-    line-height:1.6;
-}
-
-
-/* ================= TERMINAL ================= */
-
-.terminal-box{
-    border-radius:17px;
-    overflow:hidden;
-    border:1px solid rgba(255,255,255,.08);
-    background:#030407;
-}
-
-.terminal-head{
-    height:45px;
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding:0 13px;
-    background:rgba(255,255,255,.04);
-}
-
-.terminal-title{
-    font-family:monospace;
-    font-size:12px;
-}
-
-.terminal-actions{
-    display:flex;
-    gap:6px;
-}
-
-.terminal-actions button{
-    width:30px;
-    height:30px;
-    border-radius:8px;
-    background:rgba(255,255,255,.07);
-    cursor:pointer;
-}
-
-#terminalOutput{
-    min-height:300px;
-    max-height:65vh;
-    overflow:auto;
-    padding:15px;
-    direction:ltr;
-    text-align:left;
-    font-family:monospace;
-    font-size:12px;
-    white-space:pre-wrap;
-}
-
-
-/* ================= KEYS ================= */
-
-.keys-header{
-    margin-bottom:15px;
-}
-
-.keys-header h2{
-    margin:0 0 7px;
-}
-
-.keys-header p{
-    margin:0;
-    opacity:.45;
-    font-size:12px;
-    line-height:1.6;
-}
-
-.key-card{
-    padding:14px;
-    border-radius:16px;
-    background:rgba(255,255,255,.045);
-    border:1px solid rgba(255,255,255,.07);
-    margin-bottom:10px;
-}
-
-.key-card.active{
-    border-color:rgba(124,92,255,.7);
-    box-shadow:0 0 25px rgba(100,70,255,.08);
-}
-
-.key-card.quota{
-    border-color:rgba(245,158,11,.55);
-}
-
-.key-card.error{
-    border-color:rgba(239,68,68,.5);
-}
-
-.key-top{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    gap:10px;
-}
-
-.key-name{
-    font-weight:800;
-}
-
-.key-badge{
-    padding:5px 8px;
-    border-radius:8px;
-    font-size:9px;
-    background:rgba(124,92,255,.15);
-    color:#b9afff;
-}
-
-.key-badge.quota{
-    background:rgba(245,158,11,.12);
-    color:#fbbf24;
-}
-
-.key-badge.error{
-    background:rgba(239,68,68,.12);
-    color:#ff8d8d;
-}
-
-.key-badge.stopped{
-    background:rgba(255,255,255,.07);
-    color:#aaa;
-}
-
-.key-value{
-    margin-top:7px;
-    direction:ltr;
-    text-align:left;
-    font-family:monospace;
-    font-size:11px;
-    opacity:.5;
-}
-
-.key-provider{
-    margin-top:6px;
-    font-size:10px;
-    opacity:.4;
-}
-
-.key-error{
-    margin-top:8px;
-    padding:8px;
-    border-radius:9px;
-    background:rgba(239,68,68,.07);
-    color:#ff9a9a;
-    font-size:10px;
-    line-height:1.5;
-    direction:ltr;
-    text-align:left;
-    word-break:break-word;
-}
-
-.key-actions{
-    display:flex;
-    gap:7px;
-    margin-top:12px;
-}
-
-.key-actions button{
-    flex:1;
-    min-height:40px;
-    border-radius:11px;
-    background:rgba(255,255,255,.07);
-    cursor:pointer;
-    font-size:12px;
-}
-
-.key-actions .use{
-    background:
-        linear-gradient(
-            135deg,
-            #6d5dfc,
-            #8d4cff
-        );
-}
-
-.key-actions .danger{
-    background:rgba(239,68,68,.12);
-    color:#ff8d8d;
-}
-
-.key-actions .success{
-    background:rgba(34,197,94,.12);
-    color:#8ff0ad;
-}
-
-
-/* ================= ADD KEY ================= */
-
-.add-key-box{
-    margin-top:16px;
-    padding:15px;
-    border-radius:17px;
-    background:rgba(255,255,255,.035);
-    border:1px solid rgba(255,255,255,.07);
-}
-
-.add-key-box h3{
-    margin:0 0 12px;
-    font-size:14px;
-}
-
-.key-input{
-    width:100%;
-    height:44px;
-    border-radius:11px;
-    border:1px solid rgba(255,255,255,.08);
-    outline:none;
-    background:rgba(0,0,0,.25);
-    color:white;
-    padding:0 12px;
-    margin-bottom:8px;
-}
-
-.key-input:focus{
-    border-color:rgba(124,92,255,.65);
-}
-
-.add-key-btn{
-    width:100%;
-    height:44px;
-    border-radius:12px;
-    background:
-        linear-gradient(
-            135deg,
-            #6d5dfc,
-            #8c4dff
-        );
-    font-weight:800;
-    cursor:pointer;
-}
-
-.add-key-btn:disabled{
-    opacity:.5;
-}
-
-
-/* ================= COMPOSER ================= */
-
-#composer{
+/* =========================================================
+   COMPOSER
+========================================================= */
+
+.composerWrap{
     position:fixed;
     left:0;
     right:0;
     bottom:0;
-    z-index:50;
-    padding:
-        10px 12px
-        calc(10px + env(safe-area-inset-bottom));
+    z-index:10;
+    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
     background:
         linear-gradient(
             180deg,
             transparent,
-            rgba(7,8,13,.94) 28%
+            rgba(5,5,7,.95) 35%
         );
 }
 
-.composer-inner{
-    max-width:900px;
+.composer{
+    max-width:850px;
     margin:auto;
+    border:1px solid rgba(255,255,255,.1);
+    border-radius:20px;
+    background:rgba(18,18,23,.9);
+    backdrop-filter:blur(20px);
     padding:9px;
     display:flex;
     align-items:flex-end;
     gap:8px;
-    border-radius:20px;
-    background:rgba(20,21,31,.94);
-    border:1px solid rgba(255,255,255,.1);
-    box-shadow:0 15px 50px rgba(0,0,0,.4);
-    backdrop-filter:blur(22px);
 }
 
-#prompt{
+.composer textarea{
     flex:1;
     min-height:44px;
-    max-height:150px;
+    max-height:130px;
     resize:none;
     border:0;
     outline:0;
     background:transparent;
     color:white;
-    padding:11px 8px;
-    line-height:1.5;
+    padding:11px 12px;
 }
 
-#prompt::placeholder{
-    color:rgba(255,255,255,.3);
+.composer textarea::placeholder{
+    color:#656570;
 }
 
-.send-btn,
-.stop-btn{
-    width:45px;
-    height:45px;
-    border-radius:14px;
-    cursor:pointer;
-    flex:none;
-}
-
-.send-btn{
+.sendBtn{
+    width:48px;
+    height:48px;
+    border:0;
+    border-radius:15px;
     background:
         linear-gradient(
             135deg,
-            #6e5cff,
-            #984fff
+            #7955ff,
+            #4930b9
         );
+    color:white;
+    font-size:20px;
 }
 
-.stop-btn{
-    display:none;
-    background:
-        linear-gradient(
-            135deg,
-            #ef4444,
-            #b91c1c
-        );
+.sendBtn:active{
+    transform:scale(.94);
 }
 
-body.running .send-btn{
-    display:none;
+/* =========================================================
+   CARDS
+========================================================= */
+
+.card{
+    max-width:850px;
+    margin:0 auto 14px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:20px;
+    background:rgba(255,255,255,.035);
+    padding:16px;
 }
 
-body.running .stop-btn{
-    display:block;
+.cardTitle{
+    font-weight:800;
+    margin-bottom:13px;
 }
 
+.row{
+    display:flex;
+    gap:8px;
+    align-items:center;
+}
 
-@media(min-width:800px){
+.input{
+    width:100%;
+    height:46px;
+    border:1px solid rgba(255,255,255,.09);
+    border-radius:13px;
+    background:rgba(0,0,0,.25);
+    color:white;
+    outline:0;
+    padding:0 13px;
+}
 
-    #workspace{
-        padding-left:20%;
-        padding-right:20%;
+.input:focus{
+    border-color:rgba(130,90,255,.55);
+}
+
+.primaryBtn{
+    min-height:44px;
+    padding:0 15px;
+    border:1px solid rgba(130,100,255,.4);
+    border-radius:13px;
+    background:rgba(120,80,255,.16);
+    color:white;
+}
+
+.dangerBtn{
+    min-height:40px;
+    padding:0 13px;
+    border:1px solid rgba(255,70,90,.25);
+    border-radius:12px;
+    background:rgba(255,50,70,.08);
+    color:#ff9ba7;
+}
+
+.smallBtn{
+    min-height:38px;
+    padding:0 12px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:11px;
+    background:rgba(255,255,255,.05);
+    color:#ddd;
+}
+
+/* =========================================================
+   KEYS
+========================================================= */
+
+.keyCard{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    margin-top:10px;
+    padding:13px;
+    border:1px solid rgba(255,255,255,.07);
+    border-radius:15px;
+    background:rgba(255,255,255,.025);
+}
+
+.keyInfo{
+    flex:1;
+    min-width:0;
+}
+
+.keyName{
+    font-weight:700;
+}
+
+.keyMeta{
+    color:#777783;
+    font-size:11px;
+    margin-top:5px;
+    direction:ltr;
+    text-align:right;
+}
+
+.badge{
+    display:inline-flex;
+    align-items:center;
+    padding:4px 8px;
+    border-radius:8px;
+    font-size:10px;
+    margin-top:7px;
+    background:rgba(255,255,255,.06);
+    color:#aaa;
+}
+
+.badge.active{
+    background:rgba(70,255,150,.1);
+    color:#66ffa8;
+}
+
+.badge.quota{
+    background:rgba(255,170,60,.1);
+    color:#ffc06a;
+}
+
+.badge.stopped{
+    background:rgba(255,255,255,.05);
+    color:#777;
+}
+
+/* =========================================================
+   ACTIVITY
+========================================================= */
+
+.activityItem{
+    padding:11px 12px;
+    border-right:2px solid rgba(130,90,255,.5);
+    background:rgba(255,255,255,.025);
+    border-radius:10px;
+    margin-bottom:7px;
+    color:#aaa;
+    font-size:12px;
+    white-space:pre-wrap;
+}
+
+.activityItem.tool{
+    color:#c8baff;
+}
+
+.activityItem.error{
+    color:#ff9ca8;
+    border-color:#ff5268;
+}
+
+/* =========================================================
+   CHAT
+========================================================= */
+
+.messages{
+    max-width:850px;
+    margin:auto;
+    padding-bottom:10px;
+}
+
+.message{
+    max-width:90%;
+    margin:8px 0;
+    padding:12px 14px;
+    border-radius:16px;
+    line-height:1.65;
+    white-space:pre-wrap;
+}
+
+.message.user{
+    margin-right:0;
+    margin-left:auto;
+    background:rgba(110,75,255,.18);
+    border:1px solid rgba(120,90,255,.2);
+}
+
+.message.assistant{
+    margin-left:0;
+    margin-right:auto;
+    background:rgba(255,255,255,.045);
+    border:1px solid rgba(255,255,255,.06);
+}
+
+/* =========================================================
+   FILES
+========================================================= */
+
+.fileItem{
+    padding:11px;
+    border-bottom:1px solid rgba(255,255,255,.05);
+    font-family:monospace;
+    direction:ltr;
+    text-align:left;
+    color:#bbb;
+}
+
+.empty{
+    color:#666674;
+    text-align:center;
+    padding:40px 10px;
+}
+
+pre{
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+@media(max-width:500px){
+
+    .hero{
+        padding-top:8vh;
     }
 
-    #composer{
-        padding-left:20%;
-        padding-right:20%;
+    .hero h1{
+        font-size:36px;
     }
+
+    .row{
+        flex-direction:column;
+        align-items:stretch;
+    }
+
+    .row .primaryBtn{
+        width:100%;
+    }
+
 }
 
 </style>
-
 </head>
 
 <body>
 
-<div id="app">
+<div class="app">
 
+    <!-- TOPBAR -->
 
-<!-- ================= SIDEBAR ================= -->
+    <header class="topbar">
 
-<aside id="sidebar">
-
-    <div class="sidebar-top">
+        <button
+            class="menuBtn"
+            id="menuBtn"
+            type="button">
+            ☰
+        </button>
 
         <div class="logo">
-            AI Agent
+            Gemini Agent
         </div>
 
-        <button
-            class="close-btn"
-            id="closeSidebar"
-        >
-            ×
-        </button>
-
-    </div>
-
-    <button
-        class="new-chat"
-        id="newChat"
-    >
-        ＋ New Chat
-    </button>
-
-    <div class="nav">
-
-        <button
-            data-page="home"
-            class="active"
-        >
-            🏠 Home
-        </button>
-
-        <button data-page="chats">
-            💬 Chats
-        </button>
-
-        <button data-page="files">
-            📁 Files
-        </button>
-
-        <button data-page="activity">
-            ⚡ Agent Activity
-        </button>
-
-        <button data-page="terminal">
-            ⌘ Terminal
-        </button>
-
-        <button data-page="keys">
-            🔑 API Keys
-        </button>
-
-    </div>
-
-    <div class="section-title">
-        Recent Chats
-    </div>
-
-    <div
-        class="chat-list"
-        id="chatList"
-    ></div>
-
-</aside>
-
-<div id="overlay"></div>
-
-
-<!-- ================= MAIN ================= -->
-
-<main id="main">
-
-<header class="topbar">
-
-    <button
-        class="menu-btn"
-        id="menuBtn"
-    >
-        ☰
-    </button>
-
-    <div
-        class="topbar-title"
-        id="topTitle"
-    >
-        AI Agent
-    </div>
-
-    <div
-        class="status"
-        id="status"
-    >
-        Ready
-    </div>
-
-</header>
-
-
-<div id="workspace">
-
-
-<!-- ================= HOME ================= -->
-
-<section
-    class="page active"
-    id="page-home"
->
-
-    <div
-        id="homeEmpty"
-        class="home-empty"
-    >
-
-        <div class="home-icon">
-            ✦
+        <div class="status">
+            <span class="statusDot"></span>
+            Online
         </div>
 
-        <h1>
-            What can I build?
-        </h1>
+    </header>
 
-        <p>
-            Your AI Agent is ready.
-        </p>
 
+    <!-- SIDEBAR OVERLAY -->
+
+    <div
+        class="overlay"
+        id="overlay">
     </div>
 
-    <div
-        class="messages"
-        id="messages"
-    ></div>
 
-    <div
-        id="activityContainer"
-    ></div>
+    <!-- SIDEBAR -->
 
-</section>
+    <aside
+        class="sidebar"
+        id="sidebar">
 
+        <div class="sideHead">
 
-<!-- ================= CHATS ================= -->
-
-<section
-    class="page"
-    id="page-chats"
->
-
-    <h2>
-        Chats
-    </h2>
-
-    <div
-        class="chat-list"
-        id="fullChatList"
-    ></div>
-
-</section>
-
-
-<!-- ================= FILES ================= -->
-
-<section
-    class="page"
-    id="page-files"
->
-
-    <div class="file-toolbar">
-
-        <strong>
-            Project Files
-        </strong>
-
-        <button
-            id="refreshFilesBtn"
-        >
-            ↻
-        </button>
-
-    </div>
-
-    <div
-        class="file-list"
-        id="fileList"
-    ></div>
-
-    <div
-        id="codeView"
-    ></div>
-
-</section>
-
-
-<!-- ================= ACTIVITY ================= -->
-
-<section
-    class="page"
-    id="page-activity"
->
-
-    <h2>
-        Agent Activity
-    </h2>
-
-    <div
-        id="fullActivity"
-    ></div>
-
-</section>
-
-
-<!-- ================= TERMINAL ================= -->
-
-<section
-    class="page"
-    id="page-terminal"
->
-
-    <div class="terminal-box">
-
-        <div class="terminal-head">
-
-            <div class="terminal-title">
-                agent@project:~
+            <div class="sideTitle">
+                Agent
             </div>
 
-            <div class="terminal-actions">
+            <button
+                class="closeSide"
+                id="closeSide"
+                type="button">
+                ×
+            </button>
+
+        </div>
+
+
+        <nav class="nav">
+
+            <button
+                class="navBtn active"
+                data-page="home"
+                type="button">
+                🏠 Home
+            </button>
+
+            <button
+                class="navBtn"
+                data-page="chats"
+                type="button">
+                💬 Chats
+            </button>
+
+            <button
+                class="navBtn"
+                data-page="files"
+                type="button">
+                📁 Files
+            </button>
+
+            <button
+                class="navBtn"
+                data-page="activity"
+                type="button">
+                ⚡ Agent Activity
+            </button>
+
+            <button
+                class="navBtn"
+                data-page="terminal"
+                type="button">
+                ▣ Terminal
+            </button>
+
+            <button
+                class="navBtn"
+                data-page="keys"
+                type="button">
+                🔑 Gemini Keys
+            </button>
+
+        </nav>
+
+    </aside>
+
+
+    <!-- CONTENT -->
+
+    <main class="content">
+
+
+        <!-- HOME -->
+
+        <section
+            class="page active"
+            id="page-home">
+
+            <div class="home">
+
+                <div class="hero">
+
+                    <h1>
+                        What will you build?
+                    </h1>
+
+                    <p>
+                        Gemini is the brain.
+                        The Agent can plan,
+                        create files,
+                        use Terminal,
+                        fix errors and build projects.
+                    </p>
+
+                </div>
+
+
+                <div
+                    class="messages"
+                    id="messages">
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- CHATS -->
+
+        <section
+            class="page"
+            id="page-chats">
+
+            <div class="card">
+
+                <div class="cardTitle">
+                    Chats
+                </div>
 
                 <button
-                    id="clearTerminal"
-                >
-                    ×
+                    class="primaryBtn"
+                    id="newChatBtn"
+                    type="button">
+                    + New Chat
                 </button>
 
             </div>
 
+            <div
+                class="card"
+                id="chatList">
+            </div>
+
+        </section>
+
+
+        <!-- FILES -->
+
+        <section
+            class="page"
+            id="page-files">
+
+            <div class="card">
+
+                <div class="cardTitle">
+                    Project Files
+                </div>
+
+                <div
+                    id="filesList">
+                    <div class="empty">
+                        لا توجد ملفات.
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- ACTIVITY -->
+
+        <section
+            class="page"
+            id="page-activity">
+
+            <div class="card">
+
+                <div class="cardTitle">
+                    ⚡ Agent Activity
+                </div>
+
+                <div id="activityList">
+                    <div class="empty">
+                        لا يوجد نشاط حتى الآن.
+                    </div>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <!-- TERMINAL -->
+
+        <section
+            class="page"
+            id="page-terminal">
+
+            <div class="card">
+
+                <div class="cardTitle">
+                    Terminal
+                </div>
+
+                <pre id="terminalOutput"></pre>
+
+            </div>
+
+        </section>
+
+
+        <!-- KEYS -->
+
+        <section
+            class="page"
+            id="page-keys">
+
+            <div class="card">
+
+                <div class="cardTitle">
+                    Gemini API Keys
+                </div>
+
+                <p style="color:#777;font-size:12px;line-height:1.7">
+                    مفتاح Render الأساسي محفوظ في السيرفر.
+                    تقدر تضيف مفاتيح Gemini إضافية وتبدّل بينها.
+                </p>
+
+                <input
+                    class="input"
+                    id="keyName"
+                    placeholder="اسم المفتاح — مثال: Gemini 2">
+
+                <div style="height:8px"></div>
+
+                <input
+                    class="input"
+                    id="apiKeyInput"
+                    type="password"
+                    autocomplete="off"
+                    placeholder="Gemini API Key">
+
+                <div style="height:10px"></div>
+
+                <button
+                    class="primaryBtn"
+                    id="saveKeyBtn"
+                    type="button">
+                    Save Gemini API Key
+                </button>
+
+            </div>
+
+
+            <div class="card">
+
+                <div class="cardTitle">
+                    Saved Keys
+                </div>
+
+                <div id="keysList">
+
+                    <div class="empty">
+                        جاري تحميل المفاتيح...
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+    <!-- HOME COMPOSER ONLY -->
+
+    <div
+        class="composerWrap"
+        id="composerWrap">
+
+        <div class="composer">
+
+            <textarea
+                id="messageInput"
+                rows="1"
+                placeholder="وش تبي أبني لك؟">
+            </textarea>
+
+            <button
+                class="sendBtn"
+                id="sendBtn"
+                type="button">
+                ↑
+            </button>
+
         </div>
 
-        <div
-            id="terminalOutput"
-        ></div>
-
     </div>
-
-</section>
-
-
-<!-- ================= KEYS ================= -->
-
-<section
-    class="page"
-    id="page-keys"
->
-
-    <div class="keys-header">
-
-        <h2>
-            🔑 API Keys
-        </h2>
-
-        <p>
-            مفتاح Render الأساسي محفوظ في السيرفر.
-            يمكنك إضافة مفاتيح Gemini أخرى وتفعيل أي مفتاح وقت الحاجة.
-        </p>
-
-    </div>
-
-    <div id="keysList"></div>
-
-    <div class="add-key-box">
-
-        <h3>
-            ＋ Add Gemini Key
-        </h3>
-
-        <input
-            class="key-input"
-            id="keyName"
-            type="text"
-            placeholder="اسم المفتاح — مثال: Gemini 2"
-        >
-
-        <input
-            class="key-input"
-            id="keyValue"
-            type="password"
-            placeholder="ضع Gemini API Key هنا"
-            dir="ltr"
-            autocomplete="off"
-        >
-
-        <button
-            class="add-key-btn"
-            id="addKeyBtn"
-        >
-            Add & Activate
-        </button>
-
-    </div>
-
-</section>
-
-
-</div>
-
-
-<!-- ================= COMPOSER ================= -->
-
-<div id="composer">
-
-    <div class="composer-inner">
-
-        <textarea
-            id="prompt"
-            placeholder="اشرح لي وش تبي أبني..."
-            rows="1"
-        ></textarea>
-
-        <button
-            class="send-btn"
-            id="sendBtn"
-        >
-            ↑
-        </button>
-
-        <button
-            class="stop-btn"
-            id="stopBtn"
-        >
-            ■
-        </button>
-
-    </div>
-
-</div>
-
-</main>
 
 </div>
 
 
 <script>
 
-/* =====================================================
+/* =========================================================
    CONFIG
-===================================================== */
+========================================================= */
 
-const API_URL =
-    "https://gemini-roblox-ai.onrender.com";
+const API =
+    window.location.origin;
 
 
-/* =====================================================
+/* =========================================================
    STATE
-===================================================== */
+========================================================= */
+
+let currentPage = "home";
 
 let currentChatId =
-    localStorage.getItem("currentChatId");
+    localStorage.getItem(
+        "gemini_agent_chat"
+    ) || "default";
 
 let currentProject =
-    localStorage.getItem("currentProject") ||
-    "default";
+    localStorage.getItem(
+        "gemini_agent_project"
+    ) || "my-project";
 
-let currentJobId =
-    null;
-
-let running =
-    false;
-
-let activityItems =
-    [];
+let currentJobId = null;
 
 
-/* =====================================================
+/* =========================================================
    ELEMENTS
-===================================================== */
+========================================================= */
 
 const sidebar =
-    document.getElementById("sidebar");
+    document.getElementById(
+        "sidebar"
+    );
 
 const overlay =
-    document.getElementById("overlay");
+    document.getElementById(
+        "overlay"
+    );
 
-const menuBtn =
-    document.getElementById("menuBtn");
-
-const closeSidebar =
-    document.getElementById("closeSidebar");
-
-const newChatBtn =
-    document.getElementById("newChat");
-
-const prompt =
-    document.getElementById("prompt");
-
-const sendBtn =
-    document.getElementById("sendBtn");
-
-const stopBtn =
-    document.getElementById("stopBtn");
+const composerWrap =
+    document.getElementById(
+        "composerWrap"
+    );
 
 const messages =
-    document.getElementById("messages");
+    document.getElementById(
+        "messages"
+    );
 
-const homeEmpty =
-    document.getElementById("homeEmpty");
-
-const statusEl =
-    document.getElementById("status");
-
-const topTitle =
-    document.getElementById("topTitle");
-
-const chatList =
-    document.getElementById("chatList");
-
-const fullChatList =
-    document.getElementById("fullChatList");
-
-const fileList =
-    document.getElementById("fileList");
-
-const codeView =
-    document.getElementById("codeView");
+const activityList =
+    document.getElementById(
+        "activityList"
+    );
 
 const terminalOutput =
-    document.getElementById("terminalOutput");
-
-const activityContainer =
-    document.getElementById("activityContainer");
-
-const fullActivity =
-    document.getElementById("fullActivity");
-
-const keysList =
-    document.getElementById("keysList");
-
-const keyName =
-    document.getElementById("keyName");
-
-const keyValue =
-    document.getElementById("keyValue");
-
-const addKeyBtn =
-    document.getElementById("addKeyBtn");
+    document.getElementById(
+        "terminalOutput"
+    );
 
 
-/* =====================================================
+/* =========================================================
    SIDEBAR
-===================================================== */
+========================================================= */
 
 function openSidebar(){
 
-    sidebar.classList.add("open");
+    sidebar.classList.add(
+        "open"
+    );
 
-    overlay.classList.add("show");
-
-    loadChats();
-
-    loadKeys();
+    overlay.classList.add(
+        "show"
+    );
 }
 
-function closeSidebarMenu(){
 
-    sidebar.classList.remove("open");
+function closeSidebar(){
 
-    overlay.classList.remove("show");
+    sidebar.classList.remove(
+        "open"
+    );
+
+    overlay.classList.remove(
+        "show"
+    );
 }
 
-menuBtn.onclick =
-    openSidebar;
 
-closeSidebar.onclick =
-    closeSidebarMenu;
+document
+    .getElementById("menuBtn")
+    .addEventListener(
+        "click",
+        openSidebar
+    );
 
-overlay.onclick =
-    closeSidebarMenu;
+
+document
+    .getElementById("closeSide")
+    .addEventListener(
+        "click",
+        closeSidebar
+    );
 
 
-/* =====================================================
-   NAVIGATION
-===================================================== */
+overlay.addEventListener(
+    "click",
+    closeSidebar
+);
+
+
+/* =========================================================
+   PAGE NAVIGATION
+========================================================= */
 
 function showPage(page){
 
+    currentPage = page;
+
     document
         .querySelectorAll(".page")
-        .forEach(item =>
-            item.classList.remove("active")
+        .forEach(
+            element => {
+                element.classList.remove(
+                    "active"
+                );
+            }
         );
 
     const target =
@@ -1317,593 +1034,232 @@ function showPage(page){
             `page-${page}`
         );
 
-    if(target){
-        target.classList.add("active");
+    if (target) {
+        target.classList.add(
+            "active"
+        );
     }
 
     document
-        .querySelectorAll(".nav button")
-        .forEach(button => {
+        .querySelectorAll(".navBtn")
+        .forEach(
+            button => {
 
-            button.classList.toggle(
-                "active",
-                button.dataset.page === page
-            );
+                button.classList.toggle(
+                    "active",
+                    button.dataset.page ===
+                        page
+                );
 
-        });
+            }
+        );
 
-    const composer =
-        document.getElementById("composer");
-
-    // الكتابة تظهر في Home فقط.
-    if(page === "home"){
-        composer.style.display = "block";
-    }else{
-        composer.style.display = "none";
+    // الكتابة تظهر في Home فقط
+    if (
+        page === "home"
+    ) {
+        composerWrap.style.display =
+            "block";
+    } else {
+        composerWrap.style.display =
+            "none";
     }
 
-    closeSidebarMenu();
+    closeSidebar();
 
-    if(page === "files"){
-        refreshFiles();
-    }
-
-    if(page === "chats"){
-        loadChats();
-    }
-
-    if(page === "activity"){
-        renderFullActivity();
-    }
-
-    if(page === "keys"){
+    if (
+        page === "keys"
+    ) {
         loadKeys();
     }
 
-    if(page === "terminal"){
-        terminalOutput.scrollTop =
-            terminalOutput.scrollHeight;
+    if (
+        page === "files"
+    ) {
+        loadFiles();
+    }
+
+    if (
+        page === "chats"
+    ) {
+        loadChats();
     }
 }
 
 
 document
-    .querySelectorAll(".nav button")
-    .forEach(button => {
+    .querySelectorAll(".navBtn")
+    .forEach(
+        button => {
 
-        button.onclick = () =>
-            showPage(
-                button.dataset.page
-            );
+            button.addEventListener(
+                "click",
+                () => {
 
-    });
+                    showPage(
+                        button.dataset.page
+                    );
 
-
-/* =====================================================
-   CHAT
-===================================================== */
-
-function makeChatId(){
-
-    return "chat_" +
-        Date.now() +
-        "_" +
-        Math.random()
-            .toString(36)
-            .slice(2,8);
-}
-
-
-async function newChat(){
-
-    if(running){
-        await stopCurrentAgent();
-    }
-
-    try{
-
-        const response =
-            await fetch(
-                `${API_URL}/chats/new`,
-                {
-                    method:"POST",
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-                    body:JSON.stringify({
-                        project:
-                            "project_" +
-                            Date.now()
-                    })
                 }
             );
 
-        const data =
-            await response.json();
-
-        if(!data.ok){
-            throw new Error(
-                data.error ||
-                "Failed to create chat"
-            );
         }
-
-        currentChatId =
-            data.chat.id;
-
-        currentProject =
-            data.chat.project;
-
-    }catch{
-
-        currentChatId =
-            makeChatId();
-
-        currentProject =
-            "project_" +
-            Date.now();
-    }
-
-    localStorage.setItem(
-        "currentChatId",
-        currentChatId
     );
 
-    localStorage.setItem(
-        "currentProject",
-        currentProject
-    );
 
-    messages.innerHTML = "";
-
-    activityContainer.innerHTML = "";
-
-    fullActivity.innerHTML = "";
-
-    activityItems = [];
-
-    codeView.innerHTML = "";
-
-    terminalOutput.textContent = "";
-
-    homeEmpty.style.display = "flex";
-
-    topTitle.textContent = "New Chat";
-
-    statusEl.textContent = "Ready";
-
-    running = false;
-
-    document.body.classList.remove(
-        "running"
-    );
-
-    showPage("home");
-
-    loadChats();
-}
-
-
-newChatBtn.onclick =
-    newChat;
-
-
-/* =====================================================
-   CHATS
-===================================================== */
-
-async function loadChats(){
-
-    try{
-
-        const response =
-            await fetch(
-                `${API_URL}/chats`
-            );
-
-        const data =
-            await response.json();
-
-        if(!data.ok){
-            return;
-        }
-
-        renderChatList(
-            chatList,
-            data.chats
-        );
-
-        renderChatList(
-            fullChatList,
-            data.chats
-        );
-
-    }catch{}
-}
-
-
-function renderChatList(
-    element,
-    chats
-){
-
-    element.innerHTML = "";
-
-    if(
-        !chats ||
-        !chats.length
-    ){
-
-        element.innerHTML =
-            `<div style="opacity:.4;font-size:12px;padding:10px">
-                No chats yet
-             </div>`;
-
-        return;
-    }
-
-    chats.forEach(chat => {
-
-        const item =
-            document.createElement("div");
-
-        item.className =
-            "chat-item";
-
-        item.innerHTML = `
-            <div class="chat-item-title">
-                ${escapeHTML(
-                    chat.title ||
-                    "Untitled"
-                )}
-            </div>
-
-            <div class="chat-item-project">
-                ${escapeHTML(
-                    chat.project ||
-                    "default"
-                )}
-            </div>
-        `;
-
-        item.onclick =
-            () =>
-                openChat(chat.id);
-
-        element.appendChild(item);
-
-    });
-}
-
-
-async function openChat(chatId){
-
-    try{
-
-        const response =
-            await fetch(
-                `${API_URL}/chat?id=${encodeURIComponent(
-                    chatId
-                )}`
-            );
-
-        const data =
-            await response.json();
-
-        if(!data.ok){
-            throw new Error(
-                data.error ||
-                "Chat unavailable"
-            );
-        }
-
-        const chat =
-            data.chat;
-
-        currentChatId =
-            chat.id;
-
-        currentProject =
-            chat.project;
-
-        localStorage.setItem(
-            "currentChatId",
-            currentChatId
-        );
-
-        localStorage.setItem(
-            "currentProject",
-            currentProject
-        );
-
-        messages.innerHTML = "";
-
-        activityContainer.innerHTML = "";
-
-        activityItems = [];
-
-        topTitle.textContent =
-            chat.title ||
-            "Chat";
-
-        const visibleMessages =
-            chat.messages || [];
-
-        homeEmpty.style.display =
-            visibleMessages.length
-                ? "none"
-                : "flex";
-
-        visibleMessages.forEach(message => {
-
-            if(
-                message.role === "user" ||
-                message.role === "assistant"
-            ){
-
-                addMessage(
-                    message.role,
-                    message.content
-                );
-            }
-
-        });
-
-        showPage("home");
-
-    }catch(error){
-
-        alert(
-            "تعذر فتح الدردشة: " +
-            error.message
-        );
-    }
-}
-
-
-/* =====================================================
-   MESSAGE
-===================================================== */
+/* =========================================================
+   MESSAGES
+========================================================= */
 
 function addMessage(
     role,
     text
 ){
 
-    homeEmpty.style.display =
-        "none";
-
     const element =
-        document.createElement("div");
+        document.createElement(
+            "div"
+        );
 
     element.className =
         `message ${role}`;
 
     element.textContent =
-        text || "";
+        String(text || "");
 
     messages.appendChild(
         element
     );
 
-    const workspace =
-        document.getElementById(
-            "workspace"
-        );
-
-    workspace.scrollTop =
-        workspace.scrollHeight;
+    messages.scrollTop =
+        messages.scrollHeight;
 
     return element;
 }
 
 
-/* =====================================================
+/* =========================================================
    ACTIVITY
-===================================================== */
+========================================================= */
+
+function clearActivity(){
+
+    activityList.innerHTML = "";
+
+}
+
 
 function addActivity(
     text,
-    tool = ""
+    type = ""
 ){
 
-    activityItems.push({
-
-        text:
-            String(text || ""),
-
-        tool:
-            String(tool || ""),
-
-        time:
-            new Date()
-
-    });
-
-    renderActivity(
-        activityContainer
-    );
-
-    renderFullActivity();
-}
-
-
-function renderActivity(target){
-
-    if(!activityItems.length){
-
-        target.innerHTML = "";
-
-        return;
+    if (
+        activityList.querySelector(
+            ".empty"
+        )
+    ) {
+        activityList.innerHTML =
+            "";
     }
 
-    target.innerHTML = `
+    const item =
+        document.createElement(
+            "div"
+        );
 
-        <div class="activity-card">
+    item.className =
+        `activityItem ${type}`;
 
-            <div
-                class="activity-head"
-                onclick="this.parentElement.classList.toggle('closed')"
-            >
+    item.textContent =
+        String(text || "");
 
-                <div class="activity-title">
-                    ⚡ Agent Activity
-                </div>
-
-                <div class="activity-arrow">
-                    ▲
-                </div>
-
-            </div>
-
-            <div class="activity-body">
-
-                ${
-                    activityItems.map(item => `
-
-                        <div class="activity-row">
-
-                            <div class="activity-dot"></div>
-
-                            <div>
-
-                                <div class="activity-text">
-                                    ${escapeHTML(
-                                        item.text
-                                    )}
-                                </div>
-
-                                ${
-                                    item.tool
-                                    ?
-                                    `
-                                    <div class="activity-tool">
-                                        ${escapeHTML(
-                                            item.tool
-                                        )}
-                                    </div>
-                                    `
-                                    :
-                                    ""
-                                }
-
-                            </div>
-
-                        </div>
-
-                    `).join("")
-                }
-
-            </div>
-
-        </div>
-    `;
-}
-
-
-function renderFullActivity(){
-
-    renderActivity(
-        fullActivity
+    activityList.appendChild(
+        item
     );
+
+    activityList.scrollTop =
+        activityList.scrollHeight;
+
+    return item;
 }
 
 
-/* =====================================================
+/* =========================================================
    TERMINAL
-===================================================== */
+========================================================= */
 
-function terminalLog(text){
+function addTerminal(
+    text
+){
 
     terminalOutput.textContent +=
-        `${String(text || "")}\n`;
+        String(text || "") +
+        "\n";
 
-    terminalOutput.scrollTop =
-        terminalOutput.scrollHeight;
 }
 
 
-document
-    .getElementById("clearTerminal")
-    .onclick = () => {
+/* =========================================================
+   SEND AGENT REQUEST
+========================================================= */
 
-        terminalOutput.textContent =
-            "";
+async function sendMessage(){
 
-    };
+    const input =
+        document.getElementById(
+            "messageInput"
+        );
 
+    const message =
+        input.value.trim();
 
-/* =====================================================
-   SEND
-===================================================== */
-
-async function sendPrompt(){
-
-    const text =
-        prompt.value.trim();
-
-    if(!text || running){
+    if (!message) {
         return;
     }
 
-    if(!currentChatId){
-        await newChat();
-    }
-
-    prompt.value = "";
-
-    autoResize();
+    input.value = "";
 
     addMessage(
         "user",
-        text
+        message
     );
 
-    activityItems = [];
+    clearActivity();
 
-    activityContainer.innerHTML =
-        "";
-
-    running = true;
-
-    document.body.classList.add(
-        "running"
+    addActivity(
+        "Agent connected"
     );
 
-    statusEl.textContent =
-        "Agent running";
+    addActivity(
+        "Planning next step..."
+    );
 
-    showPage("home");
-
-    try{
+    try {
 
         const response =
             await fetch(
-                `${API_URL}/agent`,
+                `${API}/agent`,
                 {
-                    method:"POST",
+                    method: "POST",
 
-                    headers:{
+                    headers: {
                         "Content-Type":
                             "application/json"
                     },
 
-                    body:JSON.stringify({
-
-                        chatId:
-                            currentChatId,
-
-                        project:
-                            currentProject,
-
-                        prompt:
-                            text
-                    })
+                    body:
+                        JSON.stringify({
+                            message,
+                            project:
+                                currentProject
+                        })
                 }
             );
 
-        if(!response.ok){
+        if (
+            !response.ok
+        ) {
 
             const errorText =
                 await response.text();
@@ -1914,10 +1270,11 @@ async function sendPrompt(){
             );
         }
 
-        if(!response.body){
-
+        if (
+            !response.body
+        ) {
             throw new Error(
-                "المتصفح لم يستلم Stream من السيرفر."
+                "Server returned no stream."
             );
         }
 
@@ -1929,7 +1286,7 @@ async function sendPrompt(){
 
         let buffer = "";
 
-        while(true){
+        while (true) {
 
             const {
                 value,
@@ -1937,7 +1294,7 @@ async function sendPrompt(){
             } =
                 await reader.read();
 
-            if(done){
+            if (done) {
                 break;
             }
 
@@ -1945,7 +1302,7 @@ async function sendPrompt(){
                 decoder.decode(
                     value,
                     {
-                        stream:true
+                        stream: true
                     }
                 );
 
@@ -1955,71 +1312,102 @@ async function sendPrompt(){
             buffer =
                 lines.pop() || "";
 
-            for(
-                const line of lines
-            ){
+            for (
+                const line
+                of lines
+            ) {
 
-                if(!line.trim()){
+                const trimmed =
+                    line.trim();
+
+                if (!trimmed) {
                     continue;
                 }
 
-                try{
+                try {
 
                     const event =
-                        JSON.parse(line);
+                        JSON.parse(
+                            trimmed
+                        );
 
                     handleAgentEvent(
                         event
                     );
 
-                }catch{}
+                } catch (parseError) {
+
+                    console.warn(
+                        "Invalid event:",
+                        trimmed
+                    );
+
+                }
+
             }
         }
 
-    }catch(error){
+    } catch (err) {
 
-        if(running){
-
-            addActivity(
-                "حدث خطأ أثناء الاتصال بالـAgent"
-            );
-
-            addMessage(
-                "assistant",
-                error.message ||
-                "حدث خطأ."
-            );
-        }
-
-    }finally{
-
-        running = false;
-
-        document.body.classList.remove(
-            "running"
+        addActivity(
+            err.message ||
+                "حدث خطأ.",
+            "error"
         );
 
-        statusEl.textContent =
-            "Ready";
+        addMessage(
+            "assistant",
+            err.message ||
+                "حدث خطأ."
+        );
 
-        currentJobId = null;
-
-        showPage("home");
-
-        loadChats();
-
-        loadKeys();
     }
+
 }
 
 
-/* =====================================================
+document
+    .getElementById("sendBtn")
+    .addEventListener(
+        "click",
+        sendMessage
+    );
+
+
+document
+    .getElementById(
+        "messageInput"
+    )
+    .addEventListener(
+        "keydown",
+        event => {
+
+            if (
+                event.key === "Enter" &&
+                !event.shiftKey
+            ) {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
    AGENT EVENTS
-===================================================== */
+========================================================= */
 
-function handleAgentEvent(event){
+function handleAgentEvent(
+    event
+){
 
-    switch(event.type){
+    switch (
+        event.type
+    ) {
 
         case "connected":
 
@@ -2027,13 +1415,11 @@ function handleAgentEvent(event){
                 event.jobId ||
                 null;
 
-            if(event.project){
-                currentProject =
-                    event.project;
-
-                localStorage.setItem(
-                    "currentProject",
-                    currentProject
+            if (
+                event.project
+            ) {
+                addActivity(
+                    `Project: ${event.project}`
                 );
             }
 
@@ -2046,20 +1432,19 @@ function handleAgentEvent(event){
 
         case "start":
 
-            addActivity(
-                `Project: ${
-                    event.project ||
-                    currentProject ||
-                    "default"
-                }`
-            );
-
-            if(event.keyName){
-
+            if (
+                event.project
+            ) {
                 addActivity(
-                    `Active AI Key: ${
-                        event.keyName
-                    }`
+                    `Project: ${event.project}`
+                );
+            }
+
+            if (
+                event.keyName
+            ) {
+                addActivity(
+                    `Active AI Key: ${event.keyName}`
                 );
             }
 
@@ -2069,10 +1454,7 @@ function handleAgentEvent(event){
         case "thinking":
 
             addActivity(
-                `Planning next step — Step ${
-                    event.step ??
-                    "?"
-                }`
+                `Planning next step — Step ${event.step || "?"}`
             );
 
             break;
@@ -2080,10 +1462,15 @@ function handleAgentEvent(event){
 
         case "planning":
 
-            addActivity(
-                event.message ||
-                "Planning next step"
-            );
+            if (
+                event.message
+            ) {
+
+                addActivity(
+                    event.message
+                );
+
+            }
 
             break;
 
@@ -2091,12 +1478,8 @@ function handleAgentEvent(event){
         case "tool_start":
 
             addActivity(
-                event.message ||
-                `Running ${
-                    event.tool ||
-                    "tool"
-                }`,
-                event.tool || ""
+                `> ${event.message || event.tool || "Tool"}`,
+                "tool"
             );
 
             break;
@@ -2105,35 +1488,39 @@ function handleAgentEvent(event){
         case "tool_result":
 
             addActivity(
-                `Completed: ${
-                    event.tool ||
-                    "tool"
-                }`,
-                event.tool || ""
+                `✓ ${event.tool || "Tool"} completed`,
+                "tool"
             );
 
-            if(
-                event.tool === "terminal" &&
-                event.result
-            ){
+            if (
+                event.tool ===
+                "terminal"
+            ) {
 
-                if(
-                    event.result.stdout
-                ){
+                const result =
+                    event.result ||
+                    {};
 
-                    terminalLog(
-                        event.result.stdout
+                if (
+                    result.stdout
+                ) {
+
+                    addTerminal(
+                        result.stdout
                     );
+
                 }
 
-                if(
-                    event.result.stderr
-                ){
+                if (
+                    result.stderr
+                ) {
 
-                    terminalLog(
-                        event.result.stderr
+                    addTerminal(
+                        result.stderr
                     );
+
                 }
+
             }
 
             break;
@@ -2142,18 +1529,8 @@ function handleAgentEvent(event){
         case "tool_error":
 
             addActivity(
-                `Error: ${
-                    event.error ||
-                    "Unknown tool error"
-                }`,
-                event.tool || ""
-            );
-
-            terminalLog(
-                `[ERROR] ${
-                    event.error ||
-                    "Unknown error"
-                }`
+                `✕ ${event.tool || "Tool"}: ${event.error || "حدث خطأ"}`,
+                "error"
             );
 
             break;
@@ -2161,62 +1538,47 @@ function handleAgentEvent(event){
 
         case "final":
 
-            if(event.message){
+            if (
+                event.message
+            ) {
 
                 addMessage(
                     "assistant",
                     event.message
                 );
+
             }
 
-            addActivity(
-                "Agent finished"
-            );
-
             break;
 
 
-        case "stopped":
+        case "error": {
 
-            addActivity(
-                "Agent stopped by user"
-            );
-
-            break;
-
-
-        case "error":{
-
-            const errorText =
-                event.error ||
+            const errorMessage =
                 event.message ||
-                "حدث خطأ غير معروف.";
+                event.error ||
+                "حدث خطأ.";
 
             addActivity(
-                `Error: ${errorText}`
+                `Error: ${errorMessage}`,
+                "error"
             );
+
+            if (
+                event.quota
+            ) {
+
+                addActivity(
+                    "غيّر مفتاح Gemini من Keys.",
+                    "error"
+                );
+
+            }
 
             addMessage(
                 "assistant",
-                errorText
+                errorMessage
             );
-
-            if(
-                String(errorText)
-                    .toLowerCase()
-                    .includes("429") ||
-                String(errorText)
-                    .toLowerCase()
-                    .includes("quota") ||
-                String(errorText)
-                    .toLowerCase()
-                    .includes("resource_exhausted")
-            ){
-
-                addActivity(
-                    "⚠️ المفتاح الحالي وصل إلى حد الاستخدام. يمكنك تبديله من API Keys."
-                );
-            }
 
             break;
         }
@@ -2224,318 +1586,52 @@ function handleAgentEvent(event){
 
         case "done":
 
-            statusEl.textContent =
-                "Completed";
+            addActivity(
+                "Agent finished."
+            );
+
+            currentJobId =
+                null;
 
             break;
+
     }
+
 }
 
 
-/* =====================================================
-   STOP AGENT
-===================================================== */
-
-async function stopCurrentAgent(){
-
-    if(!currentJobId){
-
-        running = false;
-
-        document.body.classList.remove(
-            "running"
-        );
-
-        return;
-    }
-
-    const oldJob =
-        currentJobId;
-
-    try{
-
-        await fetch(
-            `${API_URL}/agent/stop`,
-            {
-                method:"POST",
-
-                headers:{
-                    "Content-Type":
-                        "application/json"
-                },
-
-                body:JSON.stringify({
-                    jobId:oldJob
-                })
-            }
-        );
-
-    }catch{}
-
-    running = false;
-
-    document.body.classList.remove(
-        "running"
-    );
-
-    statusEl.textContent =
-        "Stopped";
-
-    currentJobId = null;
-}
-
-
-stopBtn.onclick =
-    stopCurrentAgent;
-
-
-/* =====================================================
-   SEND BUTTON
-===================================================== */
-
-sendBtn.onclick =
-    sendPrompt;
-
-
-prompt.addEventListener(
-    "keydown",
-    event => {
-
-        if(
-            event.key === "Enter" &&
-            !event.shiftKey
-        ){
-
-            event.preventDefault();
-
-            sendPrompt();
-        }
-
-    }
-);
-
-
-/* =====================================================
-   AUTO RESIZE
-===================================================== */
-
-function autoResize(){
-
-    prompt.style.height =
-        "auto";
-
-    prompt.style.height =
-        Math.min(
-            prompt.scrollHeight,
-            150
-        ) + "px";
-}
-
-
-prompt.addEventListener(
-    "input",
-    autoResize
-);
-
-
-/* =====================================================
-   FILES
-===================================================== */
-
-async function refreshFiles(){
-
-    try{
-
-        const response =
-            await fetch(
-                `${API_URL}/files?project=${encodeURIComponent(
-                    currentProject
-                )}`
-            );
-
-        const data =
-            await response.json();
-
-        if(!data.ok){
-
-            throw new Error(
-                data.error ||
-                "Failed to load files"
-            );
-        }
-
-        fileList.innerHTML = "";
-
-        if(
-            !data.files ||
-            !data.files.length
-        ){
-
-            fileList.innerHTML =
-                `<div style="opacity:.4">
-                    No files yet.
-                 </div>`;
-
-            return;
-        }
-
-        data.files.forEach(file => {
-
-            const element =
-                document.createElement("div");
-
-            element.className =
-                "file";
-
-            const filePath =
-                typeof file === "string"
-                    ? file
-                    : file.path;
-
-            const fileType =
-                typeof file === "object"
-                    ? file.type
-                    : "file";
-
-            element.innerHTML = `
-
-                <div>
-                    ${
-                        fileType === "folder"
-                        ? "📁 "
-                        : "📄 "
-                    }
-
-                    ${escapeHTML(
-                        filePath
-                    )}
-                </div>
-
-                ${
-                    typeof file === "object" &&
-                    file.size !== undefined
-                    ?
-                    `
-                    <div class="file-size">
-                        ${file.size} bytes
-                    </div>
-                    `
-                    :
-                    ""
-                }
-
-            `;
-
-            if(
-                fileType !== "folder"
-            ){
-
-                element.onclick =
-                    () =>
-                        openFile(
-                            filePath
-                        );
-            }
-
-            fileList.appendChild(
-                element
-            );
-
-        });
-
-    }catch(error){
-
-        fileList.innerHTML =
-            `<div style="opacity:.5">
-                ${escapeHTML(
-                    error.message
-                )}
-             </div>`;
-    }
-}
-
-
-document
-    .getElementById("refreshFilesBtn")
-    .onclick =
-    refreshFiles;
-
-
-/* =====================================================
-   OPEN FILE
-===================================================== */
-
-async function openFile(filePath){
-
-    try{
-
-        const response =
-            await fetch(
-                `${API_URL}/file?project=${encodeURIComponent(
-                    currentProject
-                )}&path=${encodeURIComponent(
-                    filePath
-                )}`
-            );
-
-        const data =
-            await response.json();
-
-        if(!data.ok){
-
-            throw new Error(
-                data.error ||
-                "Unable to open file"
-            );
-        }
-
-        codeView.innerHTML = `
-
-            <div class="code-view">
-
-                <div class="code-head">
-                    ${escapeHTML(
-                        filePath
-                    )}
-                </div>
-
-                <pre>${escapeHTML(
-                    data.content
-                )}</pre>
-
-            </div>
-        `;
-
-    }catch(error){
-
-        alert(
-            error.message
-        );
-    }
-}
-
-
-/* =====================================================
-   API KEYS
-===================================================== */
+/* =========================================================
+   KEYS
+========================================================= */
 
 async function loadKeys(){
 
-    try{
+    const list =
+        document.getElementById(
+            "keysList"
+        );
+
+    list.innerHTML =
+        `<div class="empty">جاري تحميل المفاتيح...</div>`;
+
+    try {
 
         const response =
             await fetch(
-                `${API_URL}/keys`
+                `${API}/keys`
             );
 
         const data =
             await response.json();
 
-        if(!response.ok || !data.ok){
-
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
             throw new Error(
                 data.error ||
-                `HTTP ${response.status}`
+                data.message ||
+                "Failed to load keys."
             );
         }
 
@@ -2543,651 +1639,856 @@ async function loadKeys(){
             data
         );
 
-    }catch(error){
+    } catch (err) {
 
-        keysList.innerHTML =
-            `
-            <div style="
-                padding:12px;
-                border-radius:12px;
-                background:rgba(239,68,68,.08);
-                color:#ff9a9a;
-                font-size:12px;
-            ">
-                تعذر تحميل المفاتيح:
-                ${escapeHTML(
-                    error.message
-                )}
-            </div>
-            `;
+        list.innerHTML =
+            `<div class="empty">${escapeHtml(
+                err.message
+            )}</div>`;
+
     }
+
 }
 
 
-function renderKeys(data){
+function renderKeys(
+    data
+){
 
-    keysList.innerHTML = "";
+    const list =
+        document.getElementById(
+            "keysList"
+        );
 
-    const keys =
-        Array.isArray(data.keys)
-            ? data.keys
-            : [];
+    list.innerHTML = "";
 
     const activeId =
         data.activeKeyId ||
         null;
 
+    // PRIMARY
+    if (
+        data.primary
+    ) {
 
-    /*
-     * كل المفاتيح تأتي من السيرفر.
-     * Primary أيضًا موجود داخل keys.
-     */
+        list.appendChild(
+            createKeyCard(
+                data.primary,
+                activeId
+            )
+        );
 
-    if(!keys.length){
-
-        keysList.innerHTML =
-            `
-            <div style="opacity:.45;font-size:12px">
-                لا توجد مفاتيح محفوظة.
-            </div>
-            `;
-
-        return;
     }
 
-
-    keys.forEach(key => {
-
-        const active =
-            key.id === activeId;
-
-        const enabled =
-            key.enabled !== false;
-
-        const status =
-            key.status ||
-            "ready";
-
-        const card =
-            document.createElement("div");
-
-        card.className =
-            "key-card" +
-            (active ? " active" : "") +
-            (status === "quota"
-                ? " quota"
-                : "") +
-            (status === "error"
-                ? " error"
-                : "");
-
-
-        let badgeText =
-            "SAVED";
-
-        if(key.primary){
-
-            badgeText =
-                active
-                    ? "PRIMARY • ACTIVE"
-                    : "PRIMARY";
-        }else if(!enabled){
-
-            badgeText =
-                "STOPPED";
-        }else if(status === "quota"){
-
-            badgeText =
-                "QUOTA";
-        }else if(status === "error"){
-
-            badgeText =
-                "ERROR";
-        }else if(active){
-
-            badgeText =
-                "ACTIVE";
-        }
-
-
-        let badgeClass = "";
-
-        if(status === "quota"){
-            badgeClass = "quota";
-        }
-
-        if(status === "error"){
-            badgeClass = "error";
-        }
-
-        if(!enabled){
-            badgeClass = "stopped";
-        }
-
-
-        card.innerHTML = `
-
-            <div class="key-top">
-
-                <div class="key-name">
-                    ${escapeHTML(
-                        key.name ||
-                        "Unnamed Key"
-                    )}
-                </div>
-
-                <div
-                    class="key-badge ${badgeClass}"
-                >
-                    ${escapeHTML(
-                        badgeText
-                    )}
-                </div>
-
-            </div>
-
-            <div class="key-value">
-                ${escapeHTML(
-                    key.maskedKey ||
-                    "••••••••"
-                )}
-            </div>
-
-            <div class="key-provider">
-                ${escapeHTML(
-                    key.provider ||
-                    "Google Gemini"
-                )}
-            </div>
-
-            ${
-                key.lastError
-                ?
-                `
-                <div class="key-error">
-                    ${escapeHTML(
-                        key.lastError
-                    )}
-                </div>
-                `
-                :
-                ""
-            }
-
-            <div class="key-actions">
-
-                ${
-                    active
-                    ?
-                    `
-                    <button
-                        class="use"
-                        disabled
-                        style="opacity:.55"
-                    >
-                        ✓ Using
-                    </button>
-                    `
-                    :
-                    `
-                    <button
-                        class="use"
-                        onclick="useKey('${escapeJS(
-                            key.id
-                        )}')"
-                    >
-                        Use
-                    </button>
-                    `
-                }
-
-                ${
-                    key.primary
-                    ?
-                    ""
-                    :
-                    `
-                    ${
-                        enabled
-                        ?
-                        `
-                        <button
-                            class="danger"
-                            onclick="stopKey('${escapeJS(
-                                key.id
-                            )}')"
-                        >
-                            Stop
-                        </button>
-                        `
-                        :
-                        `
-                        <button
-                            class="success"
-                            onclick="enableKey('${escapeJS(
-                                key.id
-                            )}')"
-                        >
-                            Use Again
-                        </button>
-                        `
-                    }
-
-                    <button
-                        class="danger"
-                        onclick="deleteKey('${escapeJS(
-                            key.id
-                        )}')"
-                    >
-                        Delete
-                    </button>
-                    `
-                }
-
-            </div>
-        `;
-
-        keysList.appendChild(
-            card
-        );
-
-    });
-}
-
-
-/* =====================================================
-   USE KEY
-===================================================== */
-
-async function useKey(id){
-
-    try{
-
-        statusEl.textContent =
-            "Switching key...";
-
-        const response =
-            await fetch(
-                `${API_URL}/keys/use`,
-                {
-                    method:"POST",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:JSON.stringify({
-                        id
-                    })
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if(!response.ok || !data.ok){
-
-            throw new Error(
-                data.error ||
-                `HTTP ${response.status}`
-            );
-        }
-
-        const name =
-            data.key?.name ||
-            "Selected key";
-
-        statusEl.textContent =
-            name;
-
-        addActivity(
-            `Active AI Key: ${name}`
-        );
-
-        await loadKeys();
-
-    }catch(error){
-
-        statusEl.textContent =
-            "Ready";
-
-        alert(
-            "تعذر تفعيل المفتاح:\n" +
-            error.message
-        );
-    }
-}
-
-
-/* =====================================================
-   STOP KEY
-===================================================== */
-
-async function stopKey(id){
-
-    try{
-
-        const response =
-            await fetch(
-                `${API_URL}/keys/stop`,
-                {
-                    method:"POST",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:JSON.stringify({
-                        id
-                    })
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if(!response.ok || !data.ok){
-
-            throw new Error(
-                data.error ||
-                `HTTP ${response.status}`
-            );
-        }
-
-        await loadKeys();
-
-        statusEl.textContent =
-            "Render Primary";
-
-    }catch(error){
-
-        alert(
-            "تعذر إيقاف المفتاح:\n" +
-            error.message
-        );
-    }
-}
-
-
-/* =====================================================
-   ENABLE KEY
-===================================================== */
-
-async function enableKey(id){
-
-    /*
-     * السيرفر الحالي لا يحتاج /keys/enable.
-     * /keys/use يقوم بإعادة تفعيل المفتاح وتشغيله.
-     */
-
-    await useKey(id);
-}
-
-
-/* =====================================================
-   DELETE KEY
-===================================================== */
-
-async function deleteKey(id){
-
-    if(
-        !confirm(
-            "هل تريد حذف هذا المفتاح نهائيًا؟"
+    // OTHER KEYS
+    if (
+        Array.isArray(
+            data.keys
         )
-    ){
+    ) {
 
-        return;
-    }
+        data.keys.forEach(
+            key => {
 
-    try{
+                list.appendChild(
+                    createKeyCard(
+                        key,
+                        activeId
+                    )
+                );
 
-        const response =
-            await fetch(
-                `${API_URL}/keys/${encodeURIComponent(
-                    id
-                )}`,
-                {
-                    method:"DELETE"
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if(!response.ok || !data.ok){
-
-            throw new Error(
-                data.error ||
-                `HTTP ${response.status}`
-            );
-        }
-
-        await loadKeys();
-
-    }catch(error){
-
-        alert(
-            "تعذر حذف المفتاح:\n" +
-            error.message
+            }
         );
+
     }
+
+    if (
+        !list.children.length
+    ) {
+
+        list.innerHTML =
+            `<div class="empty">لا توجد مفاتيح محفوظة.</div>`;
+
+    }
+
 }
 
 
-/* =====================================================
+function createKeyCard(
+    key,
+    activeId
+){
+
+    const card =
+        document.createElement(
+            "div"
+        );
+
+    card.className =
+        "keyCard";
+
+    const info =
+        document.createElement(
+            "div"
+        );
+
+    info.className =
+        "keyInfo";
+
+    const name =
+        document.createElement(
+            "div"
+        );
+
+    name.className =
+        "keyName";
+
+    name.textContent =
+        key.name ||
+        "Gemini Key";
+
+    const meta =
+        document.createElement(
+            "div"
+        );
+
+    meta.className =
+        "keyMeta";
+
+    meta.textContent =
+        key.maskedKey ||
+        "••••••••";
+
+    const badge =
+        document.createElement(
+            "div"
+        );
+
+    badge.className =
+        "badge";
+
+    if (
+        key.id === activeId
+    ) {
+
+        badge.classList.add(
+            "active"
+        );
+
+        badge.textContent =
+            "ACTIVE";
+
+    } else if (
+        key.status ===
+        "quota"
+    ) {
+
+        badge.classList.add(
+            "quota"
+        );
+
+        badge.textContent =
+            "QUOTA";
+
+    } else if (
+        key.enabled === false
+    ) {
+
+        badge.classList.add(
+            "stopped"
+        );
+
+        badge.textContent =
+            "STOPPED";
+
+    } else {
+
+        badge.textContent =
+            key.primary
+                ? "PRIMARY"
+                : "SAVED";
+
+    }
+
+    info.appendChild(
+        name
+    );
+
+    info.appendChild(
+        meta
+    );
+
+    info.appendChild(
+        badge
+    );
+
+    card.appendChild(
+        info
+    );
+
+
+    // ACTIONS
+
+    const actions =
+        document.createElement(
+            "div"
+        );
+
+    actions.style.display =
+        "flex";
+
+    actions.style.gap =
+        "6px";
+
+    actions.style.flexWrap =
+        "wrap";
+
+
+    if (
+        key.id !== activeId
+    ) {
+
+        const useBtn =
+            document.createElement(
+                "button"
+            );
+
+        useBtn.className =
+            "smallBtn";
+
+        useBtn.textContent =
+            key.enabled === false
+                ? "Enable"
+                : "Use";
+
+        useBtn.addEventListener(
+            "click",
+            () =>
+                useKey(
+                    key.id,
+                    key.enabled === false
+                        ? "enable"
+                        : "use"
+                )
+        );
+
+        actions.appendChild(
+            useBtn
+        );
+
+    }
+
+
+    if (
+        key.primary !== true
+    ) {
+
+        const stopBtn =
+            document.createElement(
+                "button"
+            );
+
+        stopBtn.className =
+            "dangerBtn";
+
+        stopBtn.textContent =
+            key.enabled === false
+                ? "Delete"
+                : "Stop";
+
+        stopBtn.addEventListener(
+            "click",
+            () => {
+
+                if (
+                    key.enabled === false
+                ) {
+
+                    deleteKey(
+                        key.id
+                    );
+
+                } else {
+
+                    stopKey(
+                        key.id
+                    );
+
+                }
+
+            }
+        );
+
+        actions.appendChild(
+            stopBtn
+        );
+
+    }
+
+    card.appendChild(
+        actions
+    );
+
+    return card;
+}
+
+
+/* =========================================================
    ADD KEY
-===================================================== */
+========================================================= */
 
 async function addKey(){
 
+    const nameInput =
+        document.getElementById(
+            "keyName"
+        );
+
+    const keyInput =
+        document.getElementById(
+            "apiKeyInput"
+        );
+
     const name =
-        keyName.value.trim();
+        nameInput.value.trim();
 
     const apiKey =
-        keyValue.value.trim();
+        keyInput.value.trim();
 
-
-    if(!name){
+    if (!apiKey) {
 
         alert(
-            "اكتب اسم المفتاح."
+            "حط Gemini API Key أول."
         );
-
-        keyName.focus();
 
         return;
     }
 
-
-    if(!apiKey){
-
-        alert(
-            "ضع Gemini API Key."
+    const button =
+        document.getElementById(
+            "saveKeyBtn"
         );
 
-        keyValue.focus();
-
-        return;
-    }
-
-
-    addKeyBtn.disabled =
+    button.disabled =
         true;
 
-    addKeyBtn.textContent =
-        "Adding...";
+    button.textContent =
+        "Saving...";
 
-
-    try{
+    try {
 
         const response =
             await fetch(
-                `${API_URL}/keys`,
+                `${API}/keys`,
                 {
+                    method: "POST",
 
-                    method:"POST",
-
-                    headers:{
+                    headers: {
                         "Content-Type":
                             "application/json"
                     },
 
-                    body:JSON.stringify({
+                    body:
+                        JSON.stringify({
+                            name:
+                                name ||
+                                "Gemini Key",
 
-                        name,
-
-                        // السيرفر ينتظر apiKey
-                        apiKey
-
-                    })
+                            apiKey:
+                                apiKey
+                        })
                 }
             );
-
 
         const data =
             await response.json();
 
-
-        if(
+        if (
             !response.ok ||
             !data.ok
-        ){
+        ) {
 
             throw new Error(
                 data.error ||
-                `HTTP ${response.status}`
+                data.message ||
+                "Failed to save key."
             );
+
         }
 
-
-        keyName.value =
+        nameInput.value =
             "";
 
-        keyValue.value =
+        keyInput.value =
             "";
-
 
         await loadKeys();
 
-
-        statusEl.textContent =
-            data.key?.name ||
-            "New key active";
-
-
-        alert(
-            "تمت إضافة المفتاح وتفعيله بنجاح ✅"
+        addActivity(
+            `API Key saved: ${
+                data.activeKeyName ||
+                "Gemini Key"
+            }`
         );
 
-
-    }catch(error){
-
         alert(
-            "تعذر إضافة المفتاح:\n\n" +
-            error.message
+            "تم حفظ مفتاح Gemini وتفعيله ✅"
         );
 
-    }finally{
+    } catch (err) {
 
-        addKeyBtn.disabled =
+        alert(
+            err.message ||
+            "حدث خطأ أثناء حفظ المفتاح."
+        );
+
+    } finally {
+
+        button.disabled =
             false;
 
-        addKeyBtn.textContent =
-            "Add & Activate";
+        button.textContent =
+            "Save Gemini API Key";
+
     }
+
 }
 
 
-addKeyBtn.onclick =
-    addKey;
-
-
-/* =====================================================
-   ESCAPE
-===================================================== */
-
-function escapeHTML(value){
-
-    return String(
-        value ?? ""
+document
+    .getElementById(
+        "saveKeyBtn"
     )
-    .replace(
-        /&/g,
-        "&amp;"
-    )
-    .replace(
-        /</g,
-        "&lt;"
-    )
-    .replace(
-        />/g,
-        "&gt;"
-    )
-    .replace(
-        /"/g,
-        "&quot;"
-    )
-    .replace(
-        /'/g,
-        "&#039;"
+    .addEventListener(
+        "click",
+        addKey
     );
-}
 
 
-function escapeJS(value){
+/* =========================================================
+   USE / ENABLE
+========================================================= */
 
-    return String(
-        value ?? ""
-    )
-    .replace(
-        /\\/g,
-        "\\\\"
-    )
-    .replace(
-        /'/g,
-        "\\'"
-    )
-    .replace(
-        /"/g,
-        '\\"'
-    );
-}
+async function useKey(
+    id,
+    mode = "use"
+){
 
+    try {
 
-/* =====================================================
-   INITIAL LOAD
-===================================================== */
+        const response =
+            await fetch(
+                `${API}/keys/${mode}`,
+                {
+                    method: "POST",
 
-(async function(){
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
 
-    showPage("home");
-
-    loadChats();
-
-    loadKeys();
-
-    if(currentChatId){
-
-        try{
-
-            await openChat(
-                currentChatId
+                    body:
+                        JSON.stringify({
+                            id
+                        })
+                }
             );
 
-        }catch{
+        const data =
+            await response.json();
 
-            currentChatId =
-                null;
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
 
-            localStorage.removeItem(
-                "currentChatId"
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Failed."
+            );
+
+        }
+
+        await loadKeys();
+
+    } catch (err) {
+
+        alert(
+            err.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   STOP
+========================================================= */
+
+async function stopKey(
+    id
+){
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/keys/stop`,
+                {
+                    method: "POST",
+
+                    headers: {
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:
+                        JSON.stringify({
+                            id
+                        })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Failed to stop key."
+            );
+
+        }
+
+        await loadKeys();
+
+    } catch (err) {
+
+        alert(
+            err.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   DELETE
+========================================================= */
+
+async function deleteKey(
+    id
+){
+
+    const okay =
+        confirm(
+            "هل تريد حذف هذا المفتاح نهائيًا؟"
+        );
+
+    if (!okay) {
+        return;
+    }
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/keys/${encodeURIComponent(id)}`,
+                {
+                    method: "DELETE"
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
+
+            throw new Error(
+                data.error ||
+                data.message ||
+                "Failed to delete key."
+            );
+
+        }
+
+        await loadKeys();
+
+    } catch (err) {
+
+        alert(
+            err.message
+        );
+
+    }
+
+}
+
+
+/* =========================================================
+   FILES
+========================================================= */
+
+async function loadFiles(){
+
+    const list =
+        document.getElementById(
+            "filesList"
+        );
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/files?project=${encodeURIComponent(
+                    currentProject
+                )}`
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
+            throw new Error(
+                data.error ||
+                "Failed to load files."
             );
         }
+
+        list.innerHTML = "";
+
+        if (
+            !data.files?.length
+        ) {
+
+            list.innerHTML =
+                `<div class="empty">لا توجد ملفات في المشروع.</div>`;
+
+            return;
+        }
+
+        data.files.forEach(
+            file => {
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+                item.className =
+                    "fileItem";
+
+                item.textContent =
+                    file.path;
+
+                list.appendChild(
+                    item
+                );
+
+            }
+        );
+
+    } catch (err) {
+
+        list.innerHTML =
+            `<div class="empty">${escapeHtml(
+                err.message
+            )}</div>`;
+
     }
 
-})();
+}
+
+
+/* =========================================================
+   CHATS
+========================================================= */
+
+async function loadChats(){
+
+    const list =
+        document.getElementById(
+            "chatList"
+        );
+
+    try {
+
+        const response =
+            await fetch(
+                `${API}/chats`
+            );
+
+        const data =
+            await response.json();
+
+        if (
+            !response.ok ||
+            !data.ok
+        ) {
+            throw new Error(
+                data.error ||
+                "Failed to load chats."
+            );
+        }
+
+        list.innerHTML = "";
+
+        if (
+            !data.chats?.length
+        ) {
+
+            list.innerHTML =
+                `<div class="empty">لا توجد محادثات محفوظة.</div>`;
+
+            return;
+        }
+
+        data.chats.forEach(
+            chat => {
+
+                const item =
+                    document.createElement(
+                        "div"
+                    );
+
+                item.className =
+                    "fileItem";
+
+                item.textContent =
+                    `${chat.id} — ${chat.messages} messages`;
+
+                list.appendChild(
+                    item
+                );
+
+            }
+        );
+
+    } catch (err) {
+
+        list.innerHTML =
+            `<div class="empty">${escapeHtml(
+                err.message
+            )}</div>`;
+
+    }
+
+}
+
+
+/* =========================================================
+   NEW CHAT
+========================================================= */
+
+document
+    .getElementById(
+        "newChatBtn"
+    )
+    .addEventListener(
+        "click",
+        async () => {
+
+            try {
+
+                const response =
+                    await fetch(
+                        `${API}/chats/new`,
+                        {
+                            method: "POST"
+                        }
+                    );
+
+                const data =
+                    await response.json();
+
+                if (
+                    !response.ok ||
+                    !data.ok
+                ) {
+                    throw new Error(
+                        data.error ||
+                        "Failed."
+                    );
+                }
+
+                currentChatId =
+                    data.id;
+
+                localStorage.setItem(
+                    "gemini_agent_chat",
+                    currentChatId
+                );
+
+                alert(
+                    "تم إنشاء Chat جديد ✅"
+                );
+
+                loadChats();
+
+            } catch (err) {
+
+                alert(
+                    err.message
+                );
+
+            }
+
+        }
+    );
+
+
+/* =========================================================
+   ESCAPE
+========================================================= */
+
+function escapeHtml(
+    value
+){
+
+    return String(value || "")
+        .replace(
+            /&/g,
+            "&amp;"
+        )
+        .replace(
+            /</g,
+            "&lt;"
+        )
+        .replace(
+            />/g,
+            "&gt;"
+        )
+        .replace(
+            /"/g,
+            "&quot;"
+        )
+        .replace(
+            /'/g,
+            "&#039;"
+        );
+
+}
+
+
+/* =========================================================
+   INITIAL
+========================================================= */
+
+showPage("home");
 
 </script>
 
