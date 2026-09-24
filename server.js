@@ -1,5 +1,5 @@
 import express from "express";
-import { GoogleGenAI } from "@google/genai";
+import { GoogleGenAI, Type } from "@google/genai";
 import fs from "fs/promises";
 import path from "path";
 import { execFile } from "child_process";
@@ -7,34 +7,90 @@ import { promisify } from "util";
 
 const app = express();
 
-app.use(express.json({ limit: "2mb" }));
-
 const execFileAsync = promisify(execFile);
 
 const PORT = process.env.PORT || 10000;
-const apiKey = process.env.GEMINI_API_KEY;
+const API_KEY = process.env.GEMINI_API_KEY;
 
-const ai = apiKey
-    ? new GoogleGenAI({ apiKey })
+const MODEL =
+    process.env.GEMINI_MODEL || "gemini-3.8-flash";
+
+const ai = API_KEY
+    ? new GoogleGenAI({
+        apiKey: API_KEY
+    })
     : null;
 
 
-/* ========================================================
+/* =========================================================
+   SERVER CONFIG
+========================================================= */
+
+app.use(
+    express.json({
+        limit: "2mb"
+    })
+);
+
+
+/*
+   GitHub Pages / browser -> Render
+
+   No credentials are used.
+*/
+
+app.use(
+    (req, res, next) => {
+
+        res.setHeader(
+            "Access-Control-Allow-Origin",
+            "*"
+        );
+
+        res.setHeader(
+            "Access-Control-Allow-Methods",
+            "GET,POST,DELETE,OPTIONS"
+        );
+
+        res.setHeader(
+            "Access-Control-Allow-Headers",
+            "Content-Type"
+        );
+
+        if (req.method === "OPTIONS") {
+            return res.sendStatus(204);
+        }
+
+        next();
+    }
+);
+
+
+/* =========================================================
    PROJECT SANDBOX
-======================================================== */
+========================================================= */
 
-const PROJECT_ROOT = path.resolve("./projects");
+const PROJECT_ROOT =
+    path.resolve("./projects");
 
-await fs.mkdir(PROJECT_ROOT, {
-    recursive: true
-});
+
+await fs.mkdir(
+    PROJECT_ROOT,
+    {
+        recursive: true
+    }
+);
 
 
 function safeProjectName(name) {
 
-    const clean = String(name || "default")
-        .replace(/[^a-zA-Z0-9_-]/g, "_")
-        .slice(0, 50);
+    const clean =
+        String(name || "default")
+            .replace(
+                /[^a-zA-Z0-9_-]/g,
+                "_"
+            )
+            .slice(0, 50);
 
     return clean || "default";
 }
@@ -42,47 +98,115 @@ function safeProjectName(name) {
 
 function getProjectPath(project) {
 
-    const clean = safeProjectName(project);
-
-    return path.join(PROJECT_ROOT, clean);
+    return path.join(
+        PROJECT_ROOT,
+        safeProjectName(project)
+    );
 }
 
 
-function safePath(project, filePath) {
+function safePath(
+    project,
+    filePath
+) {
 
-    const root = path.resolve(
-        getProjectPath(project)
-    );
+    const root =
+        path.resolve(
+            getProjectPath(project)
+        );
 
-    const target = path.resolve(
-        root,
-        String(filePath || "")
-    );
+    const target =
+        path.resolve(
+            root,
+            String(filePath || "")
+        );
+
 
     if (
         target !== root &&
-        !target.startsWith(root + path.sep)
+        !target.startsWith(
+            root + path.sep
+        )
     ) {
-        throw new Error("Path outside project sandbox is not allowed.");
+
+        throw new Error(
+            "Path outside project sandbox is not allowed."
+        );
+
     }
+
 
     return target;
 }
 
 
-/* ========================================================
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function limitText(
+    value,
+    max = 12000
+) {
+
+    const text =
+        String(value ?? "");
+
+    if (text.length <= max) {
+        return text;
+    }
+
+    return (
+        text.slice(0, max) +
+        "\n...[truncated]"
+    );
+
+}
+
+
+function jsonResult(
+    value
+) {
+
+    return {
+        result:
+            limitText(
+                JSON.stringify(
+                    value,
+                    null,
+                    2
+                ),
+                16000
+            )
+    };
+
+}
+
+
+/* =========================================================
    FILE TOOLS
-======================================================== */
+========================================================= */
 
-async function createProject(project) {
+async function createProject(
+    project
+) {
 
-    const root = getProjectPath(project);
+    const root =
+        getProjectPath(project);
 
-    await fs.mkdir(root, {
-        recursive: true
+    await fs.mkdir(
+        root,
+        {
+            recursive: true
+        }
+    );
+
+    return jsonResult({
+        ok: true,
+        project:
+            safeProjectName(project)
     });
 
-    return `Project created: ${safeProjectName(project)}`;
 }
 
 
@@ -92,10 +216,25 @@ async function writeFileTool(
     content
 ) {
 
-    const target = safePath(
-        project,
-        filePath
-    );
+    const target =
+        safePath(
+            project,
+            filePath
+        );
+
+
+    const text =
+        String(content ?? "");
+
+
+    if (text.length > 1000000) {
+
+        throw new Error(
+            "File is too large."
+        );
+
+    }
+
 
     await fs.mkdir(
         path.dirname(target),
@@ -104,13 +243,24 @@ async function writeFileTool(
         }
     );
 
+
     await fs.writeFile(
         target,
-        String(content ?? ""),
+        text,
         "utf8"
     );
 
-    return `File written: ${filePath}`;
+
+    return jsonResult({
+        ok: true,
+        path: filePath,
+        bytes:
+            Buffer.byteLength(
+                text,
+                "utf8"
+            )
+    });
+
 }
 
 
@@ -119,17 +269,30 @@ async function readFileTool(
     filePath
 ) {
 
-    const target = safePath(
-        project,
-        filePath
-    );
+    const target =
+        safePath(
+            project,
+            filePath
+        );
 
-    const content = await fs.readFile(
-        target,
-        "utf8"
-    );
 
-    return content;
+    const content =
+        await fs.readFile(
+            target,
+            "utf8"
+        );
+
+
+    return jsonResult({
+        ok: true,
+        path: filePath,
+        content:
+            limitText(
+                content,
+                30000
+            )
+    });
+
 }
 
 
@@ -138,10 +301,12 @@ async function deleteFileTool(
     filePath
 ) {
 
-    const target = safePath(
-        project,
-        filePath
-    );
+    const target =
+        safePath(
+            project,
+            filePath
+        );
+
 
     await fs.rm(
         target,
@@ -151,21 +316,270 @@ async function deleteFileTool(
         }
     );
 
-    return `File deleted: ${filePath}`;
+
+    return jsonResult({
+        ok: true,
+        path: filePath
+    });
+
 }
 
 
-/* ========================================================
-   TERMINAL SANDBOX
-======================================================== */
+/* =========================================================
+   FILE LIST
+========================================================= */
 
-const ALLOWED_COMMANDS = new Set([
-    "node",
-    "npm",
-    "npx",
-    "python",
-    "python3"
-]);
+async function listFilesRecursive(
+    directory,
+    base = directory
+) {
+
+    const entries =
+        await fs.readdir(
+            directory,
+            {
+                withFileTypes: true
+            }
+        );
+
+
+    const result = [];
+
+
+    for (const entry of entries) {
+
+        const fullPath =
+            path.join(
+                directory,
+                entry.name
+            );
+
+
+        const relativePath =
+            path.relative(
+                base,
+                fullPath
+            );
+
+
+        /*
+           Never expose node_modules,
+           .git or hidden system data.
+        */
+
+        if (
+            entry.name === "node_modules" ||
+            entry.name === ".git" ||
+            entry.name.startsWith(".")
+        ) {
+
+            continue;
+
+        }
+
+
+        if (entry.isDirectory()) {
+
+            const nested =
+                await listFilesRecursive(
+                    fullPath,
+                    base
+                );
+
+            result.push(
+                ...nested
+            );
+
+        } else {
+
+            result.push(
+                relativePath
+            );
+
+        }
+
+    }
+
+
+    return result;
+
+}
+
+
+async function listFilesTool(
+    project
+) {
+
+    const root =
+        getProjectPath(project);
+
+
+    await fs.mkdir(
+        root,
+        {
+            recursive: true
+        }
+    );
+
+
+    const files =
+        await listFilesRecursive(
+            root
+        );
+
+
+    return jsonResult({
+        ok: true,
+        files
+    });
+
+}
+
+
+/* =========================================================
+   TERMINAL SAFETY
+========================================================= */
+
+
+/*
+   The Agent does NOT get an unrestricted shell.
+
+   Only these command families are allowed.
+*/
+
+const ALLOWED_COMMANDS =
+    new Set([
+        "node",
+        "npm",
+        "python",
+        "python3"
+    ]);
+
+
+function validateTerminal(
+    command,
+    args
+) {
+
+    const cleanCommand =
+        String(command || "")
+            .trim();
+
+
+    if (
+        !ALLOWED_COMMANDS.has(
+            cleanCommand
+        )
+    ) {
+
+        throw new Error(
+            `Command not allowed: ${cleanCommand}`
+        );
+
+    }
+
+
+    if (!Array.isArray(args)) {
+
+        throw new Error(
+            "Terminal args must be an array."
+        );
+
+    }
+
+
+    const safeArgs =
+        args.map(
+            value =>
+                String(value)
+        );
+
+
+    /*
+       Never allow shell syntax.
+    */
+
+    const dangerous =
+        /[;&|><`$]|(\.\.)/;
+
+
+    for (
+        const arg of safeArgs
+    ) {
+
+        if (
+            dangerous.test(arg)
+        ) {
+
+            throw new Error(
+                "Unsafe terminal argument blocked."
+            );
+
+        }
+
+    }
+
+
+    /*
+       Keep command arguments reasonably small.
+    */
+
+    if (
+        safeArgs.join(" ").length > 4000
+    ) {
+
+        throw new Error(
+            "Terminal command is too long."
+        );
+
+    }
+
+
+    /*
+       npm restrictions.
+    */
+
+    if (
+        cleanCommand === "npm"
+    ) {
+
+        const first =
+            safeArgs[0] || "";
+
+
+        const allowedNpm =
+            new Set([
+                "install",
+                "ci",
+                "run",
+                "test",
+                "start",
+                "build",
+                "version"
+            ]);
+
+
+        if (
+            !allowedNpm.has(first)
+        ) {
+
+            throw new Error(
+                `npm command not allowed: ${first}`
+            );
+
+        }
+
+    }
+
+
+    return {
+        command:
+            cleanCommand,
+        args:
+            safeArgs
+    };
+
+}
 
 
 async function terminalTool(
@@ -174,20 +588,16 @@ async function terminalTool(
     args = []
 ) {
 
-    const cleanCommand = String(command || "");
-
-    if (!ALLOWED_COMMANDS.has(cleanCommand)) {
-
-        throw new Error(
-            `Command not allowed: ${cleanCommand}`
+    const validated =
+        validateTerminal(
+            command,
+            args
         );
-    }
 
-    if (!Array.isArray(args)) {
-        throw new Error("Terminal args must be an array.");
-    }
 
-    const projectPath = getProjectPath(project);
+    const projectPath =
+        getProjectPath(project);
+
 
     await fs.mkdir(
         projectPath,
@@ -196,107 +606,329 @@ async function terminalTool(
         }
     );
 
-    const safeArgs = args.map(
-        value => String(value)
-    );
 
-    const result = await execFileAsync(
-        cleanCommand,
-        safeArgs,
-        {
-            cwd: projectPath,
-            timeout: 30000,
-            maxBuffer: 1024 * 1024
-        }
-    );
+    try {
 
-    return {
-        stdout: result.stdout || "",
-        stderr: result.stderr || ""
-    };
+        const result =
+            await execFileAsync(
+                validated.command,
+                validated.args,
+                {
+                    cwd: projectPath,
+
+                    timeout: 30000,
+
+                    maxBuffer:
+                        1024 * 1024,
+
+                    windowsHide: true
+                }
+            );
+
+
+        return jsonResult({
+            ok: true,
+            command:
+                validated.command,
+            args:
+                validated.args,
+            stdout:
+                limitText(
+                    result.stdout,
+                    12000
+                ),
+            stderr:
+                limitText(
+                    result.stderr,
+                    12000
+                ),
+            exitCode: 0
+        });
+
+    } catch (error) {
+
+        return jsonResult({
+            ok: false,
+            command:
+                validated.command,
+            args:
+                validated.args,
+            stdout:
+                limitText(
+                    error.stdout || "",
+                    12000
+                ),
+            stderr:
+                limitText(
+                    error.stderr ||
+                    error.message ||
+                    "",
+                    12000
+                ),
+            exitCode:
+                typeof error.code === "number"
+                    ? error.code
+                    : 1
+        });
+
+    }
+
 }
 
 
-/* ========================================================
-   GEMINI AGENT PROMPT
-======================================================== */
+/* =========================================================
+   TOOL DECLARATIONS
+========================================================= */
+
+const toolDeclarations = [
+
+    {
+        name: "create_project",
+
+        description:
+            "Create the current project directory.",
+
+        parameters: {
+            type: Type.OBJECT,
+
+            properties: {},
+
+            required: []
+        }
+    },
+
+
+    {
+        name: "list_files",
+
+        description:
+            "List all files currently inside the project.",
+
+        parameters: {
+            type: Type.OBJECT,
+
+            properties: {},
+
+            required: []
+        }
+    },
+
+
+    {
+        name: "read_file",
+
+        description:
+            "Read a text file from the current project before modifying it.",
+
+        parameters: {
+
+            type: Type.OBJECT,
+
+            properties: {
+
+                path: {
+                    type: Type.STRING,
+                    description:
+                        "Relative project file path."
+                }
+
+            },
+
+            required: [
+                "path"
+            ]
+        }
+    },
+
+
+    {
+        name: "write_file",
+
+        description:
+            "Create or completely replace a project text file.",
+
+        parameters: {
+
+            type: Type.OBJECT,
+
+            properties: {
+
+                path: {
+                    type: Type.STRING,
+                    description:
+                        "Relative project file path."
+                },
+
+                content: {
+                    type: Type.STRING,
+                    description:
+                        "Complete text content of the file."
+                }
+
+            },
+
+            required: [
+                "path",
+                "content"
+            ]
+        }
+    },
+
+
+    {
+        name: "delete_file",
+
+        description:
+            "Delete one file from the project.",
+
+        parameters: {
+
+            type: Type.OBJECT,
+
+            properties: {
+
+                path: {
+                    type: Type.STRING,
+                    description:
+                        "Relative project file path."
+                }
+
+            },
+
+            required: [
+                "path"
+            ]
+        }
+    },
+
+
+    {
+        name: "terminal",
+
+        description:
+            "Run a safe allowlisted command inside the current project directory. Use this to install project dependencies, run tests, build a project, or execute a project script.",
+
+        parameters: {
+
+            type: Type.OBJECT,
+
+            properties: {
+
+                command: {
+                    type: Type.STRING,
+                    description:
+                        "Allowed command: node, npm, python, or python3."
+                },
+
+                args: {
+                    type: Type.ARRAY,
+
+                    items: {
+                        type: Type.STRING
+                    },
+
+                    description:
+                        "Command arguments."
+                }
+
+            },
+
+            required: [
+                "command",
+                "args"
+            ]
+        }
+    }
+
+];
+
+
+/* =========================================================
+   GEMINI SYSTEM INSTRUCTION
+========================================================= */
 
 const SYSTEM_PROMPT = `
-أنت Gemini AI Agent متقدم.
 
-أنت لست مجرد Chatbot.
+You are a real autonomous software development agent.
 
-أنت Agent يستطيع التخطيط وتنفيذ المهام باستخدام أدوات.
+You are NOT a normal chatbot.
 
-يمكنك مساعدة المستخدم في:
+Your job is to turn the user's request into a working project.
 
-- إنشاء مواقع
-- إنشاء ألعاب
-- إنشاء مشاريع برمجية
-- تصميم UI
-- كتابة HTML
-- كتابة CSS
-- كتابة JavaScript
-- كتابة Python
-- إنشاء الملفات
-- تعديل الملفات
-- قراءة الملفات
-- تشغيل مشاريع
-- فحص الأخطاء
-- إصلاح الأخطاء
+You have access to real tools:
 
-لديك أدوات:
+- create_project
+- list_files
+- read_file
+- write_file
+- delete_file
+- terminal
 
-1. create_project
-إنشاء مشروع جديد.
+WORKFLOW:
 
-2. write_file
-إنشاء أو تعديل ملف.
-
-3. read_file
-قراءة ملف.
-
-4. delete_file
-حذف ملف.
-
-5. terminal
-تشغيل أوامر Terminal المسموحة داخل المشروع.
+1. Understand the user's request.
+2. Inspect the project when needed.
+3. Plan internally.
+4. Create or modify files using tools.
+5. Run appropriate safe commands.
+6. Read errors.
+7. Fix errors.
+8. Run verification again.
+9. Continue until the task is complete or a real blocker exists.
+10. Give the user a concise final summary.
 
 IMPORTANT:
 
-- لا تدّعي أنك نفذت شيئًا إذا لم تنفذه أداة فعلًا.
-- استخدم الأدوات عند الحاجة.
-- لا تخترع نتيجة Terminal.
-- إذا ظهر خطأ، اقرأ الخطأ وحاول إصلاحه.
-- جميع الملفات يجب أن تبقى داخل مجلد المشروع.
-- لا تحاول الوصول إلى ملفات النظام.
-- لا تستخدم أوامر خطيرة.
-- لا تحاول تجاوز Sandbox.
-- لا تكشف مفاتيح API أو الأسرار.
-- إذا طلب المستخدم بناء مشروع كامل، نفذ المهمة على مراحل.
+- Never claim a file exists unless you created or read it.
+- Never claim a command succeeded unless the terminal result confirms it.
+- Never invent tool results.
+- If an error appears, investigate it.
+- Read existing files before replacing important code.
+- Keep all file paths inside the project.
+- Do not expose API keys, environment variables, secrets, or credentials.
+- Do not access the server filesystem outside the project.
+- Do not use unsafe shell tricks.
+- Do not use shell operators.
+- Do not use unrestricted shell commands.
+- Prefer simple, maintainable project structures.
+- When building a website, create complete usable files.
+- When building software, verify that the project actually runs.
+- When possible, run a build, test, syntax check, or other appropriate verification.
+- If verification fails, fix the project and verify again.
 
-أسلوبك:
+TOOL STRATEGY:
 
-افهم طلب المستخدم.
-خطط.
-استخدم الأدوات.
-تحقق من النتيجة.
-أصلح الأخطاء.
-ثم أخبر المستخدم بما تم إنجازه.
+For a new project:
+create_project
+then write_file
+then terminal
+then inspect/fix
+then verify.
+
+For modifying an existing project:
+list_files
+then read_file for relevant files
+then write_file
+then verify.
+
+Do not stop after a single tool call when more work is obviously required.
+
+The user wants an Agent that actually performs work, not a pretend demonstration.
+
 `;
 
 
-/* ========================================================
-   TOOL EXECUTION
-======================================================== */
+/* =========================================================
+   TOOL EXECUTOR
+========================================================= */
 
-async function runAgentTool(
-    tool,
+async function executeTool(
+    name,
     project,
-    input
+    args
 ) {
 
-    switch (tool) {
+    switch (name) {
 
         case "create_project":
 
@@ -305,12 +937,10 @@ async function runAgentTool(
             );
 
 
-        case "write_file":
+        case "list_files":
 
-            return await writeFileTool(
-                project,
-                input.path,
-                input.content
+            return await listFilesTool(
+                project
             );
 
 
@@ -318,7 +948,16 @@ async function runAgentTool(
 
             return await readFileTool(
                 project,
-                input.path
+                args.path
+            );
+
+
+        case "write_file":
+
+            return await writeFileTool(
+                project,
+                args.path,
+                args.content
             );
 
 
@@ -326,7 +965,7 @@ async function runAgentTool(
 
             return await deleteFileTool(
                 project,
-                input.path
+                args.path
             );
 
 
@@ -334,252 +973,602 @@ async function runAgentTool(
 
             return await terminalTool(
                 project,
-                input.command,
-                input.args || []
+                args.command,
+                args.args || []
             );
 
 
         default:
 
             throw new Error(
-                `Unknown tool: ${tool}`
+                `Unknown tool: ${name}`
             );
+
     }
+
 }
 
 
-/* ========================================================
-   AGENT
-======================================================== */
+/* =========================================================
+   AGENT LOOP
+========================================================= */
 
-app.post("/agent", async (req, res) => {
+async function runAgent(
+    project,
+    userPrompt,
+    emit
+) {
 
-    try {
+    if (!ai) {
 
-        if (!ai) {
-
-            return res.status(500).json({
-                ok: false,
-                error: "GEMINI_API_KEY is not configured"
-            });
-        }
-
-
-        const userPrompt = req.body?.prompt;
-
-        const project =
-            safeProjectName(
-                req.body?.project || "default"
-            );
-
-
-        if (
-            !userPrompt ||
-            typeof userPrompt !== "string"
-        ) {
-
-            return res.status(400).json({
-                ok: false,
-                error: "Missing prompt"
-            });
-        }
-
-
-        await createProject(
-            project
+        throw new Error(
+            "GEMINI_API_KEY is not configured."
         );
 
+    }
 
-        const response =
-            await ai.models.generateContent({
 
-                model: "gemini-3.6-flash",
+    await createProject(
+        project
+    );
 
-                contents: `
-${SYSTEM_PROMPT}
+
+    let contents = [
+
+        {
+            role: "user",
+
+            parts: [
+                {
+                    text:
+                        `${SYSTEM_PROMPT}
 
 PROJECT:
 ${project}
 
 USER REQUEST:
-${userPrompt.slice(0, 10000)}
+${userPrompt.slice(0, 12000)}`
+                }
+            ]
+        }
 
-Respond with JSON:
+    ];
 
-{
-  "message": "what you want to do",
-  "tool": null,
-  "input": {}
-}
 
-Allowed tools:
+    const config = {
 
-create_project
-write_file
-read_file
-delete_file
-terminal
+        tools: [
+            {
+                functionDeclarations:
+                    toolDeclarations
+            }
+        ]
 
-If no tool is required:
+    };
 
-{
-  "message": "your answer",
-  "tool": null,
-  "input": {}
-}
-`
+
+    const MAX_STEPS = 20;
+
+
+    for (
+        let step = 1;
+        step <= MAX_STEPS;
+        step++
+    ) {
+
+        emit({
+            type: "thinking",
+            step,
+            message:
+                "Gemini is planning the next step."
+        });
+
+
+        const response =
+            await ai.models.generateContent({
+
+                model: MODEL,
+
+                contents,
+
+                config
+
             });
 
 
-        let text =
-            response.text?.trim() || "";
+        const functionCalls =
+            response.functionCalls || [];
 
 
-        text = text
-            .replace(/^```json\s*/i, "")
-            .replace(/^```\s*/i, "")
-            .replace(/\s*```$/i, "")
-            .trim();
+        /*
+           No tool call = final response.
+        */
+
+        if (
+            functionCalls.length === 0
+        ) {
+
+            const finalText =
+                response.text?.trim() ||
+                "Task completed.";
 
 
-        let action;
+            emit({
+                type: "final",
+                message:
+                    finalText
+            });
+
+
+            return {
+                ok: true,
+                message:
+                    finalText,
+                steps:
+                    step
+            };
+
+        }
+
+
+        /*
+           Preserve Gemini's model response
+           in the conversation.
+        */
+
+        contents.push(
+            response.candidates[0].content
+        );
+
+
+        for (
+            const call of functionCalls
+        ) {
+
+            const toolName =
+                call.name;
+
+
+            const toolArgs =
+                call.args || {};
+
+
+            emit({
+                type: "tool_start",
+
+                step,
+
+                tool:
+                    toolName,
+
+                args:
+                    toolArgs,
+
+                message:
+                    toolName
+            });
+
+
+            let result;
+
+
+            try {
+
+                result =
+                    await executeTool(
+                        toolName,
+                        project,
+                        toolArgs
+                    );
+
+
+                emit({
+                    type: "tool_result",
+
+                    step,
+
+                    tool:
+                        toolName,
+
+                    result
+                });
+
+            } catch (error) {
+
+                result =
+                    jsonResult({
+                        ok: false,
+                        error:
+                            error.message
+                    });
+
+
+                emit({
+                    type: "tool_error",
+
+                    step,
+
+                    tool:
+                        toolName,
+
+                    error:
+                        error.message
+                });
+
+            }
+
+
+            /*
+               Return the real tool result
+               back to Gemini.
+            */
+
+            contents.push({
+
+                role: "user",
+
+                parts: [
+
+                    {
+
+                        functionResponse: {
+
+                            name:
+                                toolName,
+
+                            id:
+                                call.id,
+
+                            response:
+                                result
+
+                        }
+
+                    }
+
+                ]
+
+            });
+
+        }
+
+    }
+
+
+    throw new Error(
+        "Agent reached the maximum number of steps."
+    );
+
+}
+
+
+/* =========================================================
+   STREAMING AGENT ENDPOINT
+========================================================= */
+
+app.post(
+    "/agent",
+    async (req, res) => {
+
+        /*
+           NDJSON streaming.
+
+           Each line is one JSON event.
+        */
+
+        res.status(200);
+
+        res.setHeader(
+            "Content-Type",
+            "application/x-ndjson; charset=utf-8"
+        );
+
+        res.setHeader(
+            "Cache-Control",
+            "no-cache, no-transform"
+        );
+
+        res.setHeader(
+            "Connection",
+            "keep-alive"
+        );
+
+
+        const project =
+            safeProjectName(
+                req.body?.project ||
+                "default"
+            );
+
+
+        const prompt =
+            req.body?.prompt;
+
+
+        if (
+            !prompt ||
+            typeof prompt !== "string"
+        ) {
+
+            res.write(
+                JSON.stringify({
+                    type: "error",
+                    error:
+                        "Missing prompt"
+                }) + "\n"
+            );
+
+            return res.end();
+
+        }
+
+
+        function emit(event) {
+
+            try {
+
+                res.write(
+                    JSON.stringify(event) +
+                    "\n"
+                );
+
+            } catch {
+                /* client disconnected */
+            }
+
+        }
+
+
+        emit({
+            type: "start",
+            project,
+            model: MODEL
+        });
 
 
         try {
 
-            action = JSON.parse(text);
-
-        } catch {
-
-            return res.status(502).json({
-
-                ok: false,
-
-                error:
-                    "Gemini returned invalid JSON",
-
-                raw: text
-
-            });
-        }
-
-
-        if (
-            action.tool &&
-            typeof action.tool === "string"
-        ) {
-
             const result =
-                await runAgentTool(
-                    action.tool,
+                await runAgent(
                     project,
-                    action.input || {}
+                    prompt,
+                    emit
                 );
 
 
-            return res.json({
+            emit({
+                type: "done",
+                ...result
+            });
 
-                ok: true,
+        } catch (error) {
 
-                project,
+            console.error(
+                "Agent Error:",
+                error
+            );
 
-                executed: true,
 
-                tool: action.tool,
+            emit({
+                type: "error",
 
-                message:
-                    action.message ||
-                    "Tool executed.",
-
-                result
-
+                error:
+                    error.message ||
+                    "Agent request failed"
             });
 
         }
 
 
-        return res.json({
+        res.end();
+
+    }
+);
+
+
+/* =========================================================
+   FILE API
+========================================================= */
+
+app.get(
+    "/files",
+    async (req, res) => {
+
+        try {
+
+            const project =
+                safeProjectName(
+                    req.query.project ||
+                    "default"
+                );
+
+
+            const root =
+                getProjectPath(
+                    project
+                );
+
+
+            await fs.mkdir(
+                root,
+                {
+                    recursive: true
+                }
+            );
+
+
+            const files =
+                await listFilesRecursive(
+                    root
+                );
+
+
+            res.json({
+                ok: true,
+                project,
+                files
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+                ok: false,
+                error:
+                    error.message
+            });
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   SINGLE FILE API
+========================================================= */
+
+app.get(
+    "/file",
+    async (req, res) => {
+
+        try {
+
+            const project =
+                safeProjectName(
+                    req.query.project ||
+                    "default"
+                );
+
+
+            const filePath =
+                req.query.path;
+
+
+            if (!filePath) {
+
+                return res.status(400).json({
+                    ok: false,
+                    error:
+                        "Missing path"
+                });
+
+            }
+
+
+            const content =
+                await fs.readFile(
+                    safePath(
+                        project,
+                        filePath
+                    ),
+                    "utf8"
+                );
+
+
+            res.json({
+                ok: true,
+                project,
+                path: filePath,
+                content
+            });
+
+        } catch (error) {
+
+            res.status(404).json({
+                ok: false,
+                error:
+                    error.message
+            });
+
+        }
+
+    }
+);
+
+
+/* =========================================================
+   HEALTH
+========================================================= */
+
+app.get(
+    "/health",
+    (req, res) => {
+
+        res.json({
 
             ok: true,
 
-            project,
+            service:
+                "Gemini AI Agent",
 
-            executed: false,
+            version:
+                "2.0.0",
 
-            message:
-                action.message ||
-                "تم."
+            status:
+                "online",
+
+            geminiConfigured:
+                Boolean(API_KEY),
+
+            model:
+                MODEL,
+
+            agent:
+                true,
+
+            agentLoop:
+                true,
+
+            terminal:
+                true,
+
+            files:
+                true
 
         });
 
-    } catch (error) {
-
-        console.error(
-            "Agent Error:",
-            error
-        );
-
-        return res.status(500).json({
-
-            ok: false,
-
-            error:
-                error.message ||
-                "Agent request failed"
-
-        });
     }
-});
+);
 
 
-/* ========================================================
-   TEST ROUTES
-======================================================== */
+/* =========================================================
+   ROOT
+========================================================= */
 
-app.get("/", (req, res) => {
+app.get(
+    "/",
+    (req, res) => {
 
-    res.json({
+        res.json({
 
-        ok: true,
+            ok: true,
 
-        service:
-            "Gemini AI Agent",
+            service:
+                "Gemini AI Agent",
 
-        version:
-            "1.0.0",
+            version:
+                "2.0.0",
 
-        status:
-            "online"
+            status:
+                "online",
 
-    });
-});
+            endpoints: [
+                "/",
+                "/health",
+                "/agent",
+                "/files",
+                "/file"
+            ]
 
+        });
 
-app.get("/health", (req, res) => {
-
-    res.json({
-
-        ok: true,
-
-        geminiConfigured:
-            Boolean(apiKey),
-
-        agent:
-            true,
-
-        terminal:
-            true,
-
-        files:
-            true
-
-    });
-});
+    }
+);
 
 
-/* ========================================================
+/* =========================================================
    START
-======================================================== */
+========================================================= */
 
 app.listen(
     PORT,
@@ -587,7 +1576,7 @@ app.listen(
     () => {
 
         console.log(
-            `Gemini AI Agent running on port ${PORT}`
+            `Gemini AI Agent v2 running on port ${PORT}`
         );
 
     }
