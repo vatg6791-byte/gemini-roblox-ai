@@ -3,12 +3,9 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport"
-      content="width=device-width,
-               initial-scale=1,
-               maximum-scale=1,
-               viewport-fit=cover">
+      content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 
-<title>AI Agent</title>
+<title>Gemini Agent</title>
 
 <style>
 *{
@@ -26,9 +23,7 @@ html,body{
     font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
 }
 
-button,
-input,
-textarea{
+button,input,textarea{
     font:inherit;
 }
 
@@ -38,10 +33,6 @@ button{
     cursor:pointer;
 }
 
-/* =====================================================
-   APP
-===================================================== */
-
 .app{
     position:relative;
     width:100%;
@@ -50,7 +41,7 @@ button{
     background:
         radial-gradient(
             circle at 50% -10%,
-            rgba(110,60,255,.13),
+            rgba(110,60,255,.14),
             transparent 38%
         ),
         #07070b;
@@ -61,14 +52,12 @@ button{
 ===================================================== */
 
 .topbar{
-    position:absolute;
+    position:fixed;
     top:0;
     left:0;
     right:0;
-    height:62px;
 
-    display:flex;
-    align-items:center;
+    height:calc(62px + env(safe-area-inset-top));
 
     padding:
         env(safe-area-inset-top)
@@ -76,13 +65,16 @@ button{
         0
         14px;
 
-    height:calc(62px + env(safe-area-inset-top));
+    display:flex;
+    align-items:center;
 
-    border-bottom:1px solid rgba(255,255,255,.07);
+    background:rgba(7,7,11,.80);
 
-    background:rgba(7,7,11,.78);
-    backdrop-filter:blur(22px);
-    -webkit-backdrop-filter:blur(22px);
+    border-bottom:
+        1px solid rgba(255,255,255,.07);
+
+    backdrop-filter:blur(24px);
+    -webkit-backdrop-filter:blur(24px);
 
     z-index:100;
 }
@@ -91,22 +83,24 @@ button{
     width:42px;
     height:42px;
 
+    border-radius:13px;
+
     display:flex;
     align-items:center;
     justify-content:center;
 
-    border-radius:13px;
-
     background:rgba(255,255,255,.055);
-    border:1px solid rgba(255,255,255,.08);
+
+    border:
+        1px solid rgba(255,255,255,.08);
 
     font-size:21px;
 
-    transition:.18s;
+    transition:.16s;
 }
 
 .menu-btn:active{
-    transform:scale(.92);
+    transform:scale(.91);
     background:rgba(130,80,255,.18);
 }
 
@@ -114,12 +108,13 @@ button{
     margin-left:12px;
 
     font-size:16px;
-    font-weight:800;
-    letter-spacing:.4px;
+    font-weight:850;
+
+    letter-spacing:.3px;
 }
 
 .logo span{
-    color:#9b6cff;
+    color:#9a68ff;
 }
 
 .status{
@@ -127,16 +122,20 @@ button{
 
     display:flex;
     align-items:center;
+
     gap:6px;
 
-    font-size:11px;
-    color:#8d8d98;
+    color:#777783;
+
+    font-size:10px;
 }
 
 .status-dot{
     width:7px;
     height:7px;
+
     border-radius:50%;
+
     background:#555;
 }
 
@@ -153,6 +152,7 @@ button{
     bottom:0;
 
     overflow:auto;
+
     -webkit-overflow-scrolling:touch;
 }
 
@@ -162,7 +162,7 @@ button{
     width:100%;
     min-height:100%;
 
-    padding:22px 16px 30px;
+    padding:22px 14px 30px;
 }
 
 .page.active{
@@ -174,67 +174,73 @@ button{
 ===================================================== */
 
 .home{
+    min-height:
+        calc(
+            100vh -
+            62px -
+            env(safe-area-inset-top)
+        );
+
     display:flex;
     flex-direction:column;
+
     align-items:center;
     justify-content:center;
 
-    min-height:calc(
-        100vh -
-        62px -
-        env(safe-area-inset-top)
-    );
+    text-align:center;
 
-    padding-bottom:35px;
+    padding-bottom:30px;
 }
 
 .home-orb{
     width:82px;
     height:82px;
 
-    border-radius:27px;
-
     display:flex;
     align-items:center;
     justify-content:center;
 
+    margin-bottom:21px;
+
+    border-radius:27px;
+
     background:
         linear-gradient(
             135deg,
-            rgba(145,90,255,.2),
-            rgba(55,130,255,.08)
+            rgba(145,90,255,.20),
+            rgba(55,130,255,.07)
         );
 
-    border:1px solid rgba(150,100,255,.25);
+    border:
+        1px solid rgba(150,100,255,.25);
 
     box-shadow:
-        0 0 45px rgba(120,70,255,.12),
+        0 0 50px rgba(120,70,255,.13),
         inset 0 0 30px rgba(255,255,255,.025);
 
     font-size:34px;
-
-    margin-bottom:22px;
 }
 
 .home h1{
     margin:0;
 
     font-size:27px;
+
     font-weight:850;
+
     letter-spacing:-.7px;
 }
 
 .home p{
     margin:10px 0 0;
 
-    max-width:310px;
-
-    text-align:center;
-
-    line-height:1.5;
+    max-width:320px;
 
     color:#858590;
+
     font-size:13px;
+
+    line-height:1.55;
 }
 
 /* =====================================================
@@ -255,19 +261,20 @@ button{
 
     min-height:58px;
 
-    border-radius:19px;
+    padding:8px;
 
     display:flex;
     align-items:flex-end;
 
-    padding:8px;
+    border-radius:19px;
 
-    background:rgba(17,17,24,.92);
+    background:rgba(17,17,24,.94);
 
-    border:1px solid rgba(255,255,255,.09);
+    border:
+        1px solid rgba(255,255,255,.09);
 
     box-shadow:
-        0 15px 45px rgba(0,0,0,.42),
+        0 15px 45px rgba(0,0,0,.45),
         inset 0 1px 0 rgba(255,255,255,.025);
 
     backdrop-filter:blur(25px);
@@ -289,17 +296,19 @@ button{
 
     border-radius:13px;
 
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
     background:rgba(255,255,255,.055);
 
     font-size:22px;
 
-    display:flex;
-    align-items:center;
-    justify-content:center;
+    transition:.15s;
 }
 
 .plus-btn:active{
-    transform:scale(.91);
+    transform:scale(.90);
 }
 
 .prompt{
@@ -307,10 +316,20 @@ button{
 
     min-width:0;
 
-    margin:0 7px;
+    min-height:40px;
+    max-height:110px;
+
+    margin:
+        0
+        7px;
+
+    padding:
+        10px
+        3px;
 
     border:0;
     outline:0;
+
     resize:none;
 
     background:transparent;
@@ -320,11 +339,6 @@ button{
     font-size:14px;
 
     line-height:20px;
-
-    min-height:40px;
-    max-height:110px;
-
-    padding:10px 3px;
 }
 
 .prompt::placeholder{
@@ -337,38 +351,41 @@ button{
 
     border-radius:13px;
 
-    background:
-        linear-gradient(
-            135deg,
-            #8c5cff,
-            #5b5cff
-        );
-
     display:flex;
     align-items:center;
     justify-content:center;
 
-    font-size:17px;
+    background:
+        linear-gradient(
+            135deg,
+            #8d5cff,
+            #5b5cff
+        );
 
     box-shadow:
-        0 5px 20px rgba(110,80,255,.28);
+        0 5px 20px rgba(110,80,255,.30);
+
+    font-size:18px;
+
+    transition:.15s;
 }
 
 .send-btn:active{
-    transform:scale(.91);
+    transform:scale(.90);
 }
 
 /* =====================================================
-   SIDEBAR OVERLAY
+   OVERLAY
 ===================================================== */
 
 .overlay{
     position:fixed;
     inset:0;
 
-    background:rgba(0,0,0,.55);
+    background:rgba(0,0,0,.58);
 
     opacity:0;
+
     pointer-events:none;
 
     transition:.22s;
@@ -406,7 +423,8 @@ button{
             #09090d
         );
 
-    border-right:1px solid rgba(255,255,255,.08);
+    border-right:
+        1px solid rgba(255,255,255,.08);
 
     transform:translateX(-105%);
 
@@ -415,19 +433,15 @@ button{
 
     z-index:210;
 
+    overflow:auto;
+
     box-shadow:
         20px 0 60px rgba(0,0,0,.35);
-
-    overflow:auto;
 }
 
 .sidebar.open{
     transform:translateX(0);
 }
-
-/* =====================================================
-   SIDEBAR HEADER
-===================================================== */
 
 .sidebar-head{
     display:flex;
@@ -450,12 +464,8 @@ button{
 
     background:rgba(255,255,255,.055);
 
-    font-size:18px;
+    font-size:19px;
 }
-
-/* =====================================================
-   SIDEBAR SECTIONS
-===================================================== */
 
 .side-section{
     margin-top:20px;
@@ -463,26 +473,28 @@ button{
 
 .side-label{
     padding:0 10px;
+
     margin-bottom:7px;
 
     color:#62626d;
 
     font-size:10px;
-    font-weight:700;
+    font-weight:750;
+
+    letter-spacing:1px;
 
     text-transform:uppercase;
-    letter-spacing:1px;
 }
 
 .nav-btn{
     width:100%;
 
+    min-height:47px;
+
     display:flex;
     align-items:center;
 
     gap:12px;
-
-    min-height:47px;
 
     padding:0 12px;
 
@@ -496,15 +508,11 @@ button{
 
     text-align:left;
 
-    transition:.16s;
+    transition:.15s;
 }
 
 .nav-btn:active{
     transform:scale(.98);
-}
-
-.nav-btn:hover{
-    background:rgba(255,255,255,.045);
 }
 
 .nav-btn.active{
@@ -514,10 +522,11 @@ button{
         linear-gradient(
             90deg,
             rgba(130,80,255,.15),
-            rgba(130,80,255,.04)
+            rgba(130,80,255,.03)
         );
 
-    border:1px solid rgba(140,90,255,.15);
+    border:
+        1px solid rgba(140,90,255,.15);
 }
 
 .nav-icon{
@@ -533,12 +542,8 @@ button{
     font-weight:650;
 }
 
-/* =====================================================
-   PROJECT
-===================================================== */
-
 .project-box{
-    margin-top:10px;
+    margin-top:20px;
 
     padding:12px;
 
@@ -546,7 +551,8 @@ button{
 
     background:rgba(255,255,255,.035);
 
-    border:1px solid rgba(255,255,255,.07);
+    border:
+        1px solid rgba(255,255,255,.07);
 }
 
 .project-name{
@@ -563,14 +569,14 @@ button{
 }
 
 /* =====================================================
-   GENERIC PAGE
+   PAGE HEADER
 ===================================================== */
 
 .page-title{
+    margin:3px 0 7px;
+
     font-size:23px;
     font-weight:850;
-
-    margin:3px 0 7px;
 }
 
 .page-subtitle{
@@ -582,7 +588,7 @@ button{
 }
 
 /* =====================================================
-   EMPTY
+   EMPTY STATE
 ===================================================== */
 
 .empty{
@@ -601,6 +607,8 @@ button{
     width:64px;
     height:64px;
 
+    margin-bottom:16px;
+
     display:flex;
     align-items:center;
     justify-content:center;
@@ -609,11 +617,10 @@ button{
 
     background:rgba(255,255,255,.035);
 
-    border:1px solid rgba(255,255,255,.07);
+    border:
+        1px solid rgba(255,255,255,.07);
 
     font-size:25px;
-
-    margin-bottom:16px;
 }
 
 .empty-title{
@@ -629,111 +636,17 @@ button{
     color:#666672;
 
     font-size:12px;
+
     line-height:1.5;
-}
-
-/* =====================================================
-   TERMINAL
-===================================================== */
-
-.terminal-box{
-    position:relative;
-
-    height:calc(
-        100vh -
-        62px -
-        env(safe-area-inset-top) -
-        44px
-    );
-
-    min-height:400px;
-
-    background:#050507;
-
-    border:1px solid rgba(255,255,255,.08);
-
-    border-radius:17px;
-
-    overflow:hidden;
-}
-
-.terminal-head{
-    height:46px;
-
-    display:flex;
-    align-items:center;
-
-    padding:0 12px;
-
-    border-bottom:1px solid rgba(255,255,255,.07);
-
-    background:#0d0d12;
-}
-
-.terminal-title{
-    font-size:12px;
-    font-weight:750;
-}
-
-.terminal-actions{
-    margin-left:auto;
-
-    display:flex;
-    gap:6px;
-}
-
-.term-btn{
-    width:31px;
-    height:31px;
-
-    border-radius:9px;
-
-    background:rgba(255,255,255,.05);
-
-    color:#9999a4;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-}
-
-.term-btn:active{
-    transform:scale(.9);
-}
-
-.terminal-body{
-    height:calc(100% - 46px);
-
-    overflow:auto;
-
-    padding:14px;
-
-    font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        monospace;
-
-    font-size:11px;
-
-    color:#777783;
-
-    white-space:pre-wrap;
-}
-
-.terminal-empty{
-    color:#41414a;
 }
 
 /* =====================================================
    FILES
 ===================================================== */
 
-.files-list{
-    width:100%;
-}
-
 .file-row{
+    width:100%;
+
     min-height:50px;
 
     display:flex;
@@ -741,17 +654,29 @@ button{
 
     padding:0 13px;
 
-    margin-bottom:5px;
+    margin-bottom:6px;
 
     border-radius:13px;
 
     background:rgba(255,255,255,.025);
 
-    border:1px solid rgba(255,255,255,.05);
+    border:
+        1px solid rgba(255,255,255,.05);
 
-    color:#8a8a95;
+    color:#a0a0aa;
 
     font-size:12px;
+
+    cursor:pointer;
+
+    transition:.15s;
+}
+
+.file-row:active{
+    transform:scale(.985);
+
+    background:
+        rgba(130,80,255,.08);
 }
 
 /* =====================================================
@@ -761,17 +686,19 @@ button{
 .activity-list{
     display:flex;
     flex-direction:column;
+
     gap:8px;
 }
 
 .activity{
-    border:1px solid rgba(255,255,255,.07);
-
-    background:rgba(255,255,255,.025);
+    overflow:hidden;
 
     border-radius:14px;
 
-    overflow:hidden;
+    background:rgba(255,255,255,.025);
+
+    border:
+        1px solid rgba(255,255,255,.07);
 }
 
 .activity-head{
@@ -785,6 +712,8 @@ button{
     color:#85858f;
 
     font-size:12px;
+
+    cursor:pointer;
 }
 
 .activity-arrow{
@@ -800,17 +729,125 @@ button{
 .activity-body{
     display:none;
 
-    padding:0 13px 13px;
+    padding:
+        0
+        13px
+        13px;
 
-    color:#555560;
+    color:#60606b;
 
     font-size:11px;
 
     line-height:1.6;
+
+    white-space:pre-wrap;
+
+    overflow:auto;
 }
 
 .activity.open .activity-body{
     display:block;
+}
+
+/* =====================================================
+   TERMINAL
+===================================================== */
+
+.terminal-box{
+    position:relative;
+
+    height:
+        calc(
+            100vh -
+            62px -
+            env(safe-area-inset-top) -
+            44px
+        );
+
+    min-height:400px;
+
+    overflow:hidden;
+
+    border-radius:17px;
+
+    background:#050507;
+
+    border:
+        1px solid rgba(255,255,255,.08);
+}
+
+.terminal-head{
+    height:46px;
+
+    display:flex;
+    align-items:center;
+
+    padding:0 12px;
+
+    background:#0d0d12;
+
+    border-bottom:
+        1px solid rgba(255,255,255,.07);
+}
+
+.terminal-title{
+    font-size:12px;
+    font-weight:750;
+}
+
+.terminal-actions{
+    margin-left:auto;
+
+    display:flex;
+
+    gap:6px;
+}
+
+.term-btn{
+    width:31px;
+    height:31px;
+
+    display:flex;
+    align-items:center;
+    justify-content:center;
+
+    border-radius:9px;
+
+    background:rgba(255,255,255,.05);
+
+    color:#9999a4;
+
+    font-size:15px;
+}
+
+.term-btn:active{
+    transform:scale(.90);
+}
+
+.terminal-body{
+    height:calc(100% - 46px);
+
+    overflow:auto;
+
+    padding:14px;
+
+    color:#777783;
+
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+
+    font-size:11px;
+
+    line-height:1.6;
+
+    white-space:pre-wrap;
+}
+
+.terminal-empty{
+    color:#41414a;
 }
 
 /* =====================================================
@@ -820,22 +857,24 @@ button{
 .preview-frame{
     width:100%;
 
-    height:calc(
-        100vh -
-        62px -
-        env(safe-area-inset-top) -
-        45px
-    );
+    height:
+        calc(
+            100vh -
+            62px -
+            env(safe-area-inset-top) -
+            45px
+        );
 
     min-height:400px;
 
-    border-radius:17px;
+    overflow:hidden;
 
-    border:1px solid rgba(255,255,255,.08);
+    border-radius:17px;
 
     background:#050507;
 
-    overflow:hidden;
+    border:
+        1px solid rgba(255,255,255,.08);
 }
 
 /* =====================================================
@@ -851,7 +890,8 @@ button{
 
     background:rgba(255,255,255,.025);
 
-    border:1px solid rgba(255,255,255,.06);
+    border:
+        1px solid rgba(255,255,255,.06);
 }
 
 .setting-title{
@@ -888,19 +928,24 @@ button{
 
     border-radius:17px;
 
-    background:rgba(20,20,27,.96);
+    background:rgba(20,20,27,.97);
 
-    border:1px solid rgba(255,255,255,.09);
+    border:
+        1px solid rgba(255,255,255,.09);
 
     backdrop-filter:blur(25px);
     -webkit-backdrop-filter:blur(25px);
 
-    box-shadow:0 15px 45px rgba(0,0,0,.4);
+    box-shadow:
+        0 15px 45px rgba(0,0,0,.4);
 
     opacity:0;
+
     pointer-events:none;
 
-    transform:translateY(8px) scale(.97);
+    transform:
+        translateY(8px)
+        scale(.97);
 
     transition:.18s;
 
@@ -909,14 +954,16 @@ button{
 
 .attach-menu.open{
     opacity:1;
+
     pointer-events:auto;
 
-    transform:translateY(0) scale(1);
+    transform:
+        translateY(0)
+        scale(1);
 }
 
 .attach-item{
     width:100%;
-
     height:43px;
 
     display:flex;
@@ -942,23 +989,6 @@ button{
 }
 
 /* =====================================================
-   MOBILE
-===================================================== */
-
-@media(max-width:600px){
-
-    .page{
-        padding-left:13px;
-        padding-right:13px;
-    }
-
-    .home h1{
-        font-size:25px;
-    }
-
-}
-
-/* =====================================================
    DESKTOP
 ===================================================== */
 
@@ -967,6 +997,7 @@ button{
     .page{
         max-width:1000px;
         margin:auto;
+
         padding-left:30px;
         padding-right:30px;
     }
@@ -975,11 +1006,13 @@ button{
         left:50%;
         right:auto;
 
-        width:min(700px,calc(100% - 30px));
+        width:min(
+            700px,
+            calc(100% - 30px)
+        );
 
         transform:translateX(-50%);
     }
-
 }
 </style>
 </head>
@@ -988,552 +1021,583 @@ button{
 
 <div class="app">
 
-    <!-- =================================================
-         TOP BAR
-    ================================================== -->
+<!-- =====================================================
+     TOP BAR
+===================================================== -->
 
-    <header class="topbar">
+<header class="topbar">
 
-        <button
-            class="menu-btn"
-            id="menuBtn"
-            type="button"
-            aria-label="Menu">
-            ☰
-        </button>
+    <button
+        class="menu-btn"
+        id="menuBtn"
+        type="button">
 
-        <div class="logo">
-            Gemini <span>Agent</span>
-        </div>
+        ☰
 
-        <div class="status">
-            <span class="status-dot"></span>
+    </button>
+
+    <div class="logo">
+        Gemini <span>Agent</span>
+    </div>
+
+    <div class="status">
+
+        <span
+            class="status-dot"
+            id="statusDot">
+        </span>
+
+        <span id="statusText">
             Ready
+        </span>
+
+    </div>
+
+</header>
+
+
+<!-- =====================================================
+     WORKSPACE
+===================================================== -->
+
+<main
+    class="workspace"
+    id="workspace">
+
+
+<!-- HOME -->
+
+<section
+    class="page active"
+    id="page-home">
+
+    <div class="home">
+
+        <div class="home-orb">
+            ✦
         </div>
 
-    </header>
+        <h1>
+            What can I build for you?
+        </h1>
+
+        <p>
+            Describe your idea and the Agent
+            can plan, create, edit, run and verify
+            your project.
+        </p>
+
+    </div>
+
+</section>
 
 
-    <!-- =================================================
-         WORKSPACE
-    ================================================== -->
+<!-- FILES -->
 
-    <main class="workspace" id="workspace">
+<section
+    class="page"
+    id="page-files">
 
-        <!-- HOME -->
+    <div class="page-title">
+        Files
+    </div>
 
-        <section
-            class="page active"
-            id="page-home">
+    <div class="page-subtitle">
+        Project files
+    </div>
 
-            <div class="home">
+    <div
+        id="filesList">
 
-                <div class="home-orb">
-                    ✦
-                </div>
+        <div class="empty">
 
-                <h1>
-                    What can I build for you?
-                </h1>
-
-                <p>
-                    Describe your idea and the Agent
-                    can plan, create, edit, run and verify
-                    your project.
-                </p>
-
+            <div class="empty-icon">
+                ⌁
             </div>
 
-        </section>
-
-
-        <!-- FILES -->
-
-        <section
-            class="page"
-            id="page-files">
-
-            <div class="page-title">
-                Files
+            <div class="empty-title">
+                No files yet
             </div>
 
-            <div class="page-subtitle">
-                Project files
+            <div class="empty-text">
+                Files created by the Agent
+                will appear here.
             </div>
 
-            <div
-                class="files-list"
-                id="filesList">
+        </div>
 
-                <div class="empty">
+    </div>
 
-                    <div class="empty-icon">
-                        ⌁
-                    </div>
+</section>
 
-                    <div class="empty-title">
-                        No files yet
-                    </div>
 
-                    <div class="empty-text">
-                        Files created by the Agent
-                        will appear here.
-                    </div>
+<!-- ACTIVITY -->
 
-                </div>
+<section
+    class="page"
+    id="page-activity">
 
+    <div class="page-title">
+        Agent Activity
+    </div>
+
+    <div class="page-subtitle">
+        Tool execution and project activity
+    </div>
+
+    <div
+        class="activity-list"
+        id="activityList">
+
+        <div class="empty">
+
+            <div class="empty-icon">
+                ◌
             </div>
 
-        </section>
-
-
-        <!-- ACTIVITY -->
-
-        <section
-            class="page"
-            id="page-activity">
-
-            <div class="page-title">
-                Agent Activity
+            <div class="empty-title">
+                No activity
             </div>
 
-            <div class="page-subtitle">
-                Tool execution and project activity
+            <div class="empty-text">
+                Agent actions will appear
+                here when a task starts.
             </div>
 
-            <div
-                class="activity-list"
-                id="activityList">
+        </div>
 
-                <div class="empty">
+    </div>
 
-                    <div class="empty-icon">
-                        ◌
-                    </div>
-
-                    <div class="empty-title">
-                        No activity
-                    </div>
-
-                    <div class="empty-text">
-                        Agent actions will appear
-                        here when a task starts.
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
+</section>
 
 
-        <!-- TERMINAL -->
+<!-- TERMINAL -->
 
-        <section
-            class="page"
-            id="page-terminal">
+<section
+    class="page"
+    id="page-terminal">
 
-            <div class="page-title">
+    <div class="page-title">
+        Terminal
+    </div>
+
+    <div class="page-subtitle">
+        Agent terminal
+    </div>
+
+    <div class="terminal-box">
+
+        <div class="terminal-head">
+
+            <div class="terminal-title">
                 Terminal
             </div>
 
-            <div class="page-subtitle">
-                Agent terminal
-            </div>
+            <div class="terminal-actions">
 
-            <div class="terminal-box">
+                <button
+                    class="term-btn"
+                    id="terminalMinBtn"
+                    type="button">
 
-                <div class="terminal-head">
+                    −
 
-                    <div class="terminal-title">
-                        Terminal
-                    </div>
+                </button>
 
-                    <div class="terminal-actions">
+                <button
+                    class="term-btn"
+                    id="terminalClearBtn"
+                    type="button">
 
-                        <button
-                            class="term-btn"
-                            id="terminalMinBtn"
-                            type="button">
-                            −
-                        </button>
+                    ×
 
-                        <button
-                            class="term-btn"
-                            id="terminalClearBtn"
-                            type="button">
-                            ×
-                        </button>
-
-                    </div>
-
-                </div>
-
-                <div
-                    class="terminal-body"
-                    id="terminalBody">
-
-                    <span class="terminal-empty">
-                        Terminal is empty.
-                    </span>
-
-                </div>
+                </button>
 
             </div>
 
-        </section>
+        </div>
+
+        <div
+            class="terminal-body"
+            id="terminalBody">
+
+            <span class="terminal-empty">
+                Terminal is empty.
+            </span>
+
+        </div>
+
+    </div>
+
+</section>
 
 
-        <!-- PREVIEW -->
+<!-- PREVIEW -->
 
-        <section
-            class="page"
-            id="page-preview">
+<section
+    class="page"
+    id="page-preview">
 
-            <div class="page-title">
+    <div class="page-title">
+        Preview
+    </div>
+
+    <div class="page-subtitle">
+        Project preview
+    </div>
+
+    <div
+        class="preview-frame"
+        id="previewFrame">
+
+        <div class="empty">
+
+            <div class="empty-icon">
+                ◇
+            </div>
+
+            <div class="empty-title">
+                No preview
+            </div>
+
+            <div class="empty-text">
+                A project preview will appear
+                here after the Agent creates one.
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- SETTINGS -->
+
+<section
+    class="page"
+    id="page-settings">
+
+    <div class="page-title">
+        Settings
+    </div>
+
+    <div class="page-subtitle">
+        Agent configuration
+    </div>
+
+    <div class="setting">
+
+        <div class="setting-title">
+            Project
+        </div>
+
+        <div class="setting-description">
+            Current project workspace.
+        </div>
+
+    </div>
+
+    <div class="setting">
+
+        <div class="setting-title">
+            Agent
+        </div>
+
+        <div class="setting-description">
+            Gemini-powered autonomous agent.
+        </div>
+
+    </div>
+
+</section>
+
+</main>
+
+
+<!-- =====================================================
+     HOME COMPOSER
+===================================================== -->
+
+<div
+    class="composer"
+    id="composer">
+
+    <div class="composer-left">
+
+        <button
+            class="plus-btn"
+            id="plusBtn"
+            type="button">
+
+            +
+
+        </button>
+
+    </div>
+
+    <textarea
+        class="prompt"
+        id="prompt"
+        rows="1"
+        placeholder="Tell the Agent what to build..."></textarea>
+
+    <button
+        class="send-btn"
+        id="sendBtn"
+        type="button">
+
+        ↑
+
+    </button>
+
+</div>
+
+
+<!-- =====================================================
+     ATTACHMENT MENU
+===================================================== -->
+
+<div
+    class="attach-menu"
+    id="attachMenu">
+
+    <button
+        class="attach-item"
+        type="button">
+
+        📎 &nbsp; File
+
+    </button>
+
+    <button
+        class="attach-item"
+        type="button">
+
+        🖼️ &nbsp; Image
+
+    </button>
+
+    <button
+        class="attach-item"
+        type="button">
+
+        🎥 &nbsp; Video
+
+    </button>
+
+    <button
+        class="attach-item"
+        type="button">
+
+        </> &nbsp; Code
+
+    </button>
+
+</div>
+
+
+<!-- =====================================================
+     OVERLAY
+===================================================== -->
+
+<div
+    class="overlay"
+    id="overlay">
+</div>
+
+
+<!-- =====================================================
+     SIDEBAR
+===================================================== -->
+
+<aside
+    class="sidebar"
+    id="sidebar">
+
+    <div class="sidebar-head">
+
+        <div class="sidebar-title">
+            AI Agent
+        </div>
+
+        <button
+            class="close-sidebar"
+            id="closeSidebar"
+            type="button">
+
+            ×
+
+        </button>
+
+    </div>
+
+
+    <!-- HOME -->
+
+    <div class="side-section">
+
+        <div class="side-label">
+            Workspace
+        </div>
+
+        <button
+            class="nav-btn active"
+            data-page="home"
+            type="button">
+
+            <span class="nav-icon">
+                ⌂
+            </span>
+
+            <span class="nav-text">
+                Home
+            </span>
+
+        </button>
+
+    </div>
+
+
+    <!-- PROJECT -->
+
+    <div class="side-section">
+
+        <div class="side-label">
+            Project
+        </div>
+
+        <button
+            class="nav-btn"
+            data-page="files"
+            type="button">
+
+            <span class="nav-icon">
+                ▱
+            </span>
+
+            <span class="nav-text">
+                Files
+            </span>
+
+        </button>
+
+
+        <button
+            class="nav-btn"
+            data-page="preview"
+            type="button">
+
+            <span class="nav-icon">
+                ◇
+            </span>
+
+            <span class="nav-text">
                 Preview
-            </div>
+            </span>
 
-            <div class="page-subtitle">
-                Project preview
-            </div>
-
-            <div
-                class="preview-frame"
-                id="previewFrame">
-
-                <div class="empty">
-
-                    <div class="empty-icon">
-                        ◇
-                    </div>
-
-                    <div class="empty-title">
-                        No preview
-                    </div>
-
-                    <div class="empty-text">
-                        A project preview will appear
-                        here after the Agent creates one.
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
+        </button>
 
 
-        <!-- SETTINGS -->
+        <button
+            class="nav-btn"
+            data-page="activity"
+            type="button">
 
-        <section
-            class="page"
-            id="page-settings">
+            <span class="nav-icon">
+                ◌
+            </span>
 
-            <div class="page-title">
+            <span class="nav-text">
+                Agent Activity
+            </span>
+
+        </button>
+
+    </div>
+
+
+    <!-- TOOLS -->
+
+    <div class="side-section">
+
+        <div class="side-label">
+            Tools
+        </div>
+
+        <button
+            class="nav-btn"
+            data-page="terminal"
+            type="button">
+
+            <span class="nav-icon">
+                ›_
+            </span>
+
+            <span class="nav-text">
+                Terminal
+            </span>
+
+        </button>
+
+    </div>
+
+
+    <!-- SYSTEM -->
+
+    <div class="side-section">
+
+        <div class="side-label">
+            System
+        </div>
+
+        <button
+            class="nav-btn"
+            data-page="settings"
+            type="button">
+
+            <span class="nav-icon">
+                ⚙
+            </span>
+
+            <span class="nav-text">
                 Settings
-            </div>
+            </span>
 
-            <div class="page-subtitle">
-                Agent configuration
-            </div>
-
-            <div class="setting">
-
-                <div class="setting-title">
-                    Project
-                </div>
-
-                <div class="setting-description">
-                    Current project workspace.
-                </div>
-
-            </div>
-
-            <div class="setting">
-
-                <div class="setting-title">
-                    Agent
-                </div>
-
-                <div class="setting-description">
-                    Gemini-powered autonomous agent.
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- =================================================
-         COMPOSER
-         
-         IMPORTANT:
-         This is intentionally ONLY shown on HOME.
-         It is NOT inside the pages.
-    ================================================== -->
-
-    <div
-        class="composer"
-        id="composer">
-
-        <div class="composer-left">
-
-            <button
-                class="plus-btn"
-                id="plusBtn"
-                type="button">
-                +
-            </button>
-
-        </div>
-
-        <textarea
-            class="prompt"
-            id="prompt"
-            rows="1"
-            placeholder="Tell the Agent what to build..."></textarea>
-
-        <button
-            class="send-btn"
-            id="sendBtn"
-            type="button">
-            ↑
         </button>
 
     </div>
 
 
-    <!-- =================================================
-         ATTACH MENU
-    ================================================== -->
+    <div class="project-box">
 
-    <div
-        class="attach-menu"
-        id="attachMenu">
+        <div class="project-name">
+            Current Project
+        </div>
 
-        <button
-            class="attach-item"
-            type="button">
-            📎 &nbsp; File
-        </button>
-
-        <button
-            class="attach-item"
-            type="button">
-            🖼️ &nbsp; Image
-        </button>
-
-        <button
-            class="attach-item"
-            type="button">
-            🎥 &nbsp; Video
-        </button>
-
-        <button
-            class="attach-item"
-            type="button">
-            </> &nbsp; Code
-        </button>
+        <div class="project-status">
+            Connected workspace
+        </div>
 
     </div>
 
-
-    <!-- =================================================
-         OVERLAY
-    ================================================== -->
-
-    <div
-        class="overlay"
-        id="overlay">
-    </div>
-
-
-    <!-- =================================================
-         SIDEBAR
-    ================================================== -->
-
-    <aside
-        class="sidebar"
-        id="sidebar">
-
-        <div class="sidebar-head">
-
-            <div class="sidebar-title">
-                AI Agent
-            </div>
-
-            <button
-                class="close-sidebar"
-                id="closeSidebar"
-                type="button">
-                ×
-            </button>
-
-        </div>
-
-
-        <!-- HOME -->
-
-        <div class="side-section">
-
-            <div class="side-label">
-                Workspace
-            </div>
-
-            <button
-                class="nav-btn active"
-                data-page="home"
-                type="button">
-
-                <span class="nav-icon">
-                    ⌂
-                </span>
-
-                <span class="nav-text">
-                    Home
-                </span>
-
-            </button>
-
-        </div>
-
-
-        <!-- PROJECT -->
-
-        <div class="side-section">
-
-            <div class="side-label">
-                Project
-            </div>
-
-
-            <button
-                class="nav-btn"
-                data-page="files"
-                type="button">
-
-                <span class="nav-icon">
-                    ▱
-                </span>
-
-                <span class="nav-text">
-                    Files
-                </span>
-
-            </button>
-
-
-            <button
-                class="nav-btn"
-                data-page="preview"
-                type="button">
-
-                <span class="nav-icon">
-                    ◇
-                </span>
-
-                <span class="nav-text">
-                    Preview
-                </span>
-
-            </button>
-
-
-            <button
-                class="nav-btn"
-                data-page="activity"
-                type="button">
-
-                <span class="nav-icon">
-                    ◌
-                </span>
-
-                <span class="nav-text">
-                    Agent Activity
-                </span>
-
-            </button>
-
-        </div>
-
-
-        <!-- TOOLS -->
-
-        <div class="side-section">
-
-            <div class="side-label">
-                Tools
-            </div>
-
-
-            <button
-                class="nav-btn"
-                data-page="terminal"
-                type="button">
-
-                <span class="nav-icon">
-                    ›_
-                </span>
-
-                <span class="nav-text">
-                    Terminal
-                </span>
-
-            </button>
-
-        </div>
-
-
-        <!-- SETTINGS -->
-
-        <div class="side-section">
-
-            <div class="side-label">
-                System
-            </div>
-
-
-            <button
-                class="nav-btn"
-                data-page="settings"
-                type="button">
-
-                <span class="nav-icon">
-                    ⚙
-                </span>
-
-                <span class="nav-text">
-                    Settings
-                </span>
-
-            </button>
-
-        </div>
-
-
-        <!-- PROJECT BOX -->
-
-        <div class="project-box">
-
-            <div class="project-name">
-                Current Project
-            </div>
-
-            <div class="project-status">
-                Empty workspace
-            </div>
-
-        </div>
-
-    </aside>
+</aside>
 
 </div>
 
 
 <script>
+
+/* =====================================================
+   CONFIG
+===================================================== */
+
+const API_URL =
+    "https://gemini-roblox-ai.onrender.com";
+
+const CURRENT_PROJECT =
+    "default";
+
 
 /* =====================================================
    ELEMENTS
@@ -1566,6 +1630,12 @@ const prompt =
 const sendBtn =
     document.getElementById("sendBtn");
 
+const statusDot =
+    document.getElementById("statusDot");
+
+const statusText =
+    document.getElementById("statusText");
+
 const terminalMinBtn =
     document.getElementById("terminalMinBtn");
 
@@ -1580,32 +1650,26 @@ const terminalBody =
 
 
 /* =====================================================
-   SIDEBAR OPEN
+   SIDEBAR
 ===================================================== */
 
 function openSidebar(){
 
     sidebar.classList.add("open");
+
     overlay.classList.add("open");
 
 }
 
 
-/* =====================================================
-   SIDEBAR CLOSE
-===================================================== */
-
 function closeSidebarMenu(){
 
     sidebar.classList.remove("open");
+
     overlay.classList.remove("open");
 
 }
 
-
-/* =====================================================
-   MENU BUTTON
-===================================================== */
 
 menuBtn.addEventListener(
     "click",
@@ -1627,14 +1691,11 @@ menuBtn.addEventListener(
 );
 
 
-/* =====================================================
-   CLOSE
-===================================================== */
-
 closeSidebar.addEventListener(
     "click",
     closeSidebarMenu
 );
+
 
 overlay.addEventListener(
     "click",
@@ -1643,7 +1704,7 @@ overlay.addEventListener(
 
 
 /* =====================================================
-   PAGE SWITCHING
+   PAGE SWITCH
 ===================================================== */
 
 const navButtons =
@@ -1653,12 +1714,16 @@ const pages =
     document.querySelectorAll(".page");
 
 
-function showPage(pageName){
+function showPage(
+    pageName
+){
 
     pages.forEach(
         page => {
 
-            page.classList.remove("active");
+            page.classList.remove(
+                "active"
+            );
 
         }
     );
@@ -1672,7 +1737,9 @@ function showPage(pageName){
 
     if(target){
 
-        target.classList.add("active");
+        target.classList.add(
+            "active"
+        );
 
     }
 
@@ -1690,47 +1757,51 @@ function showPage(pageName){
 
 
     /*
-       IMPORTANT:
-
-       Composer ONLY exists on HOME.
-
-       This is what makes it disappear
-       when opening another page.
+       Composer is ONLY visible on Home.
     */
 
-    if(pageName === "home"){
+    if(
+        pageName === "home"
+    ){
 
-        composer.style.display = "flex";
+        composer.style.display =
+            "flex";
 
     }else{
 
-        composer.style.display = "none";
+        composer.style.display =
+            "none";
 
     }
 
 
-    /* Close attachment popup */
+    attachMenu.classList.remove(
+        "open"
+    );
 
-    attachMenu.classList.remove("open");
-
-
-    /* Close sidebar */
 
     closeSidebarMenu();
 
-
-    /* Scroll workspace to top */
 
     document
         .getElementById("workspace")
         .scrollTop = 0;
 
+
+    /*
+       Refresh files when opening Files.
+    */
+
+    if(
+        pageName === "files"
+    ){
+
+        refreshFiles();
+
+    }
+
 }
 
-
-/* =====================================================
-   NAV BUTTONS
-===================================================== */
 
 navButtons.forEach(
     button => {
@@ -1751,7 +1822,7 @@ navButtons.forEach(
 
 
 /* =====================================================
-   PLUS MENU
+   ATTACHMENT MENU
 ===================================================== */
 
 plusBtn.addEventListener(
@@ -1768,16 +1839,14 @@ plusBtn.addEventListener(
 );
 
 
-/* =====================================================
-   CLOSE PLUS MENU
-===================================================== */
-
 document.addEventListener(
     "click",
     function(event){
 
         if(
-            !attachMenu.contains(event.target) &&
+            !attachMenu.contains(
+                event.target
+            ) &&
             event.target !== plusBtn
         ){
 
@@ -1792,14 +1861,15 @@ document.addEventListener(
 
 
 /* =====================================================
-   TEXTAREA AUTO SIZE
+   TEXTAREA
 ===================================================== */
 
 prompt.addEventListener(
     "input",
     function(){
 
-        this.style.height = "auto";
+        this.style.height =
+            "auto";
 
         this.style.height =
             Math.min(
@@ -1810,10 +1880,6 @@ prompt.addEventListener(
     }
 );
 
-
-/* =====================================================
-   ENTER TO SEND
-===================================================== */
 
 prompt.addEventListener(
     "keydown",
@@ -1834,10 +1900,6 @@ prompt.addEventListener(
 );
 
 
-/* =====================================================
-   SEND BUTTON
-===================================================== */
-
 sendBtn.addEventListener(
     "click",
     sendAgentMessage
@@ -1845,7 +1907,411 @@ sendBtn.addEventListener(
 
 
 /* =====================================================
-   AGENT CONNECTION PLACEHOLDER
+   STATUS
+===================================================== */
+
+function setStatus(
+    text,
+    active = false
+){
+
+    statusText.textContent =
+        text;
+
+
+    statusDot.style.background =
+        active
+            ? "#9b6cff"
+            : "#555";
+
+}
+
+
+/* =====================================================
+   ESCAPE HTML
+===================================================== */
+
+function escapeHtml(
+    value
+){
+
+    return String(value)
+        .replaceAll(
+            "&",
+            "&amp;"
+        )
+        .replaceAll(
+            "<",
+            "&lt;"
+        )
+        .replaceAll(
+            ">",
+            "&gt;"
+        )
+        .replaceAll(
+            '"',
+            "&quot;"
+        )
+        .replaceAll(
+            "'",
+            "&#039;"
+        );
+
+}
+
+
+/* =====================================================
+   ACTIVITY
+===================================================== */
+
+function addActivity(
+    title,
+    details = "",
+    type = "normal"
+){
+
+    const list =
+        document.getElementById(
+            "activityList"
+        );
+
+
+    const empty =
+        list.querySelector(
+            ".empty"
+        );
+
+
+    if(empty){
+
+        empty.remove();
+
+    }
+
+
+    const item =
+        document.createElement(
+            "div"
+        );
+
+
+    item.className =
+        "activity";
+
+
+    const head =
+        document.createElement(
+            "div"
+        );
+
+
+    head.className =
+        "activity-head";
+
+
+    let icon = "›";
+
+
+    if(
+        type === "error"
+    ){
+
+        icon = "⚠";
+
+    }
+
+
+    if(
+        type === "done"
+    ){
+
+        icon = "✓";
+
+    }
+
+
+    head.innerHTML = `
+        <span>
+            ${icon}
+            &nbsp;
+            ${escapeHtml(title)}
+        </span>
+
+        <span class="activity-arrow">
+            ↓
+        </span>
+    `;
+
+
+    const body =
+        document.createElement(
+            "div"
+        );
+
+
+    body.className =
+        "activity-body";
+
+
+    body.textContent =
+        details;
+
+
+    item.appendChild(
+        head
+    );
+
+    item.appendChild(
+        body
+    );
+
+
+    head.addEventListener(
+        "click",
+        function(){
+
+            item.classList.toggle(
+                "open"
+            );
+
+        }
+    );
+
+
+    list.prepend(
+        item
+    );
+
+
+    return item;
+
+}
+
+
+/* =====================================================
+   TERMINAL OUTPUT
+===================================================== */
+
+function terminalOutput(
+    text
+){
+
+    if(!text){
+
+        return;
+
+    }
+
+
+    const empty =
+        terminalBody.querySelector(
+            ".terminal-empty"
+        );
+
+
+    if(empty){
+
+        empty.remove();
+
+    }
+
+
+    const line =
+        document.createElement(
+            "div"
+        );
+
+
+    line.textContent =
+        text;
+
+
+    terminalBody.appendChild(
+        line
+    );
+
+
+    terminalBody.scrollTop =
+        terminalBody.scrollHeight;
+
+}
+
+
+/* =====================================================
+   REFRESH FILES
+===================================================== */
+
+async function refreshFiles(){
+
+    try{
+
+        const response =
+            await fetch(
+                `${API_URL}/files?project=${encodeURIComponent(CURRENT_PROJECT)}`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(
+            !data.ok
+        ){
+
+            return;
+
+        }
+
+
+        const list =
+            document.getElementById(
+                "filesList"
+            );
+
+
+        if(
+            !data.files ||
+            data.files.length === 0
+        ){
+
+            list.innerHTML = `
+                <div class="empty">
+
+                    <div class="empty-icon">
+                        ⌁
+                    </div>
+
+                    <div class="empty-title">
+                        No files yet
+                    </div>
+
+                    <div class="empty-text">
+                        Files created by the Agent
+                        will appear here.
+                    </div>
+
+                </div>
+            `;
+
+            return;
+
+        }
+
+
+        list.innerHTML =
+            "";
+
+
+        for(
+            const file of data.files
+        ){
+
+            const row =
+                document.createElement(
+                    "div"
+                );
+
+
+            row.className =
+                "file-row";
+
+
+            row.textContent =
+                "📄 " + file;
+
+
+            row.addEventListener(
+                "click",
+                function(){
+
+                    openFile(
+                        file
+                    );
+
+                }
+            );
+
+
+            list.appendChild(
+                row
+            );
+
+        }
+
+    }catch(error){
+
+        console.error(
+            "Files error:",
+            error
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   OPEN FILE
+===================================================== */
+
+async function openFile(
+    filePath
+){
+
+    try{
+
+        const response =
+            await fetch(
+                `${API_URL}/file?project=${encodeURIComponent(CURRENT_PROJECT)}&path=${encodeURIComponent(filePath)}`
+            );
+
+
+        const data =
+            await response.json();
+
+
+        if(
+            !data.ok
+        ){
+
+            throw new Error(
+                data.error ||
+                "Unable to read file"
+            );
+
+        }
+
+
+        addActivity(
+            "Opened " + filePath,
+            data.content
+        );
+
+
+        showPage(
+            "activity"
+        );
+
+    }catch(error){
+
+        addActivity(
+            "Failed to read file",
+            error.message,
+            "error"
+        );
+
+        showPage(
+            "activity"
+        );
+
+    }
+
+}
+
+
+/* =====================================================
+   REAL AGENT
 ===================================================== */
 
 async function sendAgentMessage(){
@@ -1861,34 +2327,351 @@ async function sendAgentMessage(){
     }
 
 
-    /*
-       IMPORTANT:
+    prompt.value =
+        "";
 
-       لا يوجد رد وهمي هنا.
-
-       هذه الدالة جاهزة فقط للربط
-       مع /agent في السيرفر لاحقًا.
-
-       عند الربط سنضع fetch هنا.
-    */
+    prompt.style.height =
+        "auto";
 
 
-    console.log(
-        "Agent request:",
+    showPage(
+        "activity"
+    );
+
+
+    setStatus(
+        "Working",
+        true
+    );
+
+
+    addActivity(
+        "Agent started",
         message
     );
 
 
-    /*
-       حاليًا لا نضيف أي رسالة وهمية
-       ولا Activity وهمية
-       ولا Terminal وهمي.
-    */
+    try{
+
+        const response =
+            await fetch(
+                `${API_URL}/agent`,
+                {
+                    method:"POST",
+
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+
+                    body:JSON.stringify({
+
+                        project:
+                            CURRENT_PROJECT,
+
+                        prompt:
+                            message
+
+                    })
+                }
+            );
 
 
-    prompt.value = "";
+        if(
+            !response.ok
+        ){
 
-    prompt.style.height = "auto";
+            throw new Error(
+                `Server returned ${response.status}`
+            );
+
+        }
+
+
+        if(
+            !response.body
+        ){
+
+            throw new Error(
+                "Server did not return a stream."
+            );
+
+        }
+
+
+        const reader =
+            response.body.getReader();
+
+
+        const decoder =
+            new TextDecoder();
+
+
+        let buffer =
+            "";
+
+
+        while(true){
+
+            const result =
+                await reader.read();
+
+
+            if(
+                result.done
+            ){
+
+                break;
+
+            }
+
+
+            buffer +=
+                decoder.decode(
+                    result.value,
+                    {
+                        stream:true
+                    }
+                );
+
+
+            const lines =
+                buffer.split(
+                    "\n"
+                );
+
+
+            buffer =
+                lines.pop() ||
+                "";
+
+
+            for(
+                const line of lines
+            ){
+
+                if(
+                    !line.trim()
+                ){
+
+                    continue;
+
+                }
+
+
+                let event;
+
+
+                try{
+
+                    event =
+                        JSON.parse(
+                            line
+                        );
+
+                }catch{
+
+                    continue;
+
+                }
+
+
+                /* START */
+
+                if(
+                    event.type === "start"
+                ){
+
+                    addActivity(
+                        "Agent connected",
+                        `Project: ${event.project}\nModel: ${event.model}`
+                    );
+
+                }
+
+
+                /* THINKING */
+
+                else if(
+                    event.type === "thinking"
+                ){
+
+                    addActivity(
+                        "Planning next step",
+                        `Step ${event.step}`
+                    );
+
+                }
+
+
+                /* TOOL START */
+
+                else if(
+                    event.type === "tool_start"
+                ){
+
+                    const tool =
+                        event.tool;
+
+
+                    addActivity(
+                        `Running ${tool}`,
+                        JSON.stringify(
+                            event.args || {},
+                            null,
+                            2
+                        )
+                    );
+
+
+                    if(
+                        tool === "terminal"
+                    ){
+
+                        const args =
+                            event.args || {};
+
+
+                        terminalOutput(
+                            `$ ${args.command || ""} ${(args.args || []).join(" ")}`
+                        );
+
+                    }
+
+                }
+
+
+                /* TOOL RESULT */
+
+                else if(
+                    event.type === "tool_result"
+                ){
+
+                    const details =
+                        typeof event.result === "string"
+                            ? event.result
+                            : JSON.stringify(
+                                event.result,
+                                null,
+                                2
+                            );
+
+
+                    addActivity(
+                        `${event.tool} completed`,
+                        details,
+                        "done"
+                    );
+
+
+                    if(
+                        event.tool === "terminal"
+                    ){
+
+                        terminalOutput(
+                            details
+                        );
+
+                    }
+
+                }
+
+
+                /* TOOL ERROR */
+
+                else if(
+                    event.type === "tool_error"
+                ){
+
+                    addActivity(
+                        `${event.tool} failed`,
+                        event.error ||
+                        "Unknown error",
+                        "error"
+                    );
+
+                }
+
+
+                /* FINAL */
+
+                else if(
+                    event.type === "final"
+                ){
+
+                    addActivity(
+                        "Agent finished",
+                        event.message ||
+                        "Task completed.",
+                        "done"
+                    );
+
+                }
+
+
+                /* DONE */
+
+                else if(
+                    event.type === "done"
+                ){
+
+                    addActivity(
+                        "Task completed",
+                        event.message ||
+                        "Done.",
+                        "done"
+                    );
+
+
+                    await refreshFiles();
+
+                }
+
+
+                /* ERROR */
+
+                else if(
+                    event.type === "error"
+                ){
+
+                    addActivity(
+                        "Agent error",
+                        event.error ||
+                        "Unknown server error",
+                        "error"
+                    );
+
+                }
+
+            }
+
+        }
+
+
+        await refreshFiles();
+
+
+        setStatus(
+            "Ready",
+            false
+        );
+
+
+    }catch(error){
+
+        addActivity(
+            "Connection error",
+            error.message,
+            "error"
+        );
+
+
+        setStatus(
+            "Connection error",
+            false
+        );
+
+    }
 
 }
 
@@ -1897,7 +2680,9 @@ async function sendAgentMessage(){
    TERMINAL MINIMIZE
 ===================================================== */
 
-let terminalMinimized = false;
+let terminalMinimized =
+    false;
+
 
 terminalMinBtn.addEventListener(
     "click",
@@ -1913,22 +2698,29 @@ terminalMinBtn.addEventListener(
             );
 
 
-        if(terminalMinimized){
+        if(
+            terminalMinimized
+        ){
 
-            body.style.display = "none";
+            body.style.display =
+                "none";
 
-            terminalBox.style.height = "46px";
+            terminalBox.style.height =
+                "46px";
 
-            terminalMinBtn.textContent = "+";
+            terminalMinBtn.textContent =
+                "+";
 
         }else{
 
-            body.style.display = "block";
+            body.style.display =
+                "block";
 
             terminalBox.style.height =
                 "calc(100vh - 62px - env(safe-area-inset-top) - 44px)";
 
-            terminalMinBtn.textContent = "−";
+            terminalMinBtn.textContent =
+                "−";
 
         }
 
@@ -1945,77 +2737,27 @@ terminalClearBtn.addEventListener(
     function(){
 
         terminalBody.innerHTML =
-            '<span class="terminal-empty">Terminal is empty.</span>';
+            `
+            <span class="terminal-empty">
+                Terminal is empty.
+            </span>
+            `;
 
     }
 );
 
 
 /* =====================================================
-   ACTIVITY EXPANDER
+   INITIAL
 ===================================================== */
 
-document.addEventListener(
-    "click",
-    function(event){
-
-        const head =
-            event.target.closest(
-                ".activity-head"
-            );
-
-
-        if(!head){
-
-            return;
-
-        }
-
-
-        const activity =
-            head.closest(
-                ".activity"
-            );
-
-
-        if(activity){
-
-            activity.classList.toggle(
-                "open"
-            );
-
-        }
-
-    }
+showPage(
+    "home"
 );
 
-
-/* =====================================================
-   INITIAL STATE
-===================================================== */
-
-showPage("home");
-
-
-/* =====================================================
-   ESC / BACK SUPPORT
-===================================================== */
-
-document.addEventListener(
-    "keydown",
-    function(event){
-
-        if(event.key === "Escape"){
-
-            closeSidebarMenu();
-
-            attachMenu.classList.remove(
-                "open"
-            );
-
-        }
-
-    }
+setStatus(
+    "Ready",
+    false
 );
 
 </script>
