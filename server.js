@@ -21,14 +21,13 @@ app.use(express.json({
 const execFileAsync = promisify(execFile);
 
 const PORT = process.env.PORT || 10000;
-const API_KEY = process.env.GEMINI_API_KEY;
 
-const ai = API_KEY
-    ? new GoogleGenAI({
-        apiKey: API_KEY
-    })
-    : null;
+/* =========================================================
+   PRIMARY GEMINI KEY
+========================================================= */
 
+const PRIMARY_API_KEY =
+    process.env.GEMINI_API_KEY || "";
 
 /* =========================================================
    DIRECTORIES
@@ -40,6 +39,15 @@ const PROJECT_ROOT =
 const CHAT_ROOT =
     path.resolve("./chats");
 
+const KEY_ROOT =
+    path.resolve("./keys");
+
+const KEY_FILE =
+    path.join(
+        KEY_ROOT,
+        "keys.json"
+    );
+
 await fs.mkdir(
     PROJECT_ROOT,
     { recursive: true }
@@ -50,6 +58,10 @@ await fs.mkdir(
     { recursive: true }
 );
 
+await fs.mkdir(
+    KEY_ROOT,
+    { recursive: true }
+);
 
 /* =========================================================
    CONFIG
@@ -58,27 +70,277 @@ await fs.mkdir(
 const MODEL =
     "gemini-3.8-flash";
 
-/*
- * Low = أسرع.
- * نرفعها فقط إذا احتجنا لاحقًا.
- */
 const THINKING_LEVEL =
     "low";
 
-/*
- * الحد الأعلى لخطوات Agent.
- * أغلب المهام لن تحتاج أكثر من 1-3.
- */
 const MAX_AGENT_STEPS =
     8;
 
-
 /* =========================================================
-   RUNNING JOBS
+   JOBS
 ========================================================= */
 
 const jobs =
     new Map();
+
+/* =========================================================
+   ACTIVE GEMINI KEY
+========================================================= */
+
+/*
+ * null = استخدام المفتاح الأساسي من Render.
+ *
+ * إذا اختار المستخدم مفتاحًا محفوظًا:
+ * currentKeyId يصبح ID المفتاح.
+ */
+
+let currentKeyId =
+    null;
+
+/* =========================================================
+   KEY STORE
+========================================================= */
+
+async function loadKeys() {
+
+    try {
+
+        const raw =
+            await fs.readFile(
+                KEY_FILE,
+                "utf8"
+            );
+
+        const data =
+            JSON.parse(raw);
+
+        if (
+            !Array.isArray(data.keys)
+        ) {
+
+            return {
+                keys: []
+            };
+        }
+
+        return data;
+
+    } catch {
+
+        const initial = {
+            keys: []
+        };
+
+        await fs.writeFile(
+            KEY_FILE,
+            JSON.stringify(
+                initial,
+                null,
+                2
+            ),
+            "utf8"
+        );
+
+        return initial;
+    }
+}
+
+
+async function saveKeys(
+    data
+) {
+
+    await fs.writeFile(
+        KEY_FILE,
+        JSON.stringify(
+            data,
+            null,
+            2
+        ),
+        "utf8"
+    );
+}
+
+
+function makeKeyId() {
+
+    return (
+        "key_" +
+        Date.now() +
+        "_" +
+        Math.random()
+            .toString(36)
+            .slice(2, 9)
+    );
+}
+
+
+function maskKey(
+    key
+) {
+
+    const value =
+        String(key || "");
+
+    if (!value) {
+        return "••••";
+    }
+
+    if (value.length <= 8) {
+        return "••••••••";
+    }
+
+    return (
+        value.slice(0, 4) +
+        "••••••••" +
+        value.slice(-4)
+    );
+}
+
+
+/*
+ * بيانات المفتاح التي نرسلها للواجهة.
+ *
+ * NEVER نرسل المفتاح الحقيقي.
+ */
+
+function publicKeyInfo(
+    key
+) {
+
+    return {
+
+        id:
+            key.id,
+
+        name:
+            key.name,
+
+        masked:
+            maskKey(
+                key.value
+            ),
+
+        enabled:
+            key.enabled !== false,
+
+        createdAt:
+            key.createdAt,
+
+        lastUsedAt:
+            key.lastUsedAt || null
+    };
+}
+
+
+/* =========================================================
+   GEMINI CLIENT
+========================================================= */
+
+function getActiveKeyRecord(
+    data
+) {
+
+    if (!currentKeyId) {
+
+        return {
+
+            id:
+                "primary",
+
+            name:
+                "Render Primary",
+
+            value:
+                PRIMARY_API_KEY,
+
+            enabled:
+                Boolean(
+                    PRIMARY_API_KEY
+                ),
+
+            primary:
+                true
+        };
+    }
+
+    const found =
+        data.keys.find(
+            key =>
+                key.id ===
+                currentKeyId
+        );
+
+    if (
+        !found ||
+        found.enabled === false
+    ) {
+
+        currentKeyId =
+            null;
+
+        return {
+
+            id:
+                "primary",
+
+            name:
+                "Render Primary",
+
+            value:
+                PRIMARY_API_KEY,
+
+            enabled:
+                Boolean(
+                    PRIMARY_API_KEY
+                ),
+
+            primary:
+                true
+        };
+    }
+
+    return found;
+}
+
+
+function getAIClient() {
+
+    /*
+     * هذه الدالة تنشئ Client للمفتاح المستخدم حاليًا.
+     */
+
+    return loadKeys()
+        .then(
+            data => {
+
+                const active =
+                    getActiveKeyRecord(
+                        data
+                    );
+
+                if (
+                    !active.value
+                ) {
+
+                    throw new Error(
+                        "لا يوجد مفتاح Gemini صالح حاليًا."
+                    );
+                }
+
+                return {
+                    ai:
+                        new GoogleGenAI({
+                            apiKey:
+                                active.value
+                        }),
+
+                    key:
+                        active
+                };
+            }
+        );
+}
 
 
 /* =========================================================
@@ -192,6 +454,7 @@ async function loadChat(
     } catch {
 
         return {
+
             id:
                 safeName(chatId),
 
@@ -438,7 +701,7 @@ async function deleteFileTool(
 
 
 /* =========================================================
-   LIST PROJECT FILES
+   FILE LIST
 ========================================================= */
 
 async function getFiles(
@@ -508,8 +771,10 @@ async function getFiles(
             ) {
 
                 result.push({
+
                     type:
                         "folder",
+
                     path:
                         rel
                 });
@@ -572,10 +837,6 @@ const ALLOWED_COMMANDS =
         "python3"
     ]);
 
-
-/*
- * نمنع الأوامر/الخيارات الخطرة.
- */
 const BLOCKED_PATTERNS = [
 
     "rm -rf",
@@ -754,7 +1015,6 @@ async function executeTool(
                 project
             );
 
-
         case "write_file":
 
             return await writeFileTool(
@@ -763,7 +1023,6 @@ async function executeTool(
                 input.content
             );
 
-
         case "read_file":
 
             return await readFileTool(
@@ -771,14 +1030,12 @@ async function executeTool(
                 input.path
             );
 
-
         case "delete_file":
 
             return await deleteFileTool(
                 project,
                 input.path
             );
-
 
         case "terminal":
 
@@ -788,7 +1045,6 @@ async function executeTool(
                 input.args || [],
                 job
             );
-
 
         default:
 
@@ -800,7 +1056,7 @@ async function executeTool(
 
 
 /* =========================================================
-   ERROR TYPE
+   GEMINI ERROR
 ========================================================= */
 
 function getGeminiErrorInfo(
@@ -863,20 +1119,13 @@ function getGeminiErrorInfo(
 
 
 /* =========================================================
-   GEMINI REQUEST
+   ASK GEMINI
 ========================================================= */
 
 async function askGemini(
     prompt,
     job
 ) {
-
-    if (!ai) {
-
-        throw new Error(
-            "GEMINI_API_KEY is not configured."
-        );
-    }
 
     if (
         job?.stopped
@@ -887,13 +1136,18 @@ async function askGemini(
         );
     }
 
+    const {
+        ai,
+        key
+    } =
+        await getAIClient();
 
-    /*
-     * طلب واحد فقط.
-     *
-     * لا نعيد المحاولة تلقائيًا
-     * إذا كانت الحصة اليومية انتهت.
-     */
+    if (!ai) {
+
+        throw new Error(
+            "Gemini client unavailable."
+        );
+    }
 
     try {
 
@@ -920,10 +1174,50 @@ async function askGemini(
             });
 
 
+        /*
+         * نسجل آخر استخدام فقط.
+         */
+
+        if (
+            key.id !== "primary"
+        ) {
+
+            try {
+
+                const data =
+                    await loadKeys();
+
+                const found =
+                    data.keys.find(
+                        item =>
+                            item.id ===
+                            key.id
+                    );
+
+                if (found) {
+
+                    found.lastUsedAt =
+                        Date.now();
+
+                    await saveKeys(
+                        data
+                    );
+                }
+
+            } catch {}
+        }
+
+
         return {
 
             model:
                 MODEL,
+
+            keyId:
+                key.id,
+
+            keyName:
+                key.name,
 
             text:
                 response.text?.trim() ||
@@ -937,25 +1231,17 @@ async function askGemini(
                 error
             );
 
-        /*
-         * 429 quota اليومية:
-         * لا نكرر الطلب.
-         */
+
         if (
             info.is429
         ) {
 
             throw new Error(
-                "QUOTA_EXCEEDED: وصلت حصة Gemini الحالية. انتظر إعادة ضبط الحصة أو استخدم مشروع Gemini بحصة متاحة."
+                `QUOTA_EXCEEDED: انتهت الحصة أو تم تجاوز حد الطلبات للمفتاح الحالي (${key.name}). يمكنك اختيار مفتاح آخر يدويًا من Keys إذا كان من مشروع Gemini آخر ولديه حصة متاحة.`
             );
         }
 
 
-        /*
-         * 503:
-         * محاولة واحدة فقط بعد انتظار قصير.
-         * حتى لا نحرق quota.
-         */
         if (
             info.is503
         ) {
@@ -968,6 +1254,7 @@ async function askGemini(
                     )
             );
 
+
             if (
                 job?.stopped
             ) {
@@ -976,6 +1263,7 @@ async function askGemini(
                     "Agent stopped."
                 );
             }
+
 
             try {
 
@@ -1001,17 +1289,24 @@ async function askGemini(
                         }
                     });
 
+
                 return {
 
                     model:
                         MODEL,
+
+                    keyId:
+                        key.id,
+
+                    keyName:
+                        key.name,
 
                     text:
                         retry.text?.trim() ||
                         ""
                 };
 
-            } catch (retryError) {
+            } catch {
 
                 throw new Error(
                     "Gemini غير متاح مؤقتًا. حاول مرة أخرى بعد قليل."
@@ -1139,19 +1434,11 @@ terminal
 
 قاعدة التنفيذ:
 
-إذا طلب المستخدم:
-
-"ابنِ موقعًا"
+إذا طلب المستخدم بناء مشروع:
 
 أنشئ الملفات المطلوبة مباشرة.
 
-مثال:
-
-index.html
-style.css
-script.js
-
-لا تقرأ index.html مباشرة بعد كتابته إلا إذا كان هناك سبب.
+إذا كانت عدة ملفات مطلوبة، نفذها بأقل عدد ممكن من الخطوات.
 
 ========================
 
@@ -1162,8 +1449,6 @@ script.js
 1. افهم الخطأ.
 2. أصلح الملف.
 3. أعد الفحص.
-
-لا تكرر نفس الأداة بلا سبب.
 
 ========================
 
@@ -1221,7 +1506,6 @@ script.js
 في المهمة الواحدة حاول إنجاز أكبر قدر ممكن بأقل عدد من استدعاءات Gemini.
 
 لا تطلب من Gemini نفسه التفكير مرة أخرى لكل ملف.
-
 `;
 
 
@@ -1239,12 +1523,6 @@ async function buildContext(
             chat.project
         );
 
-
-    /*
-     * نرسل آخر 12 رسالة فقط.
-     * هذا يقلل حجم السياق والسرعة.
-     */
-
     const history =
         chat.messages
             .slice(-12)
@@ -1255,6 +1533,15 @@ async function buildContext(
             .join("\n");
 
 
+    const keys =
+        await loadKeys();
+
+    const active =
+        getActiveKeyRecord(
+            keys
+        );
+
+
     return `
 ${SYSTEM_PROMPT}
 
@@ -1263,6 +1550,12 @@ ${chat.project}
 
 CHAT TITLE:
 ${chat.title}
+
+ACTIVE MODEL:
+${MODEL}
+
+ACTIVE KEY NAME:
+${active.name}
 
 PROJECT FILES:
 ${JSON.stringify(
@@ -1283,7 +1576,7 @@ ${userPrompt}
 
 
 /* =========================================================
-   SEND NDJSON
+   NDJSON
 ========================================================= */
 
 function sendEvent(
@@ -1315,6 +1608,15 @@ async function runAgent(
     );
 
 
+    const keyData =
+        await loadKeys();
+
+    const activeKey =
+        getActiveKeyRecord(
+            keyData
+        );
+
+
     sendEvent(
         res,
         {
@@ -1325,7 +1627,10 @@ async function runAgent(
                 chat.id,
 
             project:
-                chat.project
+                chat.project,
+
+            keyName:
+                activeKey.name
         }
     );
 
@@ -1412,7 +1717,7 @@ async function runAgent(
                     answer.text
                 );
 
-        } catch (error) {
+        } catch {
 
             sendEvent(
                 res,
@@ -1440,16 +1745,15 @@ async function runAgent(
                 model:
                     answer.model,
 
+                keyName:
+                    answer.keyName,
+
                 message:
                     action.message ||
                     "Planning next step"
             }
         );
 
-
-        /*
-         * انتهت المهمة.
-         */
 
         if (
             action.finish === true
@@ -1494,10 +1798,6 @@ async function runAgent(
         }
 
 
-        /*
-         * لا توجد أداة.
-         */
-
         if (
             !action.tool
         ) {
@@ -1539,10 +1839,6 @@ async function runAgent(
             return;
         }
 
-
-        /*
-         * تنفيذ الأداة.
-         */
 
         sendEvent(
             res,
@@ -1591,12 +1887,6 @@ async function runAgent(
                 }
             );
 
-
-            /*
-             * نخزن ملخصًا فقط.
-             *
-             * لا نضع محتوى ملف كامل داخل الذاكرة.
-             */
 
             let summary =
                 action.message ||
@@ -1675,11 +1965,6 @@ async function runAgent(
             );
 
 
-            /*
-             * نخزن الخطأ حتى يعرفه Agent
-             * في الدورة التالية.
-             */
-
             chat.messages.push({
 
                 role:
@@ -1722,19 +2007,6 @@ app.post(
     async (req, res) => {
 
         try {
-
-            if (!ai) {
-
-                return res.status(500).json({
-
-                    ok:
-                        false,
-
-                    error:
-                        "GEMINI_API_KEY is not configured."
-                });
-            }
-
 
             const prompt =
                 String(
@@ -1780,14 +2052,9 @@ app.post(
             chat.id =
                 chatId;
 
-
             chat.project =
                 project;
 
-
-            /*
-             * اسم تلقائي للدردشة.
-             */
 
             if (
                 chat.title ===
@@ -2284,12 +2551,648 @@ app.get(
 
 
 /* =========================================================
+   KEY API
+========================================================= */
+
+/*
+ * GET /keys
+ *
+ * يعرض:
+ * Primary
+ * + المفاتيح المحفوظة
+ *
+ * بدون كشف المفاتيح الحقيقية.
+ */
+
+app.get(
+    "/keys",
+    async (req, res) => {
+
+        try {
+
+            const data =
+                await loadKeys();
+
+            const active =
+                getActiveKeyRecord(
+                    data
+                );
+
+
+            res.json({
+
+                ok:
+                    true,
+
+                activeId:
+                    active.id,
+
+                primary: {
+
+                    id:
+                        "primary",
+
+                    name:
+                        "Render Primary",
+
+                    enabled:
+                        Boolean(
+                            PRIMARY_API_KEY
+                        ),
+
+                    masked:
+                        maskKey(
+                            PRIMARY_API_KEY
+                        ),
+
+                    primary:
+                        true
+                },
+
+                keys:
+                    data.keys.map(
+                        publicKeyInfo
+                    )
+            });
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok:
+                    false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+/*
+ * POST /keys
+ *
+ * إضافة مفتاح جديد.
+ */
+
+app.post(
+    "/keys",
+    async (req, res) => {
+
+        try {
+
+            const name =
+                String(
+                    req.body?.name ||
+                    ""
+                )
+                .trim()
+                .slice(
+                    0,
+                    80
+                );
+
+
+            const value =
+                String(
+                    req.body?.key ||
+                    ""
+                )
+                .trim();
+
+
+            if (!name) {
+
+                return res.status(400).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "اكتب اسم المفتاح."
+                });
+            }
+
+
+            if (!value) {
+
+                return res.status(400).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "أدخل مفتاح Gemini."
+                });
+            }
+
+
+            if (
+                value.length < 20
+            ) {
+
+                return res.status(400).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "المفتاح يبدو غير صالح."
+                });
+            }
+
+
+            const data =
+                await loadKeys();
+
+
+            /*
+             * منع إضافة نفس المفتاح مرتين.
+             */
+
+            const duplicate =
+                data.keys.find(
+                    item =>
+                        item.value ===
+                        value
+                );
+
+
+            if (duplicate) {
+
+                return res.status(409).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "هذا المفتاح مضاف بالفعل."
+                });
+            }
+
+
+            const newKey = {
+
+                id:
+                    makeKeyId(),
+
+                name,
+
+                value,
+
+                enabled:
+                    true,
+
+                createdAt:
+                    Date.now(),
+
+                lastUsedAt:
+                    null
+            };
+
+
+            data.keys.push(
+                newKey
+            );
+
+
+            await saveKeys(
+                data
+            );
+
+
+            res.json({
+
+                ok:
+                    true,
+
+                key:
+                    publicKeyInfo(
+                        newKey
+                    )
+            });
+
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok:
+                    false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+/*
+ * POST /keys/use
+ *
+ * اختيار مفتاح يدويًا.
+ */
+
+app.post(
+    "/keys/use",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                String(
+                    req.body?.id ||
+                    ""
+                );
+
+
+            /*
+             * الرجوع إلى مفتاح Render.
+             */
+
+            if (
+                id === "primary"
+            ) {
+
+                currentKeyId =
+                    null;
+
+
+                return res.json({
+
+                    ok:
+                        true,
+
+                    activeId:
+                        "primary",
+
+                    activeName:
+                        "Render Primary"
+                });
+            }
+
+
+            const data =
+                await loadKeys();
+
+
+            const key =
+                data.keys.find(
+                    item =>
+                        item.id === id
+                );
+
+
+            if (!key) {
+
+                return res.status(404).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "المفتاح غير موجود."
+                });
+            }
+
+
+            if (
+                key.enabled === false
+            ) {
+
+                return res.status(400).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "هذا المفتاح متوقف. فعّله أولًا."
+                });
+            }
+
+
+            currentKeyId =
+                key.id;
+
+
+            key.lastUsedAt =
+                Date.now();
+
+
+            await saveKeys(
+                data
+            );
+
+
+            res.json({
+
+                ok:
+                    true,
+
+                activeId:
+                    key.id,
+
+                activeName:
+                    key.name
+            });
+
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok:
+                    false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+/*
+ * POST /keys/stop
+ *
+ * إيقاف/تعطيل مفتاح محفوظ.
+ */
+
+app.post(
+    "/keys/stop",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                String(
+                    req.body?.id ||
+                    ""
+                );
+
+
+            const data =
+                await loadKeys();
+
+
+            const key =
+                data.keys.find(
+                    item =>
+                        item.id === id
+                );
+
+
+            if (!key) {
+
+                return res.status(404).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "المفتاح غير موجود."
+                });
+            }
+
+
+            key.enabled =
+                false;
+
+
+            /*
+             * إذا كان هو المستخدم حاليًا
+             * نرجع للـPrimary.
+             */
+
+            if (
+                currentKeyId ===
+                key.id
+            ) {
+
+                currentKeyId =
+                    null;
+            }
+
+
+            await saveKeys(
+                data
+            );
+
+
+            res.json({
+
+                ok:
+                    true,
+
+                activeId:
+                    currentKeyId ||
+                    "primary"
+            });
+
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok:
+                    false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+/*
+ * POST /keys/enable
+ *
+ * إعادة تشغيل مفتاح محفوظ.
+ */
+
+app.post(
+    "/keys/enable",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                String(
+                    req.body?.id ||
+                    ""
+                );
+
+
+            const data =
+                await loadKeys();
+
+
+            const key =
+                data.keys.find(
+                    item =>
+                        item.id === id
+                );
+
+
+            if (!key) {
+
+                return res.status(404).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "المفتاح غير موجود."
+                });
+            }
+
+
+            key.enabled =
+                true;
+
+
+            await saveKeys(
+                data
+            );
+
+
+            res.json({
+
+                ok:
+                    true,
+
+                key:
+                    publicKeyInfo(
+                        key
+                    )
+            });
+
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok:
+                    false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+/*
+ * DELETE /keys/:id
+ *
+ * حذف مفتاح محفوظ.
+ */
+
+app.delete(
+    "/keys/:id",
+    async (req, res) => {
+
+        try {
+
+            const id =
+                String(
+                    req.params.id ||
+                    ""
+                );
+
+
+            const data =
+                await loadKeys();
+
+
+            const before =
+                data.keys.length;
+
+
+            data.keys =
+                data.keys.filter(
+                    item =>
+                        item.id !== id
+                );
+
+
+            if (
+                data.keys.length ===
+                before
+            ) {
+
+                return res.status(404).json({
+
+                    ok:
+                        false,
+
+                    error:
+                        "المفتاح غير موجود."
+                });
+            }
+
+
+            if (
+                currentKeyId ===
+                id
+            ) {
+
+                currentKeyId =
+                    null;
+            }
+
+
+            await saveKeys(
+                data
+            );
+
+
+            res.json({
+
+                ok:
+                    true,
+
+                activeId:
+                    currentKeyId ||
+                    "primary"
+            });
+
+
+        } catch (error) {
+
+            res.status(500).json({
+
+                ok:
+                    false,
+
+                error:
+                    error.message
+            });
+        }
+    }
+);
+
+
+/* =========================================================
    ROOT
 ========================================================= */
 
 app.get(
     "/",
-    (req, res) => {
+    async (req, res) => {
+
+        const data =
+            await loadKeys();
+
+        const active =
+            getActiveKeyRecord(
+                data
+            );
+
 
         res.json({
 
@@ -2300,13 +3203,16 @@ app.get(
                 "Gemini AI Agent",
 
             version:
-                "3.0.0",
+                "4.0.0",
 
             model:
                 MODEL,
 
             thinking:
                 THINKING_LEVEL,
+
+            activeKey:
+                active.name,
 
             status:
                 "online"
@@ -2321,7 +3227,16 @@ app.get(
 
 app.get(
     "/health",
-    (req, res) => {
+    async (req, res) => {
+
+        const data =
+            await loadKeys();
+
+        const active =
+            getActiveKeyRecord(
+                data
+            );
+
 
         res.json({
 
@@ -2329,13 +3244,21 @@ app.get(
                 true,
 
             geminiConfigured:
-                Boolean(API_KEY),
+                Boolean(
+                    PRIMARY_API_KEY
+                ),
 
             model:
                 MODEL,
 
             thinking:
                 THINKING_LEVEL,
+
+            activeKey:
+                active.name,
+
+            savedKeys:
+                data.keys.length,
 
             agent:
                 true,
@@ -2350,6 +3273,9 @@ app.get(
                 true,
 
             stop:
+                true,
+
+            keyManager:
                 true
         });
     }
@@ -2357,7 +3283,7 @@ app.get(
 
 
 /* =========================================================
-   START
+   START SERVER
 ========================================================= */
 
 app.listen(
