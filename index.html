@@ -1,176 +1,138 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-
 <head>
 <meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1">
-
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
 <title>Gemini AI Agent</title>
 
 <style>
-
 *{
     box-sizing:border-box;
     -webkit-tap-highlight-color:transparent;
 }
 
-html,
-body{
+html,body{
     margin:0;
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#050507;
+    font-family:Arial,sans-serif;
+    background:#050509;
     color:#fff;
-    font-family:
-        Inter,
-        system-ui,
-        -apple-system,
-        BlinkMacSystemFont,
-        sans-serif;
 }
 
-button,
-input,
-textarea{
+button,input,textarea{
     font:inherit;
 }
 
 button{
+    border:0;
     cursor:pointer;
 }
 
 .app{
     width:100%;
     height:100%;
-    display:flex;
-    flex-direction:column;
+    position:relative;
+    overflow:hidden;
     background:
-        radial-gradient(
-            circle at 50% -10%,
-            rgba(110,70,255,.18),
-            transparent 35%
-        ),
-        #050507;
+        radial-gradient(circle at 50% -20%,#24104a 0,#0b0815 35%,#050509 70%);
 }
 
-/* =========================================================
-   TOP
-========================================================= */
+/* ================= HEADER ================= */
 
-.topbar{
+.header{
     height:64px;
-    flex-shrink:0;
     display:flex;
     align-items:center;
-    gap:12px;
-    padding:10px 14px;
-    border-bottom:1px solid rgba(255,255,255,.07);
-    background:rgba(7,7,10,.75);
+    justify-content:space-between;
+    padding:0 14px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    background:rgba(5,5,9,.78);
     backdrop-filter:blur(20px);
+    position:relative;
+    z-index:20;
+}
+
+.brand{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    direction:ltr;
+}
+
+.logo{
+    width:38px;
+    height:38px;
+    border-radius:12px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-weight:900;
+    font-size:18px;
+    background:linear-gradient(135deg,#7c3cff,#00d9ff);
+    box-shadow:0 0 24px rgba(124,60,255,.45);
+}
+
+.brandText{
+    font-size:15px;
+    font-weight:800;
 }
 
 .menuBtn{
     width:44px;
     height:44px;
+    border-radius:13px;
+    color:#fff;
+    background:rgba(255,255,255,.07);
     border:1px solid rgba(255,255,255,.1);
-    border-radius:14px;
-    background:rgba(255,255,255,.06);
-    color:white;
-    font-size:22px;
+    font-size:24px;
     display:flex;
     align-items:center;
     justify-content:center;
-    touch-action:manipulation;
+    z-index:30;
 }
 
-.menuBtn:active{
-    transform:scale(.94);
-}
-
-.logo{
-    font-size:18px;
-    font-weight:800;
-    letter-spacing:.3px;
-}
-
-.status{
-    margin-right:auto;
-    font-size:11px;
-    color:#8d8d98;
-}
-
-.statusDot{
-    display:inline-block;
-    width:7px;
-    height:7px;
-    border-radius:50%;
-    background:#55ff9b;
-    margin-left:5px;
-    box-shadow:0 0 10px #55ff9b;
-}
-
-/* =========================================================
-   SIDEBAR
-========================================================= */
+/* ================= SIDEBAR ================= */
 
 .overlay{
-    position:fixed;
+    position:absolute;
     inset:0;
     background:rgba(0,0,0,.55);
-    z-index:20;
-    display:none;
+    opacity:0;
+    pointer-events:none;
+    transition:.25s;
+    z-index:40;
 }
 
 .overlay.show{
-    display:block;
+    opacity:1;
+    pointer-events:auto;
 }
 
 .sidebar{
-    position:fixed;
+    position:absolute;
     top:0;
-    right:0;
-    width:min(320px,88vw);
+    right:-310px;
+    width:290px;
     height:100%;
-    z-index:30;
-    transform:translateX(105%);
-    transition:.25s ease;
-    background:
-        linear-gradient(
-            180deg,
-            #111116,
-            #08080c
-        );
-    border-left:1px solid rgba(255,255,255,.08);
-    box-shadow:-20px 0 70px rgba(0,0,0,.5);
+    background:rgba(10,9,17,.97);
+    border-left:1px solid rgba(255,255,255,.1);
+    box-shadow:-15px 0 50px rgba(0,0,0,.5);
+    z-index:50;
+    transition:.28s ease;
     padding:18px;
-    overflow:auto;
+    overflow-y:auto;
 }
 
 .sidebar.open{
-    transform:translateX(0);
-}
-
-.sideHead{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    margin-bottom:20px;
+    right:0;
 }
 
 .sideTitle{
-    font-size:19px;
-    font-weight:800;
-}
-
-.closeSide{
-    width:40px;
-    height:40px;
-    border-radius:12px;
-    border:1px solid rgba(255,255,255,.08);
-    background:rgba(255,255,255,.05);
-    color:white;
+    font-size:20px;
+    font-weight:900;
+    margin:8px 4px 20px;
 }
 
 .nav{
@@ -179,55 +141,49 @@ button{
     gap:8px;
 }
 
-.navBtn{
+.nav button{
     width:100%;
-    min-height:48px;
+    min-height:52px;
+    text-align:right;
+    color:#ddd;
+    background:rgba(255,255,255,.045);
     border:1px solid rgba(255,255,255,.06);
     border-radius:14px;
-    background:rgba(255,255,255,.035);
-    color:#ddd;
-    text-align:right;
     padding:0 15px;
+    font-weight:700;
 }
 
-.navBtn:active{
-    transform:scale(.98);
+.nav button.active{
+    color:#fff;
+    background:linear-gradient(90deg,rgba(124,60,255,.28),rgba(0,217,255,.08));
+    border-color:rgba(124,60,255,.4);
 }
 
-.navBtn.active{
-    background:rgba(120,80,255,.15);
-    border-color:rgba(140,100,255,.35);
-    color:white;
+.closeMenu{
+    margin-top:18px;
+    width:100%;
+    height:48px;
+    border-radius:13px;
+    color:#aaa;
+    background:rgba(255,255,255,.05);
 }
 
-.sideSection{
-    margin-top:24px;
-    padding-top:18px;
-    border-top:1px solid rgba(255,255,255,.06);
-}
+/* ================= PAGES ================= */
 
-.sideLabel{
-    color:#777783;
-    font-size:11px;
-    margin-bottom:10px;
-}
-
-/* =========================================================
-   CONTENT
-========================================================= */
-
-.content{
-    flex:1;
-    min-height:0;
-    position:relative;
+.pages{
+    position:absolute;
+    top:64px;
+    bottom:0;
+    left:0;
+    right:0;
 }
 
 .page{
+    display:none;
     width:100%;
     height:100%;
-    overflow:auto;
-    padding:18px 14px 120px;
-    display:none;
+    overflow-y:auto;
+    padding:22px 16px 30px;
 }
 
 .page.active{
@@ -235,332 +191,340 @@ button{
 }
 
 .home{
-    max-width:850px;
-    margin:auto;
+    display:flex;
+    flex-direction:column;
 }
 
 .hero{
-    padding-top:10vh;
+    flex:1;
+    min-height:0;
+    display:flex;
+    align-items:center;
+    justify-content:center;
     text-align:center;
+    flex-direction:column;
+}
+
+.heroIcon{
+    width:82px;
+    height:82px;
+    border-radius:26px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:34px;
+    font-weight:900;
+    background:linear-gradient(135deg,#7c3cff,#00d9ff);
+    box-shadow:
+        0 0 35px rgba(124,60,255,.4),
+        inset 0 0 20px rgba(255,255,255,.15);
+    margin-bottom:22px;
 }
 
 .hero h1{
-    margin:0;
-    font-size:clamp(30px,8vw,52px);
-    line-height:1.05;
-    font-weight:900;
-    background:
-        linear-gradient(
-            90deg,
-            #fff,
-            #a98cff,
-            #fff
-        );
-    -webkit-background-clip:text;
-    background-clip:text;
-    color:transparent;
+    margin:0 0 10px;
+    font-size:30px;
 }
 
 .hero p{
-    margin:15px auto 0;
-    max-width:580px;
-    color:#888895;
+    margin:0;
+    color:#92929d;
+    max-width:500px;
     line-height:1.7;
 }
 
-/* =========================================================
-   COMPOSER
-========================================================= */
-
-.composerWrap{
-    position:fixed;
-    left:0;
-    right:0;
-    bottom:0;
-    z-index:10;
-    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-    background:
-        linear-gradient(
-            180deg,
-            transparent,
-            rgba(5,5,7,.95) 35%
-        );
-}
+/* ================= COMPOSER ================= */
 
 .composer{
-    max-width:850px;
-    margin:auto;
+    width:100%;
+    padding:10px 0 14px;
+}
+
+.composerBox{
+    width:100%;
+    min-height:58px;
+    border-radius:19px;
+    background:rgba(255,255,255,.055);
     border:1px solid rgba(255,255,255,.1);
-    border-radius:20px;
-    background:rgba(18,18,23,.9);
-    backdrop-filter:blur(20px);
-    padding:9px;
     display:flex;
     align-items:flex-end;
     gap:8px;
+    padding:8px;
+    box-shadow:0 10px 35px rgba(0,0,0,.25);
 }
 
-.composer textarea{
+#message{
     flex:1;
-    min-height:44px;
-    max-height:130px;
+    min-height:42px;
+    max-height:140px;
     resize:none;
+    outline:none;
     border:0;
-    outline:0;
+    color:#fff;
     background:transparent;
-    color:white;
-    padding:11px 12px;
+    padding:11px 10px;
+    direction:rtl;
 }
 
-.composer textarea::placeholder{
-    color:#656570;
+#message::placeholder{
+    color:#777783;
 }
 
 .sendBtn{
-    width:48px;
-    height:48px;
-    border:0;
-    border-radius:15px;
-    background:
-        linear-gradient(
-            135deg,
-            #7955ff,
-            #4930b9
-        );
-    color:white;
+    width:44px;
+    height:44px;
+    flex-shrink:0;
+    border-radius:14px;
+    color:#fff;
+    background:linear-gradient(135deg,#7c3cff,#00bce8);
     font-size:20px;
+    box-shadow:0 0 20px rgba(124,60,255,.3);
 }
 
-.sendBtn:active{
-    transform:scale(.94);
+.sendBtn:disabled{
+    opacity:.45;
 }
 
-/* =========================================================
-   CARDS
-========================================================= */
+/* ================= GENERAL ================= */
+
+.pageTitle{
+    font-size:25px;
+    font-weight:900;
+    margin:5px 0 7px;
+}
+
+.pageDesc{
+    color:#858590;
+    margin:0 0 20px;
+    line-height:1.6;
+}
 
 .card{
-    max-width:850px;
-    margin:0 auto 14px;
+    background:rgba(255,255,255,.045);
     border:1px solid rgba(255,255,255,.08);
-    border-radius:20px;
-    background:rgba(255,255,255,.035);
+    border-radius:18px;
     padding:16px;
+    margin-bottom:12px;
 }
 
-.cardTitle{
-    font-weight:800;
-    margin-bottom:13px;
-}
-
-.row{
+.empty{
+    height:220px;
     display:flex;
-    gap:8px;
     align-items:center;
+    justify-content:center;
+    text-align:center;
+    color:#777783;
 }
+
+/* ================= KEYS ================= */
 
 .input{
     width:100%;
-    height:46px;
-    border:1px solid rgba(255,255,255,.09);
+    height:50px;
     border-radius:13px;
+    border:1px solid rgba(255,255,255,.1);
+    outline:none;
     background:rgba(0,0,0,.25);
-    color:white;
-    outline:0;
-    padding:0 13px;
+    color:#fff;
+    padding:0 14px;
+    margin-bottom:10px;
+    direction:ltr;
+    text-align:left;
 }
 
-.input:focus{
-    border-color:rgba(130,90,255,.55);
-}
-
-.primaryBtn{
-    min-height:44px;
-    padding:0 15px;
-    border:1px solid rgba(130,100,255,.4);
+.keySave{
+    width:100%;
+    height:50px;
     border-radius:13px;
-    background:rgba(120,80,255,.16);
-    color:white;
+    color:#fff;
+    font-weight:800;
+    background:linear-gradient(135deg,#7c3cff,#00bce8);
 }
 
-.dangerBtn{
-    min-height:40px;
-    padding:0 13px;
-    border:1px solid rgba(255,70,90,.25);
-    border-radius:12px;
-    background:rgba(255,50,70,.08);
-    color:#ff9ba7;
-}
-
-.smallBtn{
-    min-height:38px;
-    padding:0 12px;
+.keyItem{
+    padding:15px;
+    border-radius:17px;
+    background:rgba(255,255,255,.045);
     border:1px solid rgba(255,255,255,.08);
-    border-radius:11px;
-    background:rgba(255,255,255,.05);
-    color:#ddd;
+    margin-bottom:10px;
 }
 
-/* =========================================================
-   KEYS
-========================================================= */
-
-.keyCard{
+.keyTop{
     display:flex;
     align-items:center;
-    gap:12px;
-    margin-top:10px;
-    padding:13px;
-    border:1px solid rgba(255,255,255,.07);
-    border-radius:15px;
-    background:rgba(255,255,255,.025);
-}
-
-.keyInfo{
-    flex:1;
-    min-width:0;
+    justify-content:space-between;
+    gap:10px;
 }
 
 .keyName{
-    font-weight:700;
-}
-
-.keyMeta{
-    color:#777783;
-    font-size:11px;
-    margin-top:5px;
-    direction:ltr;
-    text-align:right;
+    font-weight:900;
 }
 
 .badge{
-    display:inline-flex;
-    align-items:center;
-    padding:4px 8px;
+    font-size:11px;
+    padding:5px 8px;
     border-radius:8px;
-    font-size:10px;
-    margin-top:7px;
-    background:rgba(255,255,255,.06);
-    color:#aaa;
+    background:rgba(0,220,150,.12);
+    color:#54e8b0;
 }
 
-.badge.active{
-    background:rgba(70,255,150,.1);
-    color:#66ffa8;
-}
-
-.badge.quota{
-    background:rgba(255,170,60,.1);
-    color:#ffc06a;
-}
-
-.badge.stopped{
-    background:rgba(255,255,255,.05);
-    color:#777;
-}
-
-/* =========================================================
-   ACTIVITY
-========================================================= */
-
-.activityItem{
-    padding:11px 12px;
-    border-right:2px solid rgba(130,90,255,.5);
-    background:rgba(255,255,255,.025);
-    border-radius:10px;
-    margin-bottom:7px;
-    color:#aaa;
+.keyValue{
+    direction:ltr;
+    text-align:left;
+    color:#777783;
+    font-family:monospace;
+    margin:10px 0;
     font-size:12px;
-    white-space:pre-wrap;
 }
 
-.activityItem.tool{
-    color:#c8baff;
+.keyActions{
+    display:flex;
+    gap:7px;
 }
 
-.activityItem.error{
-    color:#ff9ca8;
-    border-color:#ff5268;
+.keyActions button{
+    flex:1;
+    height:40px;
+    border-radius:10px;
+    color:#ddd;
+    background:rgba(255,255,255,.07);
 }
 
-/* =========================================================
-   CHAT
-========================================================= */
-
-.messages{
-    max-width:850px;
-    margin:auto;
-    padding-bottom:10px;
+.keyActions .danger{
+    color:#ff7777;
 }
 
-.message{
-    max-width:90%;
-    margin:8px 0;
+/* ================= ACTIVITY ================= */
+
+.activity{
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:17px;
+    overflow:hidden;
+    margin-bottom:10px;
+    background:rgba(255,255,255,.035);
+}
+
+.activityHead{
+    min-height:52px;
     padding:12px 14px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.activityTitle{
+    font-weight:800;
+}
+
+.arrow{
+    transition:.2s;
+}
+
+.activity.open .arrow{
+    transform:rotate(180deg);
+}
+
+.activityBody{
+    display:none;
+    border-top:1px solid rgba(255,255,255,.07);
+    padding:12px;
+    color:#8f8f99;
+    font-family:monospace;
+    direction:ltr;
+    text-align:left;
+    white-space:pre-wrap;
+    word-break:break-word;
+    font-size:12px;
+    line-height:1.6;
+}
+
+.activity.open .activityBody{
+    display:block;
+}
+
+/* ================= TERMINAL ================= */
+
+.terminal{
+    background:#020204;
+    border:1px solid rgba(255,255,255,.09);
     border-radius:16px;
+    overflow:hidden;
+}
+
+.terminalHead{
+    height:45px;
+    display:flex;
+    align-items:center;
+    padding:0 12px;
+    border-bottom:1px solid rgba(255,255,255,.08);
+    color:#aaa;
+    font-size:13px;
+}
+
+.terminalBody{
+    height:400px;
+    overflow:auto;
+    padding:14px;
+    font-family:monospace;
+    font-size:12px;
+    direction:ltr;
+    text-align:left;
+    white-space:pre-wrap;
+    color:#bdbdc7;
+}
+
+.line{
+    margin-bottom:5px;
+}
+
+.prompt{
+    color:#00d9ff;
+}
+
+/* ================= CHAT ================= */
+
+.chatMessage{
+    padding:14px;
+    border-radius:16px;
+    margin-bottom:10px;
     line-height:1.65;
     white-space:pre-wrap;
 }
 
-.message.user{
-    margin-right:0;
-    margin-left:auto;
-    background:rgba(110,75,255,.18);
-    border:1px solid rgba(120,90,255,.2);
+.chatUser{
+    background:rgba(124,60,255,.14);
+    border:1px solid rgba(124,60,255,.2);
 }
 
-.message.assistant{
-    margin-left:0;
-    margin-right:auto;
-    background:rgba(255,255,255,.045);
-    border:1px solid rgba(255,255,255,.06);
+.chatAgent{
+    background:rgba(255,255,255,.05);
+    border:1px solid rgba(255,255,255,.07);
 }
 
-/* =========================================================
-   FILES
-========================================================= */
+/* ================= TOAST ================= */
 
-.fileItem{
-    padding:11px;
-    border-bottom:1px solid rgba(255,255,255,.05);
-    font-family:monospace;
-    direction:ltr;
-    text-align:left;
-    color:#bbb;
-}
-
-.empty{
-    color:#666674;
+.toast{
+    position:absolute;
+    left:14px;
+    right:14px;
+    bottom:20px;
+    z-index:100;
+    padding:14px 16px;
+    border-radius:14px;
+    background:rgba(20,19,28,.96);
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:0 15px 40px rgba(0,0,0,.4);
+    transform:translateY(120px);
+    opacity:0;
+    transition:.25s;
     text-align:center;
-    padding:40px 10px;
 }
 
-pre{
-    white-space:pre-wrap;
-    word-break:break-word;
+.toast.show{
+    transform:translateY(0);
+    opacity:1;
 }
-
-@media(max-width:500px){
-
-    .hero{
-        padding-top:8vh;
-    }
-
-    .hero h1{
-        font-size:36px;
-    }
-
-    .row{
-        flex-direction:column;
-        align-items:stretch;
-    }
-
-    .row .primaryBtn{
-        width:100%;
-    }
-
-}
-
 </style>
 </head>
 
@@ -568,325 +532,83 @@ pre{
 
 <div class="app">
 
-    <!-- TOPBAR -->
-
-    <header class="topbar">
-
-        <button
-            class="menuBtn"
-            id="menuBtn"
-            type="button">
-            ☰
-        </button>
-
-        <div class="logo">
-            Gemini Agent
-        </div>
-
-        <div class="status">
-            <span class="statusDot"></span>
-            Online
-        </div>
-
-    </header>
-
-
-    <!-- SIDEBAR OVERLAY -->
-
-    <div
-        class="overlay"
-        id="overlay">
+<header class="header">
+    <div class="brand">
+        <div class="logo">G</div>
+        <div class="brandText">Gemini AI Agent</div>
     </div>
 
+    <button class="menuBtn" id="menuBtn">☰</button>
+</header>
 
-    <!-- SIDEBAR -->
+<div class="overlay" id="overlay"></div>
 
-    <aside
-        class="sidebar"
-        id="sidebar">
+<aside class="sidebar" id="sidebar">
+    <div class="sideTitle">AI Agent</div>
 
-        <div class="sideHead">
+    <div class="nav">
 
-            <div class="sideTitle">
-                Agent
-            </div>
+        <button data-page="home" class="active">
+            🏠 &nbsp; Home
+        </button>
 
-            <button
-                class="closeSide"
-                id="closeSide"
-                type="button">
-                ×
-            </button>
+        <button data-page="chats">
+            💬 &nbsp; Chats
+        </button>
 
-        </div>
+        <button data-page="files">
+            📁 &nbsp; Files
+        </button>
 
+        <button data-page="activity">
+            ⚡ &nbsp; Agent Activity
+        </button>
 
-        <nav class="nav">
+        <button data-page="terminal">
+            ▣ &nbsp; Terminal
+        </button>
 
-            <button
-                class="navBtn active"
-                data-page="home"
-                type="button">
-                🏠 Home
-            </button>
+        <button data-page="keys">
+            🔑 &nbsp; Gemini API Keys
+        </button>
 
-            <button
-                class="navBtn"
-                data-page="chats"
-                type="button">
-                💬 Chats
-            </button>
+    </div>
 
-            <button
-                class="navBtn"
-                data-page="files"
-                type="button">
-                📁 Files
-            </button>
+    <button class="closeMenu" id="closeMenu">
+        إغلاق
+    </button>
+</aside>
 
-            <button
-                class="navBtn"
-                data-page="activity"
-                type="button">
-                ⚡ Agent Activity
-            </button>
+<div class="pages">
 
-            <button
-                class="navBtn"
-                data-page="terminal"
-                type="button">
-                ▣ Terminal
-            </button>
+<!-- ================= HOME ================= -->
 
-            <button
-                class="navBtn"
-                data-page="keys"
-                type="button">
-                🔑 Gemini Keys
-            </button>
+<section class="page home active" id="page-home">
 
-        </nav>
+    <div class="hero">
 
-    </aside>
+        <div class="heroIcon">G</div>
 
+        <h1>Gemini AI Agent</h1>
 
-    <!-- CONTENT -->
+        <p>
+            ابنِ مواقع، ألعاب، واجهات، وبرامج باستخدام وكيل ذكاء اصطناعي
+            يستطيع إنشاء الملفات وتشغيل المشاريع وإصلاح الأخطاء.
+        </p>
 
-    <main class="content">
+    </div>
 
+    <div class="composer">
 
-        <!-- HOME -->
-
-        <section
-            class="page active"
-            id="page-home">
-
-            <div class="home">
-
-                <div class="hero">
-
-                    <h1>
-                        What will you build?
-                    </h1>
-
-                    <p>
-                        Gemini is the brain.
-                        The Agent can plan,
-                        create files,
-                        use Terminal,
-                        fix errors and build projects.
-                    </p>
-
-                </div>
-
-
-                <div
-                    class="messages"
-                    id="messages">
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- CHATS -->
-
-        <section
-            class="page"
-            id="page-chats">
-
-            <div class="card">
-
-                <div class="cardTitle">
-                    Chats
-                </div>
-
-                <button
-                    class="primaryBtn"
-                    id="newChatBtn"
-                    type="button">
-                    + New Chat
-                </button>
-
-            </div>
-
-            <div
-                class="card"
-                id="chatList">
-            </div>
-
-        </section>
-
-
-        <!-- FILES -->
-
-        <section
-            class="page"
-            id="page-files">
-
-            <div class="card">
-
-                <div class="cardTitle">
-                    Project Files
-                </div>
-
-                <div
-                    id="filesList">
-                    <div class="empty">
-                        لا توجد ملفات.
-                    </div>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- ACTIVITY -->
-
-        <section
-            class="page"
-            id="page-activity">
-
-            <div class="card">
-
-                <div class="cardTitle">
-                    ⚡ Agent Activity
-                </div>
-
-                <div id="activityList">
-                    <div class="empty">
-                        لا يوجد نشاط حتى الآن.
-                    </div>
-                </div>
-
-            </div>
-
-        </section>
-
-
-        <!-- TERMINAL -->
-
-        <section
-            class="page"
-            id="page-terminal">
-
-            <div class="card">
-
-                <div class="cardTitle">
-                    Terminal
-                </div>
-
-                <pre id="terminalOutput"></pre>
-
-            </div>
-
-        </section>
-
-
-        <!-- KEYS -->
-
-        <section
-            class="page"
-            id="page-keys">
-
-            <div class="card">
-
-                <div class="cardTitle">
-                    Gemini API Keys
-                </div>
-
-                <p style="color:#777;font-size:12px;line-height:1.7">
-                    مفتاح Render الأساسي محفوظ في السيرفر.
-                    تقدر تضيف مفاتيح Gemini إضافية وتبدّل بينها.
-                </p>
-
-                <input
-                    class="input"
-                    id="keyName"
-                    placeholder="اسم المفتاح — مثال: Gemini 2">
-
-                <div style="height:8px"></div>
-
-                <input
-                    class="input"
-                    id="apiKeyInput"
-                    type="password"
-                    autocomplete="off"
-                    placeholder="Gemini API Key">
-
-                <div style="height:10px"></div>
-
-                <button
-                    class="primaryBtn"
-                    id="saveKeyBtn"
-                    type="button">
-                    Save Gemini API Key
-                </button>
-
-            </div>
-
-
-            <div class="card">
-
-                <div class="cardTitle">
-                    Saved Keys
-                </div>
-
-                <div id="keysList">
-
-                    <div class="empty">
-                        جاري تحميل المفاتيح...
-                    </div>
-
-                </div>
-
-            </div>
-
-        </section>
-
-    </main>
-
-
-    <!-- HOME COMPOSER ONLY -->
-
-    <div
-        class="composerWrap"
-        id="composerWrap">
-
-        <div class="composer">
+        <div class="composerBox">
 
             <textarea
-                id="messageInput"
+                id="message"
+                placeholder="وش تبي أبني لك؟"
                 rows="1"
-                placeholder="وش تبي أبني لك؟">
-            </textarea>
+            ></textarea>
 
-            <button
-                class="sendBtn"
-                id="sendBtn"
-                type="button">
+            <button class="sendBtn" id="sendBtn">
                 ↑
             </button>
 
@@ -894,249 +616,299 @@ pre{
 
     </div>
 
+</section>
+
+<!-- ================= CHATS ================= -->
+
+<section class="page" id="page-chats">
+
+    <div class="pageTitle">Chats</div>
+
+    <p class="pageDesc">
+        محادثات Agent المحفوظة.
+    </p>
+
+    <div id="chatList"></div>
+
+</section>
+
+<!-- ================= FILES ================= -->
+
+<section class="page" id="page-files">
+
+    <div class="pageTitle">Files</div>
+
+    <p class="pageDesc">
+        ملفات المشروع التي أنشأها Agent.
+    </p>
+
+    <div id="fileList"></div>
+
+</section>
+
+<!-- ================= ACTIVITY ================= -->
+
+<section class="page" id="page-activity">
+
+    <div class="pageTitle">Agent Activity</div>
+
+    <p class="pageDesc">
+        هنا تظهر خطوات Agent والأدوات التي يستخدمها.
+    </p>
+
+    <div id="activityList"></div>
+
+</section>
+
+<!-- ================= TERMINAL ================= -->
+
+<section class="page" id="page-terminal">
+
+    <div class="pageTitle">Terminal</div>
+
+    <p class="pageDesc">
+        Terminal الخاص بالمشروع.
+    </p>
+
+    <div class="terminal">
+
+        <div class="terminalHead">
+            Agent Terminal
+        </div>
+
+        <div class="terminalBody" id="terminalBody"></div>
+
+    </div>
+
+</section>
+
+<!-- ================= KEYS ================= -->
+
+<section class="page" id="page-keys">
+
+    <div class="pageTitle">Gemini API Keys</div>
+
+    <p class="pageDesc">
+        أضف مفاتيح Gemini إضافية، وفعّل أو أوقف أي مفتاح بدون إظهار المفتاح كاملًا.
+    </p>
+
+    <div class="card">
+
+        <input
+            class="input"
+            id="keyName"
+            placeholder="اسم المفتاح — مثال: Gemini 2"
+            autocomplete="off"
+        >
+
+        <input
+            class="input"
+            id="apiKeyInput"
+            placeholder="Gemini API Key"
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="none"
+            spellcheck="false"
+        >
+
+        <button class="keySave" id="saveKeyBtn">
+            Add & Save
+        </button>
+
+    </div>
+
+    <div id="keysList"></div>
+
+</section>
+
 </div>
 
+<div class="toast" id="toast"></div>
+
+</div>
 
 <script>
 
 /* =========================================================
-   CONFIG
+   IMPORTANT
+   Backend Render URL
 ========================================================= */
 
-const API =
-    window.location.origin;
-
+const API = "https://gemini-roblox-ai.onrender.com";
 
 /* =========================================================
    STATE
 ========================================================= */
 
 let currentPage = "home";
-
-let currentChatId =
-    localStorage.getItem(
-        "gemini_agent_chat"
-    ) || "default";
-
-let currentProject =
-    localStorage.getItem(
-        "gemini_agent_project"
-    ) || "my-project";
-
-let currentJobId = null;
-
+let currentProject = "default";
+let agentRunning = false;
 
 /* =========================================================
-   ELEMENTS
+   HELPERS
 ========================================================= */
 
-const sidebar =
-    document.getElementById(
-        "sidebar"
-    );
+const $ = id => document.getElementById(id);
 
-const overlay =
-    document.getElementById(
-        "overlay"
-    );
+function toast(message){
 
-const composerWrap =
-    document.getElementById(
-        "composerWrap"
-    );
+    const el = $("toast");
 
-const messages =
-    document.getElementById(
-        "messages"
-    );
+    el.textContent = message;
+    el.classList.add("show");
 
-const activityList =
-    document.getElementById(
-        "activityList"
-    );
+    clearTimeout(window.__toastTimer);
 
-const terminalOutput =
-    document.getElementById(
-        "terminalOutput"
-    );
+    window.__toastTimer = setTimeout(() => {
+        el.classList.remove("show");
+    },3000);
+}
 
+async function apiFetch(path, options = {}){
+
+    const url = API + path;
+
+    const response = await fetch(url,{
+        ...options,
+        headers:{
+            "Content-Type":"application/json",
+            ...(options.headers || {})
+        }
+    });
+
+    const text = await response.text();
+
+    let data;
+
+    try{
+        data = text ? JSON.parse(text) : {};
+    }catch{
+        data = {
+            ok:false,
+            error:text || "Invalid server response"
+        };
+    }
+
+    if(!response.ok){
+
+        throw new Error(
+            data.error ||
+            data.message ||
+            `HTTP ${response.status}`
+        );
+    }
+
+    return data;
+}
 
 /* =========================================================
-   SIDEBAR
+   MENU
 ========================================================= */
 
-function openSidebar(){
+function openMenu(){
 
-    sidebar.classList.add(
-        "open"
-    );
+    $("sidebar").classList.add("open");
+    $("overlay").classList.add("show");
 
-    overlay.classList.add(
-        "show"
-    );
 }
 
+function closeMenu(){
 
-function closeSidebar(){
+    $("sidebar").classList.remove("open");
+    $("overlay").classList.remove("show");
 
-    sidebar.classList.remove(
-        "open"
-    );
-
-    overlay.classList.remove(
-        "show"
-    );
 }
 
-
-document
-    .getElementById("menuBtn")
-    .addEventListener(
-        "click",
-        openSidebar
-    );
-
-
-document
-    .getElementById("closeSide")
-    .addEventListener(
-        "click",
-        closeSidebar
-    );
-
-
-overlay.addEventListener(
-    "click",
-    closeSidebar
-);
-
+$("menuBtn").addEventListener("click",openMenu);
+$("closeMenu").addEventListener("click",closeMenu);
+$("overlay").addEventListener("click",closeMenu);
 
 /* =========================================================
    PAGE NAVIGATION
 ========================================================= */
 
+document.querySelectorAll("[data-page]").forEach(button => {
+
+    button.addEventListener("click",() => {
+
+        const page = button.dataset.page;
+
+        showPage(page);
+
+        closeMenu();
+
+    });
+
+});
+
 function showPage(page){
 
     currentPage = page;
 
-    document
-        .querySelectorAll(".page")
-        .forEach(
-            element => {
-                element.classList.remove(
-                    "active"
-                );
-            }
-        );
+    document.querySelectorAll(".page").forEach(el => {
+        el.classList.remove("active");
+    });
 
-    const target =
-        document.getElementById(
-            `page-${page}`
-        );
+    const target = $("page-" + page);
 
-    if (target) {
-        target.classList.add(
-            "active"
-        );
+    if(target){
+        target.classList.add("active");
     }
 
-    document
-        .querySelectorAll(".navBtn")
-        .forEach(
-            button => {
+    document.querySelectorAll("[data-page]").forEach(btn => {
 
-                button.classList.toggle(
-                    "active",
-                    button.dataset.page ===
-                        page
-                );
-
-            }
+        btn.classList.toggle(
+            "active",
+            btn.dataset.page === page
         );
 
-    // الكتابة تظهر في Home فقط
-    if (
-        page === "home"
-    ) {
-        composerWrap.style.display =
-            "block";
-    } else {
-        composerWrap.style.display =
-            "none";
-    }
+    });
 
-    closeSidebar();
+    /*
+      Composer exists only visually on Home.
+      Other pages don't contain it.
+    */
 
-    if (
-        page === "keys"
-    ) {
+    if(page === "keys"){
         loadKeys();
     }
 
-    if (
-        page === "files"
-    ) {
+    if(page === "files"){
         loadFiles();
     }
 
-    if (
-        page === "chats"
-    ) {
+    if(page === "chats"){
         loadChats();
     }
+
 }
-
-
-document
-    .querySelectorAll(".navBtn")
-    .forEach(
-        button => {
-
-            button.addEventListener(
-                "click",
-                () => {
-
-                    showPage(
-                        button.dataset.page
-                    );
-
-                }
-            );
-
-        }
-    );
-
 
 /* =========================================================
-   MESSAGES
+   TEXTAREA
 ========================================================= */
 
-function addMessage(
-    role,
-    text
-){
+$("message").addEventListener("input",function(){
 
-    const element =
-        document.createElement(
-            "div"
-        );
+    this.style.height = "auto";
 
-    element.className =
-        `message ${role}`;
+    this.style.height =
+        Math.min(this.scrollHeight,140) + "px";
 
-    element.textContent =
-        String(text || "");
+});
 
-    messages.appendChild(
-        element
-    );
+$("message").addEventListener("keydown",function(e){
 
-    messages.scrollTop =
-        messages.scrollHeight;
+    if(e.key === "Enter" && !e.shiftKey){
 
-    return element;
-}
+        e.preventDefault();
 
+        sendMessage();
+
+    }
+
+});
+
+$("sendBtn").addEventListener("click",sendMessage);
 
 /* =========================================================
    ACTIVITY
@@ -1144,138 +916,142 @@ function addMessage(
 
 function clearActivity(){
 
-    activityList.innerHTML = "";
+    $("activityList").innerHTML = "";
 
 }
 
+function addActivity(title,details = ""){
 
-function addActivity(
-    text,
-    type = ""
-){
+    const box = document.createElement("div");
 
-    if (
-        activityList.querySelector(
-            ".empty"
-        )
-    ) {
-        activityList.innerHTML =
-            "";
-    }
+    box.className = "activity";
 
-    const item =
-        document.createElement(
-            "div"
-        );
+    box.innerHTML = `
+        <div class="activityHead">
+            <div class="activityTitle"></div>
+            <div class="arrow">⌄</div>
+        </div>
 
-    item.className =
-        `activityItem ${type}`;
+        <div class="activityBody"></div>
+    `;
 
-    item.textContent =
-        String(text || "");
+    box.querySelector(".activityTitle").textContent = title;
 
-    activityList.appendChild(
-        item
-    );
+    box.querySelector(".activityBody").textContent =
+        details || "";
 
-    activityList.scrollTop =
-        activityList.scrollHeight;
+    box.querySelector(".activityHead")
+       .addEventListener("click",() => {
 
-    return item;
+           box.classList.toggle("open");
+
+       });
+
+    $("activityList").appendChild(box);
+
+    box.scrollIntoView({
+        behavior:"smooth",
+        block:"nearest"
+    });
+
+    return box;
 }
-
 
 /* =========================================================
    TERMINAL
 ========================================================= */
 
-function addTerminal(
-    text
-){
+function addTerminal(text){
 
-    terminalOutput.textContent +=
-        String(text || "") +
-        "\n";
+    const line = document.createElement("div");
 
+    line.className = "line";
+
+    line.innerHTML =
+        `<span class="prompt">$</span> ` +
+        escapeHtml(text);
+
+    $("terminalBody").appendChild(line);
+
+    $("terminalBody").scrollTop =
+        $("terminalBody").scrollHeight;
 }
 
+function escapeHtml(value){
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+}
 
 /* =========================================================
-   SEND AGENT REQUEST
+   SEND MESSAGE
 ========================================================= */
 
 async function sendMessage(){
 
-    const input =
-        document.getElementById(
-            "messageInput"
-        );
-
-    const message =
-        input.value.trim();
-
-    if (!message) {
+    if(agentRunning){
+        toast("Agent يعمل حاليًا...");
         return;
     }
 
-    input.value = "";
+    const input = $("message");
 
-    addMessage(
-        "user",
+    const message = input.value.trim();
+
+    if(!message){
+        return;
+    }
+
+    agentRunning = true;
+
+    $("sendBtn").disabled = true;
+
+    addActivity(
+        "يتم تشغيل Agent",
         message
     );
 
-    clearActivity();
+    try{
 
-    addActivity(
-        "Agent connected"
-    );
+        const response = await fetch(
+            API + "/agent",
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":"application/json"
+                },
+                body:JSON.stringify({
+                    message:message,
+                    project:currentProject
+                })
+            }
+        );
 
-    addActivity(
-        "Planning next step..."
-    );
+        if(!response.ok){
 
-    try {
-
-        const response =
-            await fetch(
-                `${API}/agent`,
-                {
-                    method: "POST",
-
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            message,
-                            project:
-                                currentProject
-                        })
-                }
-            );
-
-        if (
-            !response.ok
-        ) {
-
-            const errorText =
-                await response.text();
+            const text = await response.text();
 
             throw new Error(
-                errorText ||
-                `HTTP ${response.status}`
+                text || `HTTP ${response.status}`
             );
+
         }
 
-        if (
-            !response.body
-        ) {
-            throw new Error(
-                "Server returned no stream."
-            );
+        input.value = "";
+
+        input.style.height = "auto";
+
+        /*
+          Backend returns NDJSON stream.
+        */
+
+        if(!response.body){
+
+            toast("Agent بدأ.");
+
+            return;
         }
 
         const reader =
@@ -1286,25 +1062,17 @@ async function sendMessage(){
 
         let buffer = "";
 
-        while (true) {
+        while(true){
 
-            const {
-                value,
-                done
-            } =
+            const {value,done} =
                 await reader.read();
 
-            if (done) {
-                break;
-            }
+            if(done) break;
 
-            buffer +=
-                decoder.decode(
-                    value,
-                    {
-                        stream: true
-                    }
-                );
+            buffer += decoder.decode(
+                value,
+                {stream:true}
+            );
 
             const lines =
                 buffer.split("\n");
@@ -1312,293 +1080,197 @@ async function sendMessage(){
             buffer =
                 lines.pop() || "";
 
-            for (
-                const line
-                of lines
-            ) {
+            for(const line of lines){
 
-                const trimmed =
-                    line.trim();
+                if(!line.trim()) continue;
 
-                if (!trimmed) {
+                let event;
+
+                try{
+
+                    event = JSON.parse(line);
+
+                }catch{
+
                     continue;
-                }
-
-                try {
-
-                    const event =
-                        JSON.parse(
-                            trimmed
-                        );
-
-                    handleAgentEvent(
-                        event
-                    );
-
-                } catch (parseError) {
-
-                    console.warn(
-                        "Invalid event:",
-                        trimmed
-                    );
 
                 }
+
+                handleAgentEvent(event);
 
             }
+
         }
 
-    } catch (err) {
+    }catch(error){
+
+        console.error(error);
 
         addActivity(
-            err.message ||
-                "حدث خطأ.",
-            "error"
+            "حدث خطأ",
+            error.message
         );
 
-        addMessage(
-            "assistant",
-            err.message ||
-                "حدث خطأ."
-        );
+        toast(error.message);
+
+    }finally{
+
+        agentRunning = false;
+
+        $("sendBtn").disabled = false;
 
     }
 
 }
-
-
-document
-    .getElementById("sendBtn")
-    .addEventListener(
-        "click",
-        sendMessage
-    );
-
-
-document
-    .getElementById(
-        "messageInput"
-    )
-    .addEventListener(
-        "keydown",
-        event => {
-
-            if (
-                event.key === "Enter" &&
-                !event.shiftKey
-            ) {
-
-                event.preventDefault();
-
-                sendMessage();
-
-            }
-
-        }
-    );
-
 
 /* =========================================================
    AGENT EVENTS
 ========================================================= */
 
-function handleAgentEvent(
-    event
-){
+function handleAgentEvent(event){
 
-    switch (
-        event.type
-    ) {
+    const type = event.type;
 
-        case "connected":
+    if(type === "connected"){
 
-            currentJobId =
-                event.jobId ||
-                null;
+        addActivity(
+            "Agent connected",
+            JSON.stringify(event,null,2)
+        );
 
-            if (
-                event.project
-            ) {
-                addActivity(
-                    `Project: ${event.project}`
-                );
-            }
-
-            addActivity(
-                "Agent connected"
-            );
-
-            break;
-
-
-        case "start":
-
-            if (
-                event.project
-            ) {
-                addActivity(
-                    `Project: ${event.project}`
-                );
-            }
-
-            if (
-                event.keyName
-            ) {
-                addActivity(
-                    `Active AI Key: ${event.keyName}`
-                );
-            }
-
-            break;
-
-
-        case "thinking":
-
-            addActivity(
-                `Planning next step — Step ${event.step || "?"}`
-            );
-
-            break;
-
-
-        case "planning":
-
-            if (
-                event.message
-            ) {
-
-                addActivity(
-                    event.message
-                );
-
-            }
-
-            break;
-
-
-        case "tool_start":
-
-            addActivity(
-                `> ${event.message || event.tool || "Tool"}`,
-                "tool"
-            );
-
-            break;
-
-
-        case "tool_result":
-
-            addActivity(
-                `✓ ${event.tool || "Tool"} completed`,
-                "tool"
-            );
-
-            if (
-                event.tool ===
-                "terminal"
-            ) {
-
-                const result =
-                    event.result ||
-                    {};
-
-                if (
-                    result.stdout
-                ) {
-
-                    addTerminal(
-                        result.stdout
-                    );
-
-                }
-
-                if (
-                    result.stderr
-                ) {
-
-                    addTerminal(
-                        result.stderr
-                    );
-
-                }
-
-            }
-
-            break;
-
-
-        case "tool_error":
-
-            addActivity(
-                `✕ ${event.tool || "Tool"}: ${event.error || "حدث خطأ"}`,
-                "error"
-            );
-
-            break;
-
-
-        case "final":
-
-            if (
-                event.message
-            ) {
-
-                addMessage(
-                    "assistant",
-                    event.message
-                );
-
-            }
-
-            break;
-
-
-        case "error": {
-
-            const errorMessage =
-                event.message ||
-                event.error ||
-                "حدث خطأ.";
-
-            addActivity(
-                `Error: ${errorMessage}`,
-                "error"
-            );
-
-            if (
-                event.quota
-            ) {
-
-                addActivity(
-                    "غيّر مفتاح Gemini من Keys.",
-                    "error"
-                );
-
-            }
-
-            addMessage(
-                "assistant",
-                errorMessage
-            );
-
-            break;
-        }
-
-
-        case "done":
-
-            addActivity(
-                "Agent finished."
-            );
-
-            currentJobId =
-                null;
-
-            break;
-
+        return;
     }
 
-}
+    if(type === "start"){
 
+        addActivity(
+            "Agent started",
+            JSON.stringify(event,null,2)
+        );
+
+        return;
+    }
+
+    if(type === "thinking"){
+
+        addActivity(
+            "Thinking — Step " + (event.step || "?"),
+            event.message || ""
+        );
+
+        return;
+    }
+
+    if(type === "planning"){
+
+        addActivity(
+            "Planning",
+            event.message || ""
+        );
+
+        return;
+    }
+
+    if(type === "tool_start"){
+
+        const tool = event.tool || "Tool";
+
+        addActivity(
+            "Running: " + tool,
+            event.message || ""
+        );
+
+        addTerminal(
+            "Running " + tool
+        );
+
+        /*
+          Auto-open Activity page while agent works.
+        */
+
+        showPage("activity");
+
+        return;
+    }
+
+    if(type === "tool_result"){
+
+        addActivity(
+            "Tool completed: " +
+            (event.tool || "Tool"),
+            typeof event.result === "string"
+                ? event.result
+                : JSON.stringify(
+                    event.result,
+                    null,
+                    2
+                )
+        );
+
+        return;
+    }
+
+    if(type === "tool_error"){
+
+        addActivity(
+            "Tool error: " +
+            (event.tool || "Tool"),
+            event.error || ""
+        );
+
+        return;
+    }
+
+    if(type === "final"){
+
+        addActivity(
+            "Agent finished",
+            event.message || ""
+        );
+
+        toast("Agent خلص المهمة.");
+
+        return;
+    }
+
+    if(type === "error"){
+
+        const message =
+            event.message ||
+            event.error ||
+            "حدث خطأ.";
+
+        addActivity(
+            "Error",
+            message
+        );
+
+        toast(message);
+
+        return;
+    }
+
+    if(type === "done"){
+
+        addActivity(
+            "Done",
+            "Agent completed the run."
+        );
+
+        return;
+    }
+
+    /*
+      Unknown events are still shown
+      instead of being ignored.
+    */
+
+    addActivity(
+        type || "Agent event",
+        JSON.stringify(event,null,2)
+    );
+
+}
 
 /* =========================================================
    KEYS
@@ -1606,635 +1278,426 @@ function handleAgentEvent(
 
 async function loadKeys(){
 
-    const list =
-        document.getElementById(
-            "keysList"
-        );
+    const list = $("keysList");
 
     list.innerHTML =
         `<div class="empty">جاري تحميل المفاتيح...</div>`;
 
-    try {
-
-        const response =
-            await fetch(
-                `${API}/keys`
-            );
+    try{
 
         const data =
-            await response.json();
+            await apiFetch("/keys");
 
-        if (
-            !response.ok ||
-            !data.ok
-        ) {
-            throw new Error(
-                data.error ||
-                data.message ||
-                "Failed to load keys."
-            );
-        }
+        renderKeys(data);
 
-        renderKeys(
-            data
-        );
-
-    } catch (err) {
+    }catch(error){
 
         list.innerHTML =
-            `<div class="empty">${escapeHtml(
-                err.message
-            )}</div>`;
+            `<div class="empty">${escapeHtml(error.message)}</div>`;
 
     }
 
 }
 
+function renderKeys(data){
 
-function renderKeys(
-    data
-){
-
-    const list =
-        document.getElementById(
-            "keysList"
-        );
+    const list = $("keysList");
 
     list.innerHTML = "";
 
-    const activeId =
-        data.activeKeyId ||
-        null;
+    if(!data){
 
-    // PRIMARY
-    if (
-        data.primary
-    ) {
+        list.innerHTML =
+            `<div class="empty">لا توجد بيانات.</div>`;
 
-        list.appendChild(
-            createKeyCard(
-                data.primary,
-                activeId
-            )
-        );
-
+        return;
     }
 
-    // OTHER KEYS
-    if (
-        Array.isArray(
-            data.keys
-        )
-    ) {
+    const allKeys = [];
 
-        data.keys.forEach(
-            key => {
+    if(data.primary){
+        allKeys.push(data.primary);
+    }
 
-                list.appendChild(
-                    createKeyCard(
-                        key,
-                        activeId
-                    )
-                );
+    if(Array.isArray(data.keys)){
 
+        for(const key of data.keys){
+
+            /*
+              Avoid duplicating primary if backend ever
+              includes it inside keys.
+            */
+
+            if(key.id !== "primary"){
+                allKeys.push(key);
             }
-        );
+
+        }
 
     }
 
-    if (
-        !list.children.length
-    ) {
+    if(!allKeys.length){
 
         list.innerHTML =
             `<div class="empty">لا توجد مفاتيح محفوظة.</div>`;
 
+        return;
     }
 
-}
+    for(const key of allKeys){
 
+        const item =
+            document.createElement("div");
 
-function createKeyCard(
-    key,
-    activeId
-){
+        item.className = "keyItem";
 
-    const card =
-        document.createElement(
-            "div"
-        );
+        const active =
+            key.active === true ||
+            key.id === data.activeKeyId;
 
-    card.className =
-        "keyCard";
+        const enabled =
+            key.enabled !== false;
 
-    const info =
-        document.createElement(
-            "div"
-        );
+        const masked =
+            key.maskedKey ||
+            key.masked ||
+            "••••••••";
 
-    info.className =
-        "keyInfo";
+        item.innerHTML = `
 
-    const name =
-        document.createElement(
-            "div"
-        );
+            <div class="keyTop">
 
-    name.className =
-        "keyName";
+                <div class="keyName"></div>
 
-    name.textContent =
-        key.name ||
-        "Gemini Key";
-
-    const meta =
-        document.createElement(
-            "div"
-        );
-
-    meta.className =
-        "keyMeta";
-
-    meta.textContent =
-        key.maskedKey ||
-        "••••••••";
-
-    const badge =
-        document.createElement(
-            "div"
-        );
-
-    badge.className =
-        "badge";
-
-    if (
-        key.id === activeId
-    ) {
-
-        badge.classList.add(
-            "active"
-        );
-
-        badge.textContent =
-            "ACTIVE";
-
-    } else if (
-        key.status ===
-        "quota"
-    ) {
-
-        badge.classList.add(
-            "quota"
-        );
-
-        badge.textContent =
-            "QUOTA";
-
-    } else if (
-        key.enabled === false
-    ) {
-
-        badge.classList.add(
-            "stopped"
-        );
-
-        badge.textContent =
-            "STOPPED";
-
-    } else {
-
-        badge.textContent =
-            key.primary
-                ? "PRIMARY"
-                : "SAVED";
-
-    }
-
-    info.appendChild(
-        name
-    );
-
-    info.appendChild(
-        meta
-    );
-
-    info.appendChild(
-        badge
-    );
-
-    card.appendChild(
-        info
-    );
-
-
-    // ACTIONS
-
-    const actions =
-        document.createElement(
-            "div"
-        );
-
-    actions.style.display =
-        "flex";
-
-    actions.style.gap =
-        "6px";
-
-    actions.style.flexWrap =
-        "wrap";
-
-
-    if (
-        key.id !== activeId
-    ) {
-
-        const useBtn =
-            document.createElement(
-                "button"
-            );
-
-        useBtn.className =
-            "smallBtn";
-
-        useBtn.textContent =
-            key.enabled === false
-                ? "Enable"
-                : "Use";
-
-        useBtn.addEventListener(
-            "click",
-            () =>
-                useKey(
-                    key.id,
-                    key.enabled === false
-                        ? "enable"
-                        : "use"
-                )
-        );
-
-        actions.appendChild(
-            useBtn
-        );
-
-    }
-
-
-    if (
-        key.primary !== true
-    ) {
-
-        const stopBtn =
-            document.createElement(
-                "button"
-            );
-
-        stopBtn.className =
-            "dangerBtn";
-
-        stopBtn.textContent =
-            key.enabled === false
-                ? "Delete"
-                : "Stop";
-
-        stopBtn.addEventListener(
-            "click",
-            () => {
-
-                if (
-                    key.enabled === false
-                ) {
-
-                    deleteKey(
-                        key.id
-                    );
-
-                } else {
-
-                    stopKey(
-                        key.id
-                    );
-
+                ${
+                    active
+                    ? `<div class="badge">ACTIVE</div>`
+                    : ""
                 }
 
-            }
-        );
+            </div>
 
-        actions.appendChild(
-            stopBtn
-        );
+            <div class="keyValue"></div>
+
+            <div class="keyActions">
+
+                ${
+                    key.id === "primary"
+                    ? `
+                        <button
+                            data-action="use"
+                            data-id="primary">
+                            Use
+                        </button>
+                      `
+                    : `
+                        <button
+                            data-action="${
+                                enabled
+                                ? "use"
+                                : "enable"
+                            }"
+                            data-id="${escapeAttr(key.id)}">
+                            ${
+                                enabled
+                                ? "Use"
+                                : "Enable"
+                            }
+                        </button>
+
+                        <button
+                            data-action="stop"
+                            data-id="${escapeAttr(key.id)}">
+                            Stop
+                        </button>
+
+                        <button
+                            class="danger"
+                            data-action="delete"
+                            data-id="${escapeAttr(key.id)}">
+                            Delete
+                        </button>
+                      `
+                }
+
+            </div>
+        `;
+
+        item.querySelector(".keyName").textContent =
+            key.name || "Gemini Key";
+
+        item.querySelector(".keyValue").textContent =
+            masked;
+
+        item.querySelectorAll("[data-action]")
+            .forEach(button => {
+
+                button.addEventListener(
+                    "click",
+                    () => {
+
+                        const action =
+                            button.dataset.action;
+
+                        const id =
+                            button.dataset.id;
+
+                        if(action === "use"){
+                            useKey(id);
+                        }
+
+                        if(action === "enable"){
+                            enableKey(id);
+                        }
+
+                        if(action === "stop"){
+                            stopKey(id);
+                        }
+
+                        if(action === "delete"){
+                            deleteKey(id);
+                        }
+
+                    }
+                );
+
+            });
+
+        list.appendChild(item);
 
     }
 
-    card.appendChild(
-        actions
-    );
-
-    return card;
 }
 
+function escapeAttr(value){
+
+    return String(value)
+        .replaceAll("&","&amp;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;");
+}
 
 /* =========================================================
    ADD KEY
 ========================================================= */
 
+$("saveKeyBtn").addEventListener(
+    "click",
+    addKey
+);
+
+$("apiKeyInput").addEventListener(
+    "keydown",
+    e => {
+
+        if(e.key === "Enter"){
+            addKey();
+        }
+
+    }
+);
+
 async function addKey(){
 
-    const nameInput =
-        document.getElementById(
-            "keyName"
-        );
-
-    const keyInput =
-        document.getElementById(
-            "apiKeyInput"
-        );
-
     const name =
-        nameInput.value.trim();
+        $("keyName").value.trim();
 
     const apiKey =
-        keyInput.value.trim();
+        $("apiKeyInput").value.trim();
 
-    if (!apiKey) {
+    if(!apiKey){
 
-        alert(
-            "حط Gemini API Key أول."
-        );
+        toast("حط Gemini API Key أول.");
 
         return;
     }
 
     const button =
-        document.getElementById(
-            "saveKeyBtn"
-        );
+        $("saveKeyBtn");
 
-    button.disabled =
-        true;
+    button.disabled = true;
 
     button.textContent =
         "Saving...";
 
-    try {
+    try{
 
-        const response =
-            await fetch(
-                `${API}/keys`,
-                {
-                    method: "POST",
+        await apiFetch(
+            "/keys",
+            {
+                method:"POST",
+                body:JSON.stringify({
+                    name:
+                        name ||
+                        "Gemini Key",
+                    apiKey:apiKey
+                })
+            }
+        );
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
+        $("keyName").value = "";
+        $("apiKeyInput").value = "";
 
-                    body:
-                        JSON.stringify({
-                            name:
-                                name ||
-                                "Gemini Key",
-
-                            apiKey:
-                                apiKey
-                        })
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if (
-            !response.ok ||
-            !data.ok
-        ) {
-
-            throw new Error(
-                data.error ||
-                data.message ||
-                "Failed to save key."
-            );
-
-        }
-
-        nameInput.value =
-            "";
-
-        keyInput.value =
-            "";
+        toast("تم حفظ المفتاح وتفعيله.");
 
         await loadKeys();
 
-        addActivity(
-            `API Key saved: ${
-                data.activeKeyName ||
-                "Gemini Key"
-            }`
-        );
+    }catch(error){
 
-        alert(
-            "تم حفظ مفتاح Gemini وتفعيله ✅"
-        );
+        console.error(error);
 
-    } catch (err) {
-
-        alert(
-            err.message ||
+        toast(
+            error.message ||
             "حدث خطأ أثناء حفظ المفتاح."
         );
 
-    } finally {
+    }finally{
 
-        button.disabled =
-            false;
+        button.disabled = false;
 
         button.textContent =
-            "Save Gemini API Key";
+            "Add & Save";
 
     }
 
 }
 
-
-document
-    .getElementById(
-        "saveKeyBtn"
-    )
-    .addEventListener(
-        "click",
-        addKey
-    );
-
-
 /* =========================================================
-   USE / ENABLE
+   USE KEY
 ========================================================= */
 
-async function useKey(
-    id,
-    mode = "use"
-){
+async function useKey(id){
 
-    try {
+    try{
 
-        const response =
-            await fetch(
-                `${API}/keys/${mode}`,
-                {
-                    method: "POST",
+        await apiFetch(
+            "/keys/use",
+            {
+                method:"POST",
+                body:JSON.stringify({
+                    id:id
+                })
+            }
+        );
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            id
-                        })
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if (
-            !response.ok ||
-            !data.ok
-        ) {
-
-            throw new Error(
-                data.error ||
-                data.message ||
-                "Failed."
-            );
-
-        }
+        toast("تم تفعيل المفتاح.");
 
         await loadKeys();
 
-    } catch (err) {
+    }catch(error){
 
-        alert(
-            err.message
-        );
+        toast(error.message);
 
     }
 
 }
 
-
 /* =========================================================
-   STOP
+   ENABLE KEY
 ========================================================= */
 
-async function stopKey(
-    id
-){
+async function enableKey(id){
 
-    try {
+    try{
 
-        const response =
-            await fetch(
-                `${API}/keys/stop`,
-                {
-                    method: "POST",
+        await apiFetch(
+            "/keys/enable",
+            {
+                method:"POST",
+                body:JSON.stringify({
+                    id:id
+                })
+            }
+        );
 
-                    headers: {
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:
-                        JSON.stringify({
-                            id
-                        })
-                }
-            );
-
-        const data =
-            await response.json();
-
-        if (
-            !response.ok ||
-            !data.ok
-        ) {
-
-            throw new Error(
-                data.error ||
-                data.message ||
-                "Failed to stop key."
-            );
-
-        }
+        toast("تم تشغيل المفتاح.");
 
         await loadKeys();
 
-    } catch (err) {
+    }catch(error){
 
-        alert(
-            err.message
-        );
+        toast(error.message);
 
     }
 
 }
 
-
 /* =========================================================
-   DELETE
+   STOP KEY
 ========================================================= */
 
-async function deleteKey(
-    id
-){
+async function stopKey(id){
 
-    const okay =
-        confirm(
-            "هل تريد حذف هذا المفتاح نهائيًا؟"
+    try{
+
+        await apiFetch(
+            "/keys/stop",
+            {
+                method:"POST",
+                body:JSON.stringify({
+                    id:id
+                })
+            }
         );
 
-    if (!okay) {
+        toast(
+            "تم إيقاف المفتاح. إذا كان هو النشط سيتم الرجوع للـ Primary."
+        );
+
+        await loadKeys();
+
+    }catch(error){
+
+        toast(error.message);
+
+    }
+
+}
+
+/* =========================================================
+   DELETE KEY
+========================================================= */
+
+async function deleteKey(id){
+
+    if(id === "primary"){
+
+        toast("المفتاح الأساسي لا يمكن حذفه.");
+
         return;
     }
 
-    try {
+    const ok =
+        confirm(
+            "Delete this Gemini API key?"
+        );
 
-        const response =
-            await fetch(
-                `${API}/keys/${encodeURIComponent(id)}`,
-                {
-                    method: "DELETE"
-                }
-            );
+    if(!ok){
+        return;
+    }
 
-        const data =
-            await response.json();
+    try{
 
-        if (
-            !response.ok ||
-            !data.ok
-        ) {
+        await apiFetch(
+            "/keys/" +
+            encodeURIComponent(id),
+            {
+                method:"DELETE"
+            }
+        );
 
-            throw new Error(
-                data.error ||
-                data.message ||
-                "Failed to delete key."
-            );
-
-        }
+        toast("تم حذف المفتاح.");
 
         await loadKeys();
 
-    } catch (err) {
+    }catch(error){
 
-        alert(
-            err.message
-        );
+        toast(error.message);
 
     }
 
 }
-
 
 /* =========================================================
    FILES
@@ -2243,76 +1706,75 @@ async function deleteKey(
 async function loadFiles(){
 
     const list =
-        document.getElementById(
-            "filesList"
-        );
+        $("fileList");
 
-    try {
+    list.innerHTML =
+        `<div class="empty">جاري تحميل الملفات...</div>`;
 
-        const response =
-            await fetch(
-                `${API}/files?project=${encodeURIComponent(
-                    currentProject
-                )}`
-            );
+    try{
 
         const data =
-            await response.json();
-
-        if (
-            !response.ok ||
-            !data.ok
-        ) {
-            throw new Error(
-                data.error ||
-                "Failed to load files."
+            await apiFetch(
+                "/files?project=" +
+                encodeURIComponent(
+                    currentProject
+                )
             );
-        }
 
-        list.innerHTML = "";
+        renderFiles(data);
 
-        if (
-            !data.files?.length
-        ) {
-
-            list.innerHTML =
-                `<div class="empty">لا توجد ملفات في المشروع.</div>`;
-
-            return;
-        }
-
-        data.files.forEach(
-            file => {
-
-                const item =
-                    document.createElement(
-                        "div"
-                    );
-
-                item.className =
-                    "fileItem";
-
-                item.textContent =
-                    file.path;
-
-                list.appendChild(
-                    item
-                );
-
-            }
-        );
-
-    } catch (err) {
+    }catch(error){
 
         list.innerHTML =
-            `<div class="empty">${escapeHtml(
-                err.message
-            )}</div>`;
+            `<div class="empty">${escapeHtml(error.message)}</div>`;
 
     }
 
 }
 
+function renderFiles(data){
+
+    const list =
+        $("fileList");
+
+    list.innerHTML = "";
+
+    const files =
+        Array.isArray(data)
+            ? data
+            : data.files;
+
+    if(!Array.isArray(files) || !files.length){
+
+        list.innerHTML =
+            `<div class="empty">
+                لا توجد ملفات حاليًا.
+             </div>`;
+
+        return;
+    }
+
+    for(const file of files){
+
+        const item =
+            document.createElement("div");
+
+        item.className = "card";
+
+        item.textContent =
+            typeof file === "string"
+                ? file
+                : (
+                    file.path ||
+                    file.name ||
+                    JSON.stringify(file)
+                );
+
+        list.appendChild(item);
+
+    }
+
+}
 
 /* =========================================================
    CHATS
@@ -2321,174 +1783,107 @@ async function loadFiles(){
 async function loadChats(){
 
     const list =
-        document.getElementById(
-            "chatList"
-        );
+        $("chatList");
 
-    try {
+    list.innerHTML =
+        `<div class="empty">جاري تحميل المحادثات...</div>`;
 
-        const response =
-            await fetch(
-                `${API}/chats`
-            );
+    try{
 
         const data =
-            await response.json();
+            await apiFetch("/chats");
 
-        if (
-            !response.ok ||
-            !data.ok
-        ) {
-            throw new Error(
-                data.error ||
-                "Failed to load chats."
-            );
-        }
+        renderChats(data);
 
-        list.innerHTML = "";
-
-        if (
-            !data.chats?.length
-        ) {
-
-            list.innerHTML =
-                `<div class="empty">لا توجد محادثات محفوظة.</div>`;
-
-            return;
-        }
-
-        data.chats.forEach(
-            chat => {
-
-                const item =
-                    document.createElement(
-                        "div"
-                    );
-
-                item.className =
-                    "fileItem";
-
-                item.textContent =
-                    `${chat.id} — ${chat.messages} messages`;
-
-                list.appendChild(
-                    item
-                );
-
-            }
-        );
-
-    } catch (err) {
+    }catch(error){
 
         list.innerHTML =
-            `<div class="empty">${escapeHtml(
-                err.message
-            )}</div>`;
+            `<div class="empty">${escapeHtml(error.message)}</div>`;
 
     }
 
 }
 
+function renderChats(data){
 
-/* =========================================================
-   NEW CHAT
-========================================================= */
+    const list =
+        $("chatList");
 
-document
-    .getElementById(
-        "newChatBtn"
-    )
-    .addEventListener(
-        "click",
-        async () => {
+    list.innerHTML = "";
 
-            try {
+    const chats =
+        Array.isArray(data)
+            ? data
+            : data.chats;
 
-                const response =
-                    await fetch(
-                        `${API}/chats/new`,
-                        {
-                            method: "POST"
-                        }
-                    );
+    if(!Array.isArray(chats) || !chats.length){
 
-                const data =
-                    await response.json();
+        list.innerHTML =
+            `<div class="empty">
+                لا توجد محادثات محفوظة.
+             </div>`;
 
-                if (
-                    !response.ok ||
-                    !data.ok
-                ) {
-                    throw new Error(
-                        data.error ||
-                        "Failed."
-                    );
-                }
+        return;
+    }
 
-                currentChatId =
-                    data.id;
+    for(const chat of chats){
 
-                localStorage.setItem(
-                    "gemini_agent_chat",
-                    currentChatId
+        const item =
+            document.createElement("div");
+
+        item.className = "card";
+
+        item.textContent =
+            typeof chat === "string"
+                ? chat
+                : (
+                    chat.name ||
+                    chat.title ||
+                    chat.id ||
+                    JSON.stringify(chat)
                 );
 
-                alert(
-                    "تم إنشاء Chat جديد ✅"
-                );
+        list.appendChild(item);
 
-                loadChats();
-
-            } catch (err) {
-
-                alert(
-                    err.message
-                );
-
-            }
-
-        }
-    );
-
-
-/* =========================================================
-   ESCAPE
-========================================================= */
-
-function escapeHtml(
-    value
-){
-
-    return String(value || "")
-        .replace(
-            /&/g,
-            "&amp;"
-        )
-        .replace(
-            /</g,
-            "&lt;"
-        )
-        .replace(
-            />/g,
-            "&gt;"
-        )
-        .replace(
-            /"/g,
-            "&quot;"
-        )
-        .replace(
-            /'/g,
-            "&#039;"
-        );
+    }
 
 }
-
 
 /* =========================================================
    INITIAL
 ========================================================= */
 
-showPage("home");
+(async function(){
+
+    /*
+      Do not create fake data.
+      Everything starts empty.
+    */
+
+    try{
+
+        const health =
+            await apiFetch("/health");
+
+        console.log(
+            "Backend:",
+            health
+        );
+
+    }catch(error){
+
+        console.error(
+            "Backend connection failed:",
+            error
+        );
+
+        toast(
+            "تعذر الاتصال بالـAgent Backend."
+        );
+
+    }
+
+})();
 
 </script>
 
