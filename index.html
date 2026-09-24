@@ -1,1093 +1,836 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport"
-      content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+<html lang="ar" dir="rtl">
 
-<title>Gemini Agent</title>
+<head>
+
+<meta charset="UTF-8">
+
+<meta
+    name="viewport"
+    content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no"
+>
+
+<title>AI Agent</title>
 
 <style>
+
 *{
     box-sizing:border-box;
     -webkit-tap-highlight-color:transparent;
 }
 
-html,body{
+html,
+body{
     margin:0;
     width:100%;
     height:100%;
     overflow:hidden;
-    background:#07070b;
-    color:#fff;
-    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "SF Pro Display",
+        Arial,
+        sans-serif;
+    background:#07080d;
+    color:#f5f7ff;
 }
 
-button,input,textarea{
+button,
+textarea,
+input{
     font:inherit;
 }
 
 button{
     border:0;
     color:inherit;
+}
+
+#app{
+    width:100%;
+    height:100%;
+    display:flex;
+    overflow:hidden;
+}
+
+
+/* =====================================================
+   SIDEBAR
+===================================================== */
+
+#sidebar{
+    position:fixed;
+    top:0;
+    right:0;
+    width:290px;
+    height:100%;
+    z-index:100;
+    background:
+        linear-gradient(
+            180deg,
+            rgba(18,20,31,.98),
+            rgba(8,9,15,.99)
+        );
+    border-left:1px solid rgba(255,255,255,.08);
+    transform:translateX(100%);
+    transition:.25s ease;
+    padding:18px;
+    overflow-y:auto;
+}
+
+#sidebar.open{
+    transform:translateX(0);
+}
+
+.sidebar-top{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:18px;
+}
+
+.logo{
+    font-size:20px;
+    font-weight:800;
+}
+
+.close-btn{
+    width:40px;
+    height:40px;
+    border-radius:12px;
+    background:rgba(255,255,255,.06);
     cursor:pointer;
 }
 
-.app{
-    position:relative;
+.new-chat{
     width:100%;
-    height:100%;
-    overflow:hidden;
+    height:48px;
+    border-radius:14px;
     background:
-        radial-gradient(
-            circle at 50% -10%,
-            rgba(110,60,255,.14),
-            transparent 38%
-        ),
-        #07070b;
+        linear-gradient(
+            135deg,
+            #6d5dfc,
+            #8c4dff
+        );
+    font-weight:800;
+    cursor:pointer;
+    margin-bottom:16px;
 }
 
+.nav{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.nav button{
+    width:100%;
+    height:46px;
+    padding:0 14px;
+    border-radius:13px;
+    background:transparent;
+    text-align:right;
+    cursor:pointer;
+}
+
+.nav button.active,
+.nav button:active{
+    background:rgba(255,255,255,.08);
+}
+
+.section-title{
+    font-size:12px;
+    opacity:.45;
+    margin:
+        22px 6px 9px;
+}
+
+.chat-list{
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+.chat-item{
+    padding:11px;
+    border-radius:12px;
+    background:rgba(255,255,255,.04);
+    cursor:pointer;
+    overflow:hidden;
+}
+
+.chat-item-title{
+    font-size:13px;
+    font-weight:700;
+    white-space:nowrap;
+    overflow:hidden;
+    text-overflow:ellipsis;
+}
+
+.chat-item-project{
+    margin-top:4px;
+    font-size:10px;
+    opacity:.45;
+}
+
+
 /* =====================================================
-   TOP BAR
+   OVERLAY
 ===================================================== */
 
-.topbar{
+#overlay{
     position:fixed;
-    top:0;
-    left:0;
-    right:0;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(4px);
+    z-index:90;
+    display:none;
+}
 
-    height:calc(62px + env(safe-area-inset-top));
+#overlay.show{
+    display:block;
+}
 
-    padding:
-        env(safe-area-inset-top)
-        14px
-        0
-        14px;
 
+/* =====================================================
+   MAIN
+===================================================== */
+
+#main{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+}
+
+.topbar{
+    height:62px;
+    flex:none;
     display:flex;
     align-items:center;
+    justify-content:space-between;
+    padding:
+        0 14px;
+    border-bottom:1px solid rgba(255,255,255,.07);
+    background:rgba(8,9,14,.85);
+    backdrop-filter:blur(20px);
+}
 
-    background:rgba(7,7,11,.80);
-
-    border-bottom:
-        1px solid rgba(255,255,255,.07);
-
-    backdrop-filter:blur(24px);
-    -webkit-backdrop-filter:blur(24px);
-
-    z-index:100;
+.topbar-title{
+    font-weight:800;
+    font-size:16px;
 }
 
 .menu-btn{
     width:42px;
     height:42px;
-
     border-radius:13px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    background:rgba(255,255,255,.055);
-
-    border:
-        1px solid rgba(255,255,255,.08);
-
+    background:rgba(255,255,255,.06);
+    cursor:pointer;
     font-size:21px;
-
-    transition:.16s;
-}
-
-.menu-btn:active{
-    transform:scale(.91);
-    background:rgba(130,80,255,.18);
-}
-
-.logo{
-    margin-left:12px;
-
-    font-size:16px;
-    font-weight:850;
-
-    letter-spacing:.3px;
-}
-
-.logo span{
-    color:#9a68ff;
 }
 
 .status{
-    margin-left:auto;
-
-    display:flex;
-    align-items:center;
-
-    gap:6px;
-
-    color:#777783;
-
-    font-size:10px;
+    font-size:11px;
+    opacity:.55;
 }
 
-.status-dot{
-    width:7px;
-    height:7px;
-
-    border-radius:50%;
-
-    background:#555;
-}
 
 /* =====================================================
    WORKSPACE
 ===================================================== */
 
-.workspace{
-    position:absolute;
-
-    top:calc(62px + env(safe-area-inset-top));
-    left:0;
-    right:0;
-    bottom:0;
-
-    overflow:auto;
-
-    -webkit-overflow-scrolling:touch;
+#workspace{
+    flex:1;
+    overflow-y:auto;
+    overflow-x:hidden;
+    padding:16px;
+    padding-bottom:170px;
 }
 
 .page{
     display:none;
-
-    width:100%;
     min-height:100%;
-
-    padding:22px 14px 30px;
 }
 
 .page.active{
     display:block;
 }
 
+
 /* =====================================================
    HOME
 ===================================================== */
 
-.home{
+.home-empty{
     min-height:
-        calc(
-            100vh -
-            62px -
-            env(safe-area-inset-top)
-        );
-
+        calc(100vh - 240px);
     display:flex;
+    align-items:center;
+    justify-content:center;
     flex-direction:column;
-
-    align-items:center;
-    justify-content:center;
-
     text-align:center;
-
-    padding-bottom:30px;
+    opacity:.9;
 }
 
-.home-orb{
-    width:82px;
-    height:82px;
-
+.home-icon{
+    width:76px;
+    height:76px;
+    border-radius:25px;
     display:flex;
     align-items:center;
     justify-content:center;
-
-    margin-bottom:21px;
-
-    border-radius:27px;
-
     background:
         linear-gradient(
             135deg,
-            rgba(145,90,255,.20),
-            rgba(55,130,255,.07)
+            rgba(112,92,255,.28),
+            rgba(155,70,255,.18)
         );
-
-    border:
-        1px solid rgba(150,100,255,.25);
-
-    box-shadow:
-        0 0 50px rgba(120,70,255,.13),
-        inset 0 0 30px rgba(255,255,255,.025);
-
-    font-size:34px;
-}
-
-.home h1{
-    margin:0;
-
-    font-size:27px;
-
-    font-weight:850;
-
-    letter-spacing:-.7px;
-}
-
-.home p{
-    margin:10px 0 0;
-
-    max-width:320px;
-
-    color:#858590;
-
-    font-size:13px;
-
-    line-height:1.55;
-}
-
-/* =====================================================
-   COMPOSER
-===================================================== */
-
-.composer{
-    position:fixed;
-
-    left:12px;
-    right:12px;
-
-    bottom:
-        calc(
-            12px +
-            env(safe-area-inset-bottom)
-        );
-
-    min-height:58px;
-
-    padding:8px;
-
-    display:flex;
-    align-items:flex-end;
-
-    border-radius:19px;
-
-    background:rgba(17,17,24,.94);
-
-    border:
-        1px solid rgba(255,255,255,.09);
-
-    box-shadow:
-        0 15px 45px rgba(0,0,0,.45),
-        inset 0 1px 0 rgba(255,255,255,.025);
-
-    backdrop-filter:blur(25px);
-    -webkit-backdrop-filter:blur(25px);
-
-    z-index:120;
-}
-
-.composer-left{
-    display:flex;
-    align-items:center;
-
-    align-self:flex-end;
-}
-
-.plus-btn{
-    width:40px;
-    height:40px;
-
-    border-radius:13px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    background:rgba(255,255,255,.055);
-
-    font-size:22px;
-
-    transition:.15s;
-}
-
-.plus-btn:active{
-    transform:scale(.90);
-}
-
-.prompt{
-    flex:1;
-
-    min-width:0;
-
-    min-height:40px;
-    max-height:110px;
-
-    margin:
-        0
-        7px;
-
-    padding:
-        10px
-        3px;
-
-    border:0;
-    outline:0;
-
-    resize:none;
-
-    background:transparent;
-
-    color:#fff;
-
-    font-size:14px;
-
-    line-height:20px;
-}
-
-.prompt::placeholder{
-    color:#666672;
-}
-
-.send-btn{
-    width:40px;
-    height:40px;
-
-    border-radius:13px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    background:
-        linear-gradient(
-            135deg,
-            #8d5cff,
-            #5b5cff
-        );
-
-    box-shadow:
-        0 5px 20px rgba(110,80,255,.30);
-
-    font-size:18px;
-
-    transition:.15s;
-}
-
-.send-btn:active{
-    transform:scale(.90);
-}
-
-/* =====================================================
-   OVERLAY
-===================================================== */
-
-.overlay{
-    position:fixed;
-    inset:0;
-
-    background:rgba(0,0,0,.58);
-
-    opacity:0;
-
-    pointer-events:none;
-
-    transition:.22s;
-
-    z-index:200;
-}
-
-.overlay.open{
-    opacity:1;
-    pointer-events:auto;
-}
-
-/* =====================================================
-   SIDEBAR
-===================================================== */
-
-.sidebar{
-    position:fixed;
-
-    top:0;
-    left:0;
-    bottom:0;
-
-    width:min(285px,82vw);
-
-    padding:
-        calc(15px + env(safe-area-inset-top))
-        13px
-        calc(15px + env(safe-area-inset-bottom));
-
-    background:
-        linear-gradient(
-            180deg,
-            #101016,
-            #09090d
-        );
-
-    border-right:
-        1px solid rgba(255,255,255,.08);
-
-    transform:translateX(-105%);
-
-    transition:
-        transform .25s cubic-bezier(.2,.8,.2,1);
-
-    z-index:210;
-
-    overflow:auto;
-
-    box-shadow:
-        20px 0 60px rgba(0,0,0,.35);
-}
-
-.sidebar.open{
-    transform:translateX(0);
-}
-
-.sidebar-head{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-
+    border:1px solid rgba(255,255,255,.1);
+    font-size:30px;
     margin-bottom:18px;
 }
 
-.sidebar-title{
-    font-size:17px;
-    font-weight:850;
-}
-
-.close-sidebar{
-    width:38px;
-    height:38px;
-
-    border-radius:12px;
-
-    background:rgba(255,255,255,.055);
-
-    font-size:19px;
-}
-
-.side-section{
-    margin-top:20px;
-}
-
-.side-label{
-    padding:0 10px;
-
-    margin-bottom:7px;
-
-    color:#62626d;
-
-    font-size:10px;
-    font-weight:750;
-
-    letter-spacing:1px;
-
-    text-transform:uppercase;
-}
-
-.nav-btn{
-    width:100%;
-
-    min-height:47px;
-
-    display:flex;
-    align-items:center;
-
-    gap:12px;
-
-    padding:0 12px;
-
-    margin-bottom:5px;
-
-    border-radius:13px;
-
-    background:transparent;
-
-    color:#a7a7b1;
-
-    text-align:left;
-
-    transition:.15s;
-}
-
-.nav-btn:active{
-    transform:scale(.98);
-}
-
-.nav-btn.active{
-    color:#fff;
-
-    background:
-        linear-gradient(
-            90deg,
-            rgba(130,80,255,.15),
-            rgba(130,80,255,.03)
-        );
-
-    border:
-        1px solid rgba(140,90,255,.15);
-}
-
-.nav-icon{
-    width:25px;
-
-    text-align:center;
-
-    font-size:17px;
-}
-
-.nav-text{
-    font-size:13px;
-    font-weight:650;
-}
-
-.project-box{
-    margin-top:20px;
-
-    padding:12px;
-
-    border-radius:15px;
-
-    background:rgba(255,255,255,.035);
-
-    border:
-        1px solid rgba(255,255,255,.07);
-}
-
-.project-name{
-    font-size:12px;
-    font-weight:750;
-}
-
-.project-status{
-    margin-top:4px;
-
-    color:#666672;
-
-    font-size:10px;
-}
-
-/* =====================================================
-   PAGE HEADER
-===================================================== */
-
-.page-title{
-    margin:3px 0 7px;
-
-    font-size:23px;
-    font-weight:850;
-}
-
-.page-subtitle{
-    margin:0 0 20px;
-
-    color:#777782;
-
-    font-size:12px;
-}
-
-/* =====================================================
-   EMPTY STATE
-===================================================== */
-
-.empty{
-    min-height:55vh;
-
-    display:flex;
-    flex-direction:column;
-
-    align-items:center;
-    justify-content:center;
-
-    text-align:center;
-}
-
-.empty-icon{
-    width:64px;
-    height:64px;
-
-    margin-bottom:16px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    border-radius:21px;
-
-    background:rgba(255,255,255,.035);
-
-    border:
-        1px solid rgba(255,255,255,.07);
-
+.home-empty h1{
+    margin:0;
     font-size:25px;
 }
 
-.empty-title{
-    font-size:16px;
-    font-weight:800;
+.home-empty p{
+    margin-top:9px;
+    opacity:.45;
+    font-size:13px;
 }
 
-.empty-text{
-    max-width:290px;
-
-    margin-top:7px;
-
-    color:#666672;
-
-    font-size:12px;
-
-    line-height:1.5;
-}
 
 /* =====================================================
-   FILES
+   MESSAGES
 ===================================================== */
 
-.file-row{
-    width:100%;
-
-    min-height:50px;
-
+.messages{
     display:flex;
-    align-items:center;
-
-    padding:0 13px;
-
-    margin-bottom:6px;
-
-    border-radius:13px;
-
-    background:rgba(255,255,255,.025);
-
-    border:
-        1px solid rgba(255,255,255,.05);
-
-    color:#a0a0aa;
-
-    font-size:12px;
-
-    cursor:pointer;
-
-    transition:.15s;
+    flex-direction:column;
+    gap:13px;
 }
 
-.file-row:active{
-    transform:scale(.985);
+.message{
+    max-width:92%;
+    padding:13px 15px;
+    border-radius:17px;
+    line-height:1.65;
+    white-space:pre-wrap;
+    word-break:break-word;
+}
 
+.message.user{
+    align-self:flex-start;
     background:
-        rgba(130,80,255,.08);
+        linear-gradient(
+            135deg,
+            #5d4de9,
+            #7846df
+        );
+    border-bottom-left-radius:5px;
 }
+
+.message.assistant{
+    align-self:flex-end;
+    background:rgba(255,255,255,.055);
+    border:1px solid rgba(255,255,255,.07);
+    border-bottom-right-radius:5px;
+}
+
 
 /* =====================================================
    ACTIVITY
 ===================================================== */
 
-.activity-list{
-    display:flex;
-    flex-direction:column;
-
-    gap:8px;
-}
-
-.activity{
+.activity-card{
+    margin-top:14px;
+    border:1px solid rgba(255,255,255,.08);
+    border-radius:17px;
+    background:rgba(255,255,255,.035);
     overflow:hidden;
-
-    border-radius:14px;
-
-    background:rgba(255,255,255,.025);
-
-    border:
-        1px solid rgba(255,255,255,.07);
 }
 
 .activity-head{
-    min-height:47px;
-
+    padding:14px;
     display:flex;
     align-items:center;
-
-    padding:0 13px;
-
-    color:#85858f;
-
-    font-size:12px;
-
+    justify-content:space-between;
     cursor:pointer;
 }
 
-.activity-arrow{
-    margin-left:auto;
+.activity-title{
+    font-weight:800;
+}
 
+.activity-arrow{
     transition:.2s;
 }
 
-.activity.open .activity-arrow{
+.activity-card.closed .activity-arrow{
     transform:rotate(180deg);
 }
 
 .activity-body{
+    border-top:1px solid rgba(255,255,255,.06);
+    padding:12px;
+    display:flex;
+    flex-direction:column;
+    gap:9px;
+}
+
+.activity-card.closed .activity-body{
     display:none;
+}
 
-    padding:
-        0
-        13px
-        13px;
+.activity-row{
+    display:flex;
+    align-items:flex-start;
+    gap:10px;
+    font-size:12px;
+}
 
-    color:#60606b;
+.activity-dot{
+    width:8px;
+    height:8px;
+    border-radius:50%;
+    background:#7d6cff;
+    margin-top:6px;
+    flex:none;
+}
 
-    font-size:11px;
+.activity-text{
+    opacity:.75;
+}
 
-    line-height:1.6;
+.activity-tool{
+    font-family:monospace;
+    direction:ltr;
+    text-align:left;
+    opacity:.55;
+}
 
-    white-space:pre-wrap;
 
+/* =====================================================
+   FILES
+===================================================== */
+
+.file-toolbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    margin-bottom:12px;
+}
+
+.file-list{
+    display:flex;
+    flex-direction:column;
+    gap:7px;
+}
+
+.file{
+    padding:12px;
+    border-radius:12px;
+    background:rgba(255,255,255,.04);
+    cursor:pointer;
+    direction:ltr;
+    text-align:left;
+}
+
+.file:hover{
+    background:rgba(255,255,255,.07);
+}
+
+.file-size{
+    opacity:.4;
+    font-size:10px;
+    margin-top:3px;
+}
+
+
+/* =====================================================
+   CODE VIEW
+===================================================== */
+
+.code-view{
+    margin-top:14px;
+    border-radius:16px;
+    background:#05060a;
+    border:1px solid rgba(255,255,255,.08);
+    overflow:hidden;
+}
+
+.code-head{
+    padding:10px 13px;
+    border-bottom:1px solid rgba(255,255,255,.06);
+    font-size:12px;
+    direction:ltr;
+    text-align:left;
+}
+
+pre{
+    margin:0;
+    padding:15px;
     overflow:auto;
+    direction:ltr;
+    text-align:left;
+    font-family:
+        ui-monospace,
+        SFMono-Regular,
+        Menlo,
+        monospace;
+    font-size:12px;
+    line-height:1.6;
 }
 
-.activity.open .activity-body{
-    display:block;
-}
 
 /* =====================================================
    TERMINAL
 ===================================================== */
 
 .terminal-box{
-    position:relative;
-
-    height:
-        calc(
-            100vh -
-            62px -
-            env(safe-area-inset-top) -
-            44px
-        );
-
-    min-height:400px;
-
-    overflow:hidden;
-
     border-radius:17px;
-
-    background:#050507;
-
-    border:
-        1px solid rgba(255,255,255,.08);
+    overflow:hidden;
+    border:1px solid rgba(255,255,255,.08);
+    background:#030407;
 }
 
 .terminal-head{
-    height:46px;
-
+    height:45px;
     display:flex;
     align-items:center;
-
-    padding:0 12px;
-
-    background:#0d0d12;
-
-    border-bottom:
-        1px solid rgba(255,255,255,.07);
+    justify-content:space-between;
+    padding:0 13px;
+    background:rgba(255,255,255,.04);
 }
 
 .terminal-title{
+    font-family:monospace;
     font-size:12px;
-    font-weight:750;
 }
 
 .terminal-actions{
-    margin-left:auto;
-
     display:flex;
-
     gap:6px;
 }
 
-.term-btn{
-    width:31px;
-    height:31px;
-
-    display:flex;
-    align-items:center;
-    justify-content:center;
-
-    border-radius:9px;
-
-    background:rgba(255,255,255,.05);
-
-    color:#9999a4;
-
-    font-size:15px;
+.terminal-actions button{
+    width:30px;
+    height:30px;
+    border-radius:8px;
+    background:rgba(255,255,255,.07);
+    cursor:pointer;
 }
 
-.term-btn:active{
-    transform:scale(.90);
-}
-
-.terminal-body{
-    height:calc(100% - 46px);
-
+#terminalOutput{
+    min-height:300px;
+    max-height:65vh;
     overflow:auto;
-
-    padding:14px;
-
-    color:#777783;
-
-    font-family:
-        ui-monospace,
-        SFMono-Regular,
-        Menlo,
-        monospace;
-
-    font-size:11px;
-
-    line-height:1.6;
-
+    padding:15px;
+    direction:ltr;
+    text-align:left;
+    font-family:monospace;
+    font-size:12px;
     white-space:pre-wrap;
 }
 
-.terminal-empty{
-    color:#41414a;
-}
 
 /* =====================================================
-   PREVIEW
+   COMPOSER
 ===================================================== */
 
-.preview-frame{
-    width:100%;
-
-    height:
-        calc(
-            100vh -
-            62px -
-            env(safe-area-inset-top) -
-            45px
-        );
-
-    min-height:400px;
-
-    overflow:hidden;
-
-    border-radius:17px;
-
-    background:#050507;
-
-    border:
-        1px solid rgba(255,255,255,.08);
-}
-
-/* =====================================================
-   SETTINGS
-===================================================== */
-
-.setting{
-    padding:14px;
-
-    margin-bottom:8px;
-
-    border-radius:14px;
-
-    background:rgba(255,255,255,.025);
-
-    border:
-        1px solid rgba(255,255,255,.06);
-}
-
-.setting-title{
-    font-size:13px;
-    font-weight:700;
-}
-
-.setting-description{
-    margin-top:5px;
-
-    color:#666672;
-
-    font-size:11px;
-}
-
-/* =====================================================
-   ATTACHMENT MENU
-===================================================== */
-
-.attach-menu{
+#composer{
     position:fixed;
-
-    left:12px;
-
-    bottom:
-        calc(
-            80px +
-            env(safe-area-inset-bottom)
+    left:0;
+    right:0;
+    bottom:0;
+    z-index:50;
+    padding:
+        10px 12px
+        calc(10px + env(safe-area-inset-bottom));
+    background:
+        linear-gradient(
+            180deg,
+            transparent,
+            rgba(7,8,13,.94) 28%
         );
-
-    width:210px;
-
-    padding:7px;
-
-    border-radius:17px;
-
-    background:rgba(20,20,27,.97);
-
-    border:
-        1px solid rgba(255,255,255,.09);
-
-    backdrop-filter:blur(25px);
-    -webkit-backdrop-filter:blur(25px);
-
-    box-shadow:
-        0 15px 45px rgba(0,0,0,.4);
-
-    opacity:0;
-
-    pointer-events:none;
-
-    transform:
-        translateY(8px)
-        scale(.97);
-
-    transition:.18s;
-
-    z-index:130;
 }
 
-.attach-menu.open{
-    opacity:1;
-
-    pointer-events:auto;
-
-    transform:
-        translateY(0)
-        scale(1);
-}
-
-.attach-item{
-    width:100%;
-    height:43px;
-
+.composer-inner{
+    max-width:900px;
+    margin:auto;
+    padding:9px;
     display:flex;
-    align-items:center;
+    align-items:flex-end;
+    gap:8px;
+    border-radius:20px;
+    background:
+        rgba(20,21,31,.94);
+    border:1px solid rgba(255,255,255,.1);
+    box-shadow:
+        0 15px 50px rgba(0,0,0,.4);
+    backdrop-filter:blur(22px);
+}
 
-    gap:10px;
-
-    padding:0 10px;
-
-    border-radius:11px;
-
+#prompt{
+    flex:1;
+    min-height:44px;
+    max-height:150px;
+    resize:none;
+    border:0;
+    outline:0;
     background:transparent;
-
-    color:#9999a4;
-
-    font-size:12px;
-
-    text-align:left;
+    color:white;
+    padding:
+        11px 8px;
+    line-height:1.5;
 }
 
-.attach-item:active{
-    background:rgba(255,255,255,.06);
+#prompt::placeholder{
+    color:rgba(255,255,255,.3);
 }
+
+.send-btn,
+.stop-btn{
+    width:45px;
+    height:45px;
+    border-radius:14px;
+    cursor:pointer;
+    flex:none;
+}
+
+.send-btn{
+    background:
+        linear-gradient(
+            135deg,
+            #6e5cff,
+            #984fff
+        );
+}
+
+.stop-btn{
+    display:none;
+    background:
+        linear-gradient(
+            135deg,
+            #ef4444,
+            #b91c1c
+        );
+}
+
+body.running .send-btn{
+    display:none;
+}
+
+body.running .stop-btn{
+    display:block;
+}
+
 
 /* =====================================================
-   DESKTOP
+   RESPONSIVE
 ===================================================== */
 
-@media(min-width:800px){
+@media(
+    min-width:800px
+){
 
-    .page{
-        max-width:1000px;
-        margin:auto;
-
-        padding-left:30px;
-        padding-right:30px;
+    #workspace{
+        padding-left:20%;
+        padding-right:20%;
     }
 
-    .composer{
-        left:50%;
-        right:auto;
-
-        width:min(
-            700px,
-            calc(100% - 30px)
-        );
-
-        transform:translateX(-50%);
+    #composer{
+        padding-left:20%;
+        padding-right:20%;
     }
 }
+
 </style>
+
 </head>
 
 <body>
 
-<div class="app">
+<div id="app">
 
-<!-- =====================================================
-     TOP BAR
-===================================================== -->
+
+<!-- ===================================================
+     SIDEBAR
+=================================================== -->
+
+<aside id="sidebar">
+
+    <div class="sidebar-top">
+
+        <div class="logo">
+            AI Agent
+        </div>
+
+        <button
+            class="close-btn"
+            id="closeSidebar"
+        >
+            ×
+        </button>
+
+    </div>
+
+
+    <button
+        class="new-chat"
+        id="newChat"
+    >
+        ＋ New Chat
+    </button>
+
+
+    <div class="nav">
+
+        <button
+            data-page="home"
+            class="active"
+        >
+            🏠 Home
+        </button>
+
+        <button
+            data-page="chats"
+        >
+            💬 Chats
+        </button>
+
+        <button
+            data-page="files"
+        >
+            📁 Files
+        </button>
+
+        <button
+            data-page="activity"
+        >
+            ⚡ Agent Activity
+        </button>
+
+        <button
+            data-page="terminal"
+        >
+            ⌘ Terminal
+        </button>
+
+    </div>
+
+
+    <div class="section-title">
+        Recent Chats
+    </div>
+
+    <div
+        class="chat-list"
+        id="chatList"
+    ></div>
+
+</aside>
+
+
+<div
+    id="overlay"
+></div>
+
+
+<!-- ===================================================
+     MAIN
+=================================================== -->
+
+<main id="main">
+
 
 <header class="topbar">
 
     <button
         class="menu-btn"
         id="menuBtn"
-        type="button">
-
+    >
         ☰
-
     </button>
 
-    <div class="logo">
-        Gemini <span>Agent</span>
+    <div
+        class="topbar-title"
+        id="topTitle"
+    >
+        AI Agent
     </div>
 
-    <div class="status">
-
-        <span
-            class="status-dot"
-            id="statusDot">
-        </span>
-
-        <span id="statusText">
-            Ready
-        </span>
-
+    <div
+        class="status"
+        id="status"
+    >
+        Ready
     </div>
 
 </header>
 
 
-<!-- =====================================================
-     WORKSPACE
-===================================================== -->
-
-<main
-    class="workspace"
-    id="workspace">
+<div id="workspace">
 
 
 <!-- HOME -->
 
 <section
     class="page active"
-    id="page-home">
+    id="page-home"
+>
 
-    <div class="home">
+    <div
+        id="homeEmpty"
+        class="home-empty"
+    >
 
-        <div class="home-orb">
+        <div class="home-icon">
             ✦
         </div>
 
         <h1>
-            What can I build for you?
+            What can I build?
         </h1>
 
         <p>
-            Describe your idea and the Agent
-            can plan, create, edit, run and verify
-            your project.
+            Your AI Agent is ready.
         </p>
 
     </div>
+
+
+    <div
+        class="messages"
+        id="messages"
+    ></div>
+
+
+    <div
+        id="activityContainer"
+    ></div>
+
+</section>
+
+
+<!-- CHATS -->
+
+<section
+    class="page"
+    id="page-chats"
+>
+
+    <h2>
+        Chats
+    </h2>
+
+    <div
+        class="chat-list"
+        id="fullChatList"
+    ></div>
 
 </section>
 
@@ -1096,37 +839,31 @@ button{
 
 <section
     class="page"
-    id="page-files">
+    id="page-files"
+>
 
-    <div class="page-title">
-        Files
-    </div>
+    <div class="file-toolbar">
 
-    <div class="page-subtitle">
-        Project files
+        <strong>
+            Project Files
+        </strong>
+
+        <button
+            onclick="refreshFiles()"
+        >
+            ↻
+        </button>
+
     </div>
 
     <div
-        id="filesList">
+        class="file-list"
+        id="fileList"
+    ></div>
 
-        <div class="empty">
-
-            <div class="empty-icon">
-                ⌁
-            </div>
-
-            <div class="empty-title">
-                No files yet
-            </div>
-
-            <div class="empty-text">
-                Files created by the Agent
-                will appear here.
-            </div>
-
-        </div>
-
-    </div>
+    <div
+        id="codeView"
+    ></div>
 
 </section>
 
@@ -1135,38 +872,16 @@ button{
 
 <section
     class="page"
-    id="page-activity">
+    id="page-activity"
+>
 
-    <div class="page-title">
+    <h2>
         Agent Activity
-    </div>
-
-    <div class="page-subtitle">
-        Tool execution and project activity
-    </div>
+    </h2>
 
     <div
-        class="activity-list"
-        id="activityList">
-
-        <div class="empty">
-
-            <div class="empty-icon">
-                ◌
-            </div>
-
-            <div class="empty-title">
-                No activity
-            </div>
-
-            <div class="empty-text">
-                Agent actions will appear
-                here when a task starts.
-            </div>
-
-        </div>
-
-    </div>
+        id="fullActivity"
+    ></div>
 
 </section>
 
@@ -1175,42 +890,23 @@ button{
 
 <section
     class="page"
-    id="page-terminal">
-
-    <div class="page-title">
-        Terminal
-    </div>
-
-    <div class="page-subtitle">
-        Agent terminal
-    </div>
+    id="page-terminal"
+>
 
     <div class="terminal-box">
 
         <div class="terminal-head">
 
             <div class="terminal-title">
-                Terminal
+                agent@project:~
             </div>
 
             <div class="terminal-actions">
 
                 <button
-                    class="term-btn"
-                    id="terminalMinBtn"
-                    type="button">
-
-                    −
-
-                </button>
-
-                <button
-                    class="term-btn"
-                    id="terminalClearBtn"
-                    type="button">
-
+                    id="clearTerminal"
+                >
                     ×
-
                 </button>
 
             </div>
@@ -1218,370 +914,51 @@ button{
         </div>
 
         <div
-            class="terminal-body"
-            id="terminalBody">
-
-            <span class="terminal-empty">
-                Terminal is empty.
-            </span>
-
-        </div>
+            id="terminalOutput"
+        ></div>
 
     </div>
 
 </section>
 
 
-<!-- PREVIEW -->
+</div>
 
-<section
-    class="page"
-    id="page-preview">
 
-    <div class="page-title">
-        Preview
-    </div>
+<!-- ===================================================
+     COMPOSER
+=================================================== -->
 
-    <div class="page-subtitle">
-        Project preview
-    </div>
+<div id="composer">
 
-    <div
-        class="preview-frame"
-        id="previewFrame">
+    <div class="composer-inner">
 
-        <div class="empty">
+        <textarea
+            id="prompt"
+            placeholder="اشرح لي وش تبي أبني..."
+            rows="1"
+        ></textarea>
 
-            <div class="empty-icon">
-                ◇
-            </div>
+        <button
+            class="send-btn"
+            id="sendBtn"
+        >
+            ↑
+        </button>
 
-            <div class="empty-title">
-                No preview
-            </div>
-
-            <div class="empty-text">
-                A project preview will appear
-                here after the Agent creates one.
-            </div>
-
-        </div>
+        <button
+            class="stop-btn"
+            id="stopBtn"
+        >
+            ■
+        </button>
 
     </div>
 
-</section>
+</div>
 
-
-<!-- SETTINGS -->
-
-<section
-    class="page"
-    id="page-settings">
-
-    <div class="page-title">
-        Settings
-    </div>
-
-    <div class="page-subtitle">
-        Agent configuration
-    </div>
-
-    <div class="setting">
-
-        <div class="setting-title">
-            Project
-        </div>
-
-        <div class="setting-description">
-            Current project workspace.
-        </div>
-
-    </div>
-
-    <div class="setting">
-
-        <div class="setting-title">
-            Agent
-        </div>
-
-        <div class="setting-description">
-            Gemini-powered autonomous agent.
-        </div>
-
-    </div>
-
-</section>
 
 </main>
-
-
-<!-- =====================================================
-     HOME COMPOSER
-===================================================== -->
-
-<div
-    class="composer"
-    id="composer">
-
-    <div class="composer-left">
-
-        <button
-            class="plus-btn"
-            id="plusBtn"
-            type="button">
-
-            +
-
-        </button>
-
-    </div>
-
-    <textarea
-        class="prompt"
-        id="prompt"
-        rows="1"
-        placeholder="Tell the Agent what to build..."></textarea>
-
-    <button
-        class="send-btn"
-        id="sendBtn"
-        type="button">
-
-        ↑
-
-    </button>
-
-</div>
-
-
-<!-- =====================================================
-     ATTACHMENT MENU
-===================================================== -->
-
-<div
-    class="attach-menu"
-    id="attachMenu">
-
-    <button
-        class="attach-item"
-        type="button">
-
-        📎 &nbsp; File
-
-    </button>
-
-    <button
-        class="attach-item"
-        type="button">
-
-        🖼️ &nbsp; Image
-
-    </button>
-
-    <button
-        class="attach-item"
-        type="button">
-
-        🎥 &nbsp; Video
-
-    </button>
-
-    <button
-        class="attach-item"
-        type="button">
-
-        </> &nbsp; Code
-
-    </button>
-
-</div>
-
-
-<!-- =====================================================
-     OVERLAY
-===================================================== -->
-
-<div
-    class="overlay"
-    id="overlay">
-</div>
-
-
-<!-- =====================================================
-     SIDEBAR
-===================================================== -->
-
-<aside
-    class="sidebar"
-    id="sidebar">
-
-    <div class="sidebar-head">
-
-        <div class="sidebar-title">
-            AI Agent
-        </div>
-
-        <button
-            class="close-sidebar"
-            id="closeSidebar"
-            type="button">
-
-            ×
-
-        </button>
-
-    </div>
-
-
-    <!-- HOME -->
-
-    <div class="side-section">
-
-        <div class="side-label">
-            Workspace
-        </div>
-
-        <button
-            class="nav-btn active"
-            data-page="home"
-            type="button">
-
-            <span class="nav-icon">
-                ⌂
-            </span>
-
-            <span class="nav-text">
-                Home
-            </span>
-
-        </button>
-
-    </div>
-
-
-    <!-- PROJECT -->
-
-    <div class="side-section">
-
-        <div class="side-label">
-            Project
-        </div>
-
-        <button
-            class="nav-btn"
-            data-page="files"
-            type="button">
-
-            <span class="nav-icon">
-                ▱
-            </span>
-
-            <span class="nav-text">
-                Files
-            </span>
-
-        </button>
-
-
-        <button
-            class="nav-btn"
-            data-page="preview"
-            type="button">
-
-            <span class="nav-icon">
-                ◇
-            </span>
-
-            <span class="nav-text">
-                Preview
-            </span>
-
-        </button>
-
-
-        <button
-            class="nav-btn"
-            data-page="activity"
-            type="button">
-
-            <span class="nav-icon">
-                ◌
-            </span>
-
-            <span class="nav-text">
-                Agent Activity
-            </span>
-
-        </button>
-
-    </div>
-
-
-    <!-- TOOLS -->
-
-    <div class="side-section">
-
-        <div class="side-label">
-            Tools
-        </div>
-
-        <button
-            class="nav-btn"
-            data-page="terminal"
-            type="button">
-
-            <span class="nav-icon">
-                ›_
-            </span>
-
-            <span class="nav-text">
-                Terminal
-            </span>
-
-        </button>
-
-    </div>
-
-
-    <!-- SYSTEM -->
-
-    <div class="side-section">
-
-        <div class="side-label">
-            System
-        </div>
-
-        <button
-            class="nav-btn"
-            data-page="settings"
-            type="button">
-
-            <span class="nav-icon">
-                ⚙
-            </span>
-
-            <span class="nav-text">
-                Settings
-            </span>
-
-        </button>
-
-    </div>
-
-
-    <div class="project-box">
-
-        <div class="project-name">
-            Current Project
-        </div>
-
-        <div class="project-status">
-            Connected workspace
-        </div>
-
-    </div>
-
-</aside>
 
 </div>
 
@@ -1595,58 +972,129 @@ button{
 const API_URL =
     "https://gemini-roblox-ai.onrender.com";
 
-const CURRENT_PROJECT =
-    "default";
+
+/* =====================================================
+   STATE
+===================================================== */
+
+let currentChatId =
+    localStorage.getItem(
+        "currentChatId"
+    );
+
+let currentProject =
+    localStorage.getItem(
+        "currentProject"
+    ) || "default";
+
+let currentJobId =
+    null;
+
+let running =
+    false;
+
+let activityItems =
+    [];
 
 
 /* =====================================================
    ELEMENTS
 ===================================================== */
 
-const menuBtn =
-    document.getElementById("menuBtn");
-
 const sidebar =
-    document.getElementById("sidebar");
+    document.getElementById(
+        "sidebar"
+    );
 
 const overlay =
-    document.getElementById("overlay");
+    document.getElementById(
+        "overlay"
+    );
+
+const menuBtn =
+    document.getElementById(
+        "menuBtn"
+    );
 
 const closeSidebar =
-    document.getElementById("closeSidebar");
+    document.getElementById(
+        "closeSidebar"
+    );
 
-const composer =
-    document.getElementById("composer");
-
-const plusBtn =
-    document.getElementById("plusBtn");
-
-const attachMenu =
-    document.getElementById("attachMenu");
+const newChatBtn =
+    document.getElementById(
+        "newChat"
+    );
 
 const prompt =
-    document.getElementById("prompt");
+    document.getElementById(
+        "prompt"
+    );
 
 const sendBtn =
-    document.getElementById("sendBtn");
+    document.getElementById(
+        "sendBtn"
+    );
 
-const statusDot =
-    document.getElementById("statusDot");
+const stopBtn =
+    document.getElementById(
+        "stopBtn"
+    );
 
-const statusText =
-    document.getElementById("statusText");
+const messages =
+    document.getElementById(
+        "messages"
+    );
 
-const terminalMinBtn =
-    document.getElementById("terminalMinBtn");
+const homeEmpty =
+    document.getElementById(
+        "homeEmpty"
+    );
 
-const terminalClearBtn =
-    document.getElementById("terminalClearBtn");
+const statusEl =
+    document.getElementById(
+        "status"
+    );
 
-const terminalBox =
-    document.querySelector(".terminal-box");
+const topTitle =
+    document.getElementById(
+        "topTitle"
+    );
 
-const terminalBody =
-    document.getElementById("terminalBody");
+const chatList =
+    document.getElementById(
+        "chatList"
+    );
+
+const fullChatList =
+    document.getElementById(
+        "fullChatList"
+    );
+
+const fileList =
+    document.getElementById(
+        "fileList"
+    );
+
+const codeView =
+    document.getElementById(
+        "codeView"
+    );
+
+const terminalOutput =
+    document.getElementById(
+        "terminalOutput"
+    );
+
+const activityContainer =
+    document.getElementById(
+        "activityContainer"
+    );
+
+const fullActivity =
+    document.getElementById(
+        "fullActivity"
+    );
 
 
 /* =====================================================
@@ -1655,308 +1103,557 @@ const terminalBody =
 
 function openSidebar(){
 
-    sidebar.classList.add("open");
+    sidebar.classList.add(
+        "open"
+    );
 
-    overlay.classList.add("open");
+    overlay.classList.add(
+        "show"
+    );
 
+    loadChats();
 }
 
 
 function closeSidebarMenu(){
 
-    sidebar.classList.remove("open");
+    sidebar.classList.remove(
+        "open"
+    );
 
-    overlay.classList.remove("open");
-
+    overlay.classList.remove(
+        "show"
+    );
 }
 
 
-menuBtn.addEventListener(
-    "click",
-    function(){
+menuBtn.onclick =
+    openSidebar;
 
-        if(
-            sidebar.classList.contains("open")
-        ){
+closeSidebar.onclick =
+    closeSidebarMenu;
 
-            closeSidebarMenu();
-
-        }else{
-
-            openSidebar();
-
-        }
-
-    }
-);
-
-
-closeSidebar.addEventListener(
-    "click",
-    closeSidebarMenu
-);
-
-
-overlay.addEventListener(
-    "click",
-    closeSidebarMenu
-);
+overlay.onclick =
+    closeSidebarMenu;
 
 
 /* =====================================================
-   PAGE SWITCH
+   NAVIGATION
 ===================================================== */
 
-const navButtons =
-    document.querySelectorAll(".nav-btn");
-
-const pages =
-    document.querySelectorAll(".page");
-
-
 function showPage(
-    pageName
+    page
 ){
 
-    pages.forEach(
-        page => {
-
-            page.classList.remove(
-                "active"
-            );
-
-        }
-    );
-
+    document
+        .querySelectorAll(".page")
+        .forEach(
+            item =>
+                item.classList.remove(
+                    "active"
+                )
+        );
 
     const target =
         document.getElementById(
-            "page-" + pageName
+            `page-${page}`
         );
-
 
     if(target){
 
         target.classList.add(
             "active"
         );
-
     }
-
-
-    navButtons.forEach(
-        button => {
-
-            button.classList.toggle(
-                "active",
-                button.dataset.page === pageName
-            );
-
-        }
-    );
-
-
-    /*
-       Composer is ONLY visible on Home.
-    */
-
-    if(
-        pageName === "home"
-    ){
-
-        composer.style.display =
-            "flex";
-
-    }else{
-
-        composer.style.display =
-            "none";
-
-    }
-
-
-    attachMenu.classList.remove(
-        "open"
-    );
-
-
-    closeSidebarMenu();
 
 
     document
-        .getElementById("workspace")
-        .scrollTop = 0;
+        .querySelectorAll(".nav button")
+        .forEach(
+            button => {
 
-
-    /*
-       Refresh files when opening Files.
-    */
-
-    if(
-        pageName === "files"
-    ){
-
-        refreshFiles();
-
-    }
-
-}
-
-
-navButtons.forEach(
-    button => {
-
-        button.addEventListener(
-            "click",
-            function(){
-
-                showPage(
-                    button.dataset.page
+                button.classList.toggle(
+                    "active",
+                    button.dataset.page === page
                 );
 
             }
         );
 
-    }
-);
 
+    /*
+     * مهم:
+     * مربع الكتابة لا يختفي أثناء تشغيل الـAgent.
+     * وفي الصفحات الأخرى نخليه ظاهر فقط في Home.
+     */
 
-/* =====================================================
-   ATTACHMENT MENU
-===================================================== */
-
-plusBtn.addEventListener(
-    "click",
-    function(event){
-
-        event.stopPropagation();
-
-        attachMenu.classList.toggle(
-            "open"
+    const composer =
+        document.getElementById(
+            "composer"
         );
 
+    if(
+        page === "home" ||
+        running
+    ){
+
+        composer.style.display =
+            "block";
+
+    }else{
+
+        composer.style.display =
+            "none";
     }
-);
 
 
-document.addEventListener(
-    "click",
-    function(event){
+    closeSidebarMenu();
 
-        if(
-            !attachMenu.contains(
-                event.target
-            ) &&
-            event.target !== plusBtn
-        ){
 
-            attachMenu.classList.remove(
-                "open"
-            );
+    if(page === "files"){
+
+        refreshFiles();
+    }
+
+
+    if(page === "chats"){
+
+        loadChats();
+    }
+
+
+    if(page === "activity"){
+
+        renderFullActivity();
+    }
+
+
+    if(page === "terminal"){
+
+        terminalOutput.scrollTop =
+            terminalOutput.scrollHeight;
+    }
+}
+
+
+document
+    .querySelectorAll(".nav button")
+    .forEach(
+        button => {
+
+            button.onclick =
+                () =>
+                    showPage(
+                        button.dataset.page
+                    );
 
         }
-
-    }
-);
+    );
 
 
 /* =====================================================
-   TEXTAREA
+   CHAT ID
 ===================================================== */
 
-prompt.addEventListener(
-    "input",
-    function(){
+function makeChatId(){
 
-        this.style.height =
-            "auto";
-
-        this.style.height =
-            Math.min(
-                this.scrollHeight,
-                110
-            ) + "px";
-
-    }
-);
-
-
-prompt.addEventListener(
-    "keydown",
-    function(event){
-
-        if(
-            event.key === "Enter" &&
-            !event.shiftKey
-        ){
-
-            event.preventDefault();
-
-            sendAgentMessage();
-
-        }
-
-    }
-);
-
-
-sendBtn.addEventListener(
-    "click",
-    sendAgentMessage
-);
-
-
-/* =====================================================
-   STATUS
-===================================================== */
-
-function setStatus(
-    text,
-    active = false
-){
-
-    statusText.textContent =
-        text;
-
-
-    statusDot.style.background =
-        active
-            ? "#9b6cff"
-            : "#555";
-
+    return "chat_" +
+        Date.now() +
+        "_" +
+        Math.random()
+            .toString(36)
+            .slice(2, 8);
 }
 
 
 /* =====================================================
-   ESCAPE HTML
+   NEW CHAT
 ===================================================== */
 
-function escapeHtml(
-    value
-){
+async function newChat(){
 
-    return String(value)
-        .replaceAll(
-            "&",
-            "&amp;"
-        )
-        .replaceAll(
-            "<",
-            "&lt;"
-        )
-        .replaceAll(
-            ">",
-            "&gt;"
-        )
-        .replaceAll(
-            '"',
-            "&quot;"
-        )
-        .replaceAll(
-            "'",
-            "&#039;"
+    stopCurrentAgent();
+
+    const id =
+        makeChatId();
+
+    const title =
+        "New Chat";
+
+    const project =
+        "project_" +
+        Date.now();
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/chats/new`,
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        id,
+                        title,
+                        project
+                    })
+                }
+            );
+
+        const data =
+            await response.json();
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error ||
+                "Failed to create chat"
+            );
+        }
+
+        currentChatId =
+            data.chat.id;
+
+        currentProject =
+            data.chat.project;
+
+    } catch(error){
+
+        /*
+         * حتى لو السيرفر غير متاح،
+         * نقدر نجهز Chat ID محلي.
+         */
+
+        currentChatId =
+            id;
+
+        currentProject =
+            project;
+    }
+
+
+    localStorage.setItem(
+        "currentChatId",
+        currentChatId
+    );
+
+    localStorage.setItem(
+        "currentProject",
+        currentProject
+    );
+
+
+    messages.innerHTML =
+        "";
+
+    activityContainer.innerHTML =
+        "";
+
+    fullActivity.innerHTML =
+        "";
+
+    activityItems =
+        [];
+
+    codeView.innerHTML =
+        "";
+
+    terminalOutput.textContent =
+        "";
+
+
+    homeEmpty.style.display =
+        "flex";
+
+    topTitle.textContent =
+        "New Chat";
+
+    statusEl.textContent =
+        "Ready";
+
+
+    document.body.classList.remove(
+        "running"
+    );
+
+    running =
+        false;
+
+
+    showPage(
+        "home"
+    );
+
+    loadChats();
+}
+
+
+newChatBtn.onclick =
+    newChat;
+
+
+/* =====================================================
+   LOAD CHATS
+===================================================== */
+
+async function loadChats(){
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/chats`
+            );
+
+        const data =
+            await response.json();
+
+        if(!data.ok){
+
+            return;
+        }
+
+        renderChatList(
+            chatList,
+            data.chats
         );
 
+        renderChatList(
+            fullChatList,
+            data.chats
+        );
+
+    } catch {}
+}
+
+
+function renderChatList(
+    element,
+    chats
+){
+
+    element.innerHTML =
+        "";
+
+    if(!chats.length){
+
+        element.innerHTML =
+            `<div style="opacity:.4;font-size:12px;padding:10px">
+                No chats yet
+             </div>`;
+
+        return;
+    }
+
+
+    chats.forEach(
+        chat => {
+
+            const item =
+                document.createElement(
+                    "div"
+                );
+
+            item.className =
+                "chat-item";
+
+            item.innerHTML = `
+
+                <div class="chat-item-title">
+                    ${escapeHTML(
+                        chat.title ||
+                        "Untitled"
+                    )}
+                </div>
+
+                <div class="chat-item-project">
+                    ${escapeHTML(
+                        chat.project ||
+                        "default"
+                    )}
+                </div>
+            `;
+
+
+            item.onclick =
+                () =>
+                    openChat(
+                        chat.id
+                    );
+
+
+            element.appendChild(
+                item
+            );
+
+        }
+    );
+}
+
+
+/* =====================================================
+   OPEN CHAT
+===================================================== */
+
+async function openChat(
+    chatId
+){
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/chat?id=${encodeURIComponent(
+                    chatId
+                )}`
+            );
+
+        const data =
+            await response.json();
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error ||
+                "Chat unavailable"
+            );
+        }
+
+        const chat =
+            data.chat;
+
+        currentChatId =
+            chat.id;
+
+        currentProject =
+            chat.project;
+
+        localStorage.setItem(
+            "currentChatId",
+            currentChatId
+        );
+
+        localStorage.setItem(
+            "currentProject",
+            currentProject
+        );
+
+
+        messages.innerHTML =
+            "";
+
+        activityContainer.innerHTML =
+            "";
+
+        activityItems =
+            [];
+
+        topTitle.textContent =
+            chat.title ||
+            "Chat";
+
+
+        const visibleMessages =
+            chat.messages || [];
+
+
+        if(
+            visibleMessages.length
+        ){
+
+            homeEmpty.style.display =
+                "none";
+        }else{
+
+            homeEmpty.style.display =
+                "flex";
+        }
+
+
+        visibleMessages.forEach(
+            message => {
+
+                if(
+                    message.role === "user"
+                ){
+
+                    addMessage(
+                        "user",
+                        message.content
+                    );
+
+                }else if(
+                    message.role === "assistant"
+                ){
+
+                    addMessage(
+                        "assistant",
+                        message.content
+                    );
+                }
+
+            }
+        );
+
+
+        showPage(
+            "home"
+        );
+
+        closeSidebarMenu();
+
+    } catch(error){
+
+        alert(
+            "تعذر فتح الدردشة: " +
+            error.message
+        );
+    }
+}
+
+
+/* =====================================================
+   MESSAGE
+===================================================== */
+
+function addMessage(
+    role,
+    text
+){
+
+    homeEmpty.style.display =
+        "none";
+
+    const element =
+        document.createElement(
+            "div"
+        );
+
+    element.className =
+        `message ${role}`;
+
+    element.textContent =
+        text;
+
+    messages.appendChild(
+        element
+    );
+
+    document
+        .getElementById(
+            "workspace"
+        )
+        .scrollTop =
+        document
+            .getElementById(
+                "workspace"
+            )
+            .scrollHeight;
+
+    return element;
 }
 
 
@@ -1965,289 +1662,748 @@ function escapeHtml(
 ===================================================== */
 
 function addActivity(
-    title,
-    details = "",
-    type = "normal"
+    text,
+    tool = ""
 ){
 
-    const list =
-        document.getElementById(
-            "activityList"
-        );
+    const item = {
+        text,
+        tool,
+        time: new Date()
+    };
 
-
-    const empty =
-        list.querySelector(
-            ".empty"
-        );
-
-
-    if(empty){
-
-        empty.remove();
-
-    }
-
-
-    const item =
-        document.createElement(
-            "div"
-        );
-
-
-    item.className =
-        "activity";
-
-
-    const head =
-        document.createElement(
-            "div"
-        );
-
-
-    head.className =
-        "activity-head";
-
-
-    let icon = "›";
-
-
-    if(
-        type === "error"
-    ){
-
-        icon = "⚠";
-
-    }
-
-
-    if(
-        type === "done"
-    ){
-
-        icon = "✓";
-
-    }
-
-
-    head.innerHTML = `
-        <span>
-            ${icon}
-            &nbsp;
-            ${escapeHtml(title)}
-        </span>
-
-        <span class="activity-arrow">
-            ↓
-        </span>
-    `;
-
-
-    const body =
-        document.createElement(
-            "div"
-        );
-
-
-    body.className =
-        "activity-body";
-
-
-    body.textContent =
-        details;
-
-
-    item.appendChild(
-        head
-    );
-
-    item.appendChild(
-        body
-    );
-
-
-    head.addEventListener(
-        "click",
-        function(){
-
-            item.classList.toggle(
-                "open"
-            );
-
-        }
-    );
-
-
-    list.prepend(
+    activityItems.push(
         item
     );
 
+    renderActivity(
+        activityContainer
+    );
 
-    return item;
+    renderFullActivity();
 
+
+    const page =
+        document.getElementById(
+            "page-activity"
+        );
+
+    if(page){
+
+        /*
+         * nothing
+         */
+    }
+}
+
+
+function renderActivity(
+    target
+){
+
+    if(!activityItems.length){
+
+        target.innerHTML =
+            "";
+
+        return;
+    }
+
+
+    target.innerHTML = `
+
+        <div class="activity-card">
+
+            <div
+                class="activity-head"
+                onclick="this.parentElement.classList.toggle('closed')"
+            >
+
+                <div class="activity-title">
+                    ⚡ Agent Activity
+                </div>
+
+                <div class="activity-arrow">
+                    ▲
+                </div>
+
+            </div>
+
+            <div class="activity-body">
+
+                ${
+                    activityItems
+                        .map(
+                            item => `
+
+                            <div class="activity-row">
+
+                                <div class="activity-dot"></div>
+
+                                <div>
+
+                                    <div class="activity-text">
+                                        ${escapeHTML(
+                                            item.text
+                                        )}
+                                    </div>
+
+                                    ${
+                                        item.tool
+                                        ?
+                                        `<div class="activity-tool">
+                                            ${escapeHTML(
+                                                item.tool
+                                            )}
+                                        </div>`
+                                        :
+                                        ""
+                                    }
+
+                                </div>
+
+                            </div>
+
+                        `
+                        )
+                        .join("")
+                }
+
+            </div>
+
+        </div>
+    `;
+}
+
+
+function renderFullActivity(){
+
+    renderActivity(
+        fullActivity
+    );
 }
 
 
 /* =====================================================
-   TERMINAL OUTPUT
+   TERMINAL
 ===================================================== */
 
-function terminalOutput(
+function terminalLog(
     text
 ){
+
+    terminalOutput.textContent +=
+        `${text}\n`;
+
+    terminalOutput.scrollTop =
+        terminalOutput.scrollHeight;
+}
+
+
+document
+    .getElementById(
+        "clearTerminal"
+    )
+    .onclick =
+    () => {
+
+        terminalOutput.textContent =
+            "";
+    };
+
+
+/* =====================================================
+   SEND
+===================================================== */
+
+async function sendPrompt(){
+
+    const text =
+        prompt.value.trim();
 
     if(!text){
 
         return;
+    }
 
+    if(running){
+
+        return;
     }
 
 
-    const empty =
-        terminalBody.querySelector(
-            ".terminal-empty"
-        );
+    if(!currentChatId){
 
-
-    if(empty){
-
-        empty.remove();
-
+        await newChat();
     }
 
 
-    const line =
-        document.createElement(
-            "div"
-        );
+    prompt.value =
+        "";
+
+    autoResize();
 
 
-    line.textContent =
-        text;
-
-
-    terminalBody.appendChild(
-        line
+    addMessage(
+        "user",
+        text
     );
 
 
-    terminalBody.scrollTop =
-        terminalBody.scrollHeight;
+    activityItems =
+        [];
 
-}
+    activityContainer.innerHTML =
+        "";
 
 
-/* =====================================================
-   REFRESH FILES
-===================================================== */
+    running =
+        true;
 
-async function refreshFiles(){
+    document.body.classList.add(
+        "running"
+    );
 
-    try{
+
+    statusEl.textContent =
+        "Agent running";
+
+
+    showPage(
+        "home"
+    );
+
+
+    try {
 
         const response =
             await fetch(
-                `${API_URL}/files?project=${encodeURIComponent(CURRENT_PROJECT)}`
-            );
-
-
-        const data =
-            await response.json();
-
-
-        if(
-            !data.ok
-        ){
-
-            return;
-
-        }
-
-
-        const list =
-            document.getElementById(
-                "filesList"
-            );
-
-
-        if(
-            !data.files ||
-            data.files.length === 0
-        ){
-
-            list.innerHTML = `
-                <div class="empty">
-
-                    <div class="empty-icon">
-                        ⌁
-                    </div>
-
-                    <div class="empty-title">
-                        No files yet
-                    </div>
-
-                    <div class="empty-text">
-                        Files created by the Agent
-                        will appear here.
-                    </div>
-
-                </div>
-            `;
-
-            return;
-
-        }
-
-
-        list.innerHTML =
-            "";
-
-
-        for(
-            const file of data.files
-        ){
-
-            const row =
-                document.createElement(
-                    "div"
-                );
-
-
-            row.className =
-                "file-row";
-
-
-            row.textContent =
-                "📄 " + file;
-
-
-            row.addEventListener(
-                "click",
-                function(){
-
-                    openFile(
-                        file
-                    );
-
+                `${API_URL}/agent`,
+                {
+                    method:"POST",
+                    headers:{
+                        "Content-Type":
+                            "application/json"
+                    },
+                    body:JSON.stringify({
+                        chatId:
+                            currentChatId,
+                        project:
+                            currentProject,
+                        prompt:
+                            text
+                    })
                 }
             );
 
 
-            list.appendChild(
-                row
+        if(!response.ok){
+
+            const errorText =
+                await response.text();
+
+            throw new Error(
+                errorText ||
+                `HTTP ${response.status}`
+            );
+        }
+
+
+        const reader =
+            response.body.getReader();
+
+        const decoder =
+            new TextDecoder();
+
+        let buffer =
+            "";
+
+
+        while(true){
+
+            if(!running){
+
+                break;
+            }
+
+            const {
+                value,
+                done
+            } =
+                await reader.read();
+
+
+            if(done){
+
+                break;
+            }
+
+
+            buffer +=
+                decoder.decode(
+                    value,
+                    {
+                        stream:true
+                    }
+                );
+
+
+            const lines =
+                buffer.split("\n");
+
+            buffer =
+                lines.pop() ||
+                "";
+
+
+            for(
+                const line of lines
+            ){
+
+                if(!line.trim()){
+
+                    continue;
+                }
+
+
+                let event;
+
+                try {
+
+                    event =
+                        JSON.parse(
+                            line
+                        );
+
+                } catch {
+
+                    continue;
+                }
+
+
+                handleAgentEvent(
+                    event
+                );
+            }
+        }
+
+    } catch(error){
+
+        if(running){
+
+            addActivity(
+                "حدث خطأ أثناء الاتصال بالـAgent"
+            );
+
+            addMessage(
+                "assistant",
+                error.message
             );
 
         }
 
-    }catch(error){
+    } finally {
 
-        console.error(
-            "Files error:",
-            error
+        running =
+            false;
+
+        document.body.classList.remove(
+            "running"
         );
 
+        statusEl.textContent =
+            "Ready";
+
+        showPage(
+            "home"
+        );
+
+        loadChats();
+    }
+}
+
+
+/* =====================================================
+   HANDLE EVENTS
+===================================================== */
+
+function handleAgentEvent(
+    event
+){
+
+    switch(
+        event.type
+    ){
+
+        case "connected":
+
+            currentJobId =
+                event.jobId;
+
+            addActivity(
+                "Agent connected"
+            );
+
+            break;
+
+
+        case "start":
+
+            addActivity(
+                `Project: ${
+                    event.project
+                }`
+            );
+
+            break;
+
+
+        case "thinking":
+
+            addActivity(
+                `Planning next step — Step ${event.step}`
+            );
+
+            break;
+
+
+        case "planning":
+
+            addActivity(
+                event.message ||
+                "Planning next step"
+            );
+
+            break;
+
+
+        case "tool_start":
+
+            addActivity(
+                event.message ||
+                `Running ${event.tool}`,
+                event.tool
+            );
+
+            break;
+
+
+        case "tool_result":
+
+            addActivity(
+                `Completed: ${event.tool}`,
+                event.tool
+            );
+
+            if(
+                event.tool === "terminal" &&
+                event.result
+            ){
+
+                if(
+                    event.result.stdout
+                ){
+
+                    terminalLog(
+                        event.result.stdout
+                    );
+                }
+
+                if(
+                    event.result.stderr
+                ){
+
+                    terminalLog(
+                        event.result.stderr
+                    );
+                }
+            }
+
+            break;
+
+
+        case "tool_error":
+
+            addActivity(
+                `Error: ${event.error}`,
+                event.tool
+            );
+
+            terminalLog(
+                `[ERROR] ${
+                    event.error
+                }`
+            );
+
+            break;
+
+
+        case "final":
+
+            if(event.message){
+
+                addMessage(
+                    "assistant",
+                    event.message
+                );
+            }
+
+            addActivity(
+                "Agent finished"
+            );
+
+            break;
+
+
+        case "stopped":
+
+            addActivity(
+                "Agent stopped by user"
+            );
+
+            addMessage(
+                "assistant",
+                "تم إيقاف المهمة."
+            );
+
+            break;
+
+
+        case "error":
+
+            addActivity(
+                `Error: ${event.message}`
+            );
+
+            addMessage(
+                "assistant",
+                event.message ||
+                "حدث خطأ."
+            );
+
+            break;
+
+
+        case "done":
+
+            statusEl.textContent =
+                "Completed";
+
+            break;
+    }
+}
+
+
+/* =====================================================
+   STOP
+===================================================== */
+
+async function stopCurrentAgent(){
+
+    if(!currentJobId){
+
+        return;
     }
 
+    try {
+
+        await fetch(
+            `${API_URL}/agent/stop`,
+            {
+                method:"POST",
+                headers:{
+                    "Content-Type":
+                        "application/json"
+                },
+                body:JSON.stringify({
+                    jobId:
+                        currentJobId
+                })
+            }
+        );
+
+    } catch {}
+
+
+    running =
+        false;
+
+    document.body.classList.remove(
+        "running"
+    );
+
+    statusEl.textContent =
+        "Stopped";
+
+
+    addActivity(
+        "تم طلب إيقاف الـAgent"
+    );
+
+    currentJobId =
+        null;
+}
+
+
+stopBtn.onclick =
+    stopCurrentAgent;
+
+
+/* =====================================================
+   SEND BUTTON
+===================================================== */
+
+sendBtn.onclick =
+    sendPrompt;
+
+
+prompt.addEventListener(
+    "keydown",
+    event => {
+
+        if(
+            event.key === "Enter" &&
+            !event.shiftKey
+        ){
+
+            event.preventDefault();
+
+            sendPrompt();
+        }
+
+    }
+);
+
+
+/* =====================================================
+   AUTO RESIZE
+===================================================== */
+
+function autoResize(){
+
+    prompt.style.height =
+        "auto";
+
+    prompt.style.height =
+        Math.min(
+            prompt.scrollHeight,
+            150
+        ) + "px";
+}
+
+
+prompt.addEventListener(
+    "input",
+    autoResize
+);
+
+
+/* =====================================================
+   FILES
+===================================================== */
+
+async function refreshFiles(){
+
+    try {
+
+        const response =
+            await fetch(
+                `${API_URL}/files?project=${encodeURIComponent(
+                    currentProject
+                )}`
+            );
+
+        const data =
+            await response.json();
+
+        if(!data.ok){
+
+            throw new Error(
+                data.error
+            );
+        }
+
+
+        fileList.innerHTML =
+            "";
+
+
+        if(!data.files.length){
+
+            fileList.innerHTML =
+                `<div style="opacity:.4">
+                    No files yet.
+                 </div>`;
+
+            return;
+        }
+
+
+        data.files.forEach(
+            file => {
+
+                const element =
+                    document.createElement(
+                        "div"
+                    );
+
+                element.className =
+                    "file";
+
+                element.innerHTML = `
+
+                    <div>
+                        ${
+                            file.type === "folder"
+                            ? "📁 "
+                            : "📄 "
+                        }
+
+                        ${escapeHTML(
+                            file.path
+                        )}
+                    </div>
+
+                    ${
+                        file.size !== undefined
+                        ?
+                        `<div class="file-size">
+                            ${file.size} bytes
+                         </div>`
+                        :
+                        ""
+                    }
+
+                `;
+
+
+                if(
+                    file.type === "file"
+                ){
+
+                    element.onclick =
+                        () =>
+                            openFile(
+                                file.path
+                            );
+                }
+
+
+                fileList.appendChild(
+                    element
+                );
+            }
+        );
+
+    } catch(error){
+
+        fileList.innerHTML =
+            `<div style="opacity:.5">
+                ${escapeHTML(
+                    error.message
+                )}
+             </div>`;
+    }
 }
 
 
@@ -2259,508 +2415,122 @@ async function openFile(
     filePath
 ){
 
-    try{
+    try {
 
         const response =
             await fetch(
-                `${API_URL}/file?project=${encodeURIComponent(CURRENT_PROJECT)}&path=${encodeURIComponent(filePath)}`
+                `${API_URL}/file?project=${encodeURIComponent(
+                    currentProject
+                )}&path=${encodeURIComponent(
+                    filePath
+                )}`
             );
-
 
         const data =
             await response.json();
 
-
-        if(
-            !data.ok
-        ){
+        if(!data.ok){
 
             throw new Error(
-                data.error ||
-                "Unable to read file"
+                data.error
             );
-
         }
 
 
-        addActivity(
-            "Opened " + filePath,
-            data.content
+        codeView.innerHTML = `
+
+            <div class="code-view">
+
+                <div class="code-head">
+                    ${escapeHTML(
+                        filePath
+                    )}
+                </div>
+
+                <pre>${escapeHTML(
+                    data.content
+                )}</pre>
+
+            </div>
+
+        `;
+
+    } catch(error){
+
+        alert(
+            error.message
         );
-
-
-        showPage(
-            "activity"
-        );
-
-    }catch(error){
-
-        addActivity(
-            "Failed to read file",
-            error.message,
-            "error"
-        );
-
-        showPage(
-            "activity"
-        );
-
     }
-
 }
 
 
 /* =====================================================
-   REAL AGENT
+   ESCAPE
 ===================================================== */
 
-async function sendAgentMessage(){
+function escapeHTML(
+    value
+){
 
-    const message =
-        prompt.value.trim();
-
-
-    if(!message){
-
-        return;
-
-    }
-
-
-    prompt.value =
-        "";
-
-    prompt.style.height =
-        "auto";
-
-
-    showPage(
-        "activity"
+    return String(
+        value ?? ""
+    )
+    .replace(
+        /&/g,
+        "&amp;"
+    )
+    .replace(
+        /</g,
+        "&lt;"
+    )
+    .replace(
+        />/g,
+        "&gt;"
+    )
+    .replace(
+        /"/g,
+        "&quot;"
+    )
+    .replace(
+        /'/g,
+        "&#039;"
     );
-
-
-    setStatus(
-        "Working",
-        true
-    );
-
-
-    addActivity(
-        "Agent started",
-        message
-    );
-
-
-    try{
-
-        const response =
-            await fetch(
-                `${API_URL}/agent`,
-                {
-                    method:"POST",
-
-                    headers:{
-                        "Content-Type":
-                            "application/json"
-                    },
-
-                    body:JSON.stringify({
-
-                        project:
-                            CURRENT_PROJECT,
-
-                        prompt:
-                            message
-
-                    })
-                }
-            );
-
-
-        if(
-            !response.ok
-        ){
-
-            throw new Error(
-                `Server returned ${response.status}`
-            );
-
-        }
-
-
-        if(
-            !response.body
-        ){
-
-            throw new Error(
-                "Server did not return a stream."
-            );
-
-        }
-
-
-        const reader =
-            response.body.getReader();
-
-
-        const decoder =
-            new TextDecoder();
-
-
-        let buffer =
-            "";
-
-
-        while(true){
-
-            const result =
-                await reader.read();
-
-
-            if(
-                result.done
-            ){
-
-                break;
-
-            }
-
-
-            buffer +=
-                decoder.decode(
-                    result.value,
-                    {
-                        stream:true
-                    }
-                );
-
-
-            const lines =
-                buffer.split(
-                    "\n"
-                );
-
-
-            buffer =
-                lines.pop() ||
-                "";
-
-
-            for(
-                const line of lines
-            ){
-
-                if(
-                    !line.trim()
-                ){
-
-                    continue;
-
-                }
-
-
-                let event;
-
-
-                try{
-
-                    event =
-                        JSON.parse(
-                            line
-                        );
-
-                }catch{
-
-                    continue;
-
-                }
-
-
-                /* START */
-
-                if(
-                    event.type === "start"
-                ){
-
-                    addActivity(
-                        "Agent connected",
-                        `Project: ${event.project}\nModel: ${event.model}`
-                    );
-
-                }
-
-
-                /* THINKING */
-
-                else if(
-                    event.type === "thinking"
-                ){
-
-                    addActivity(
-                        "Planning next step",
-                        `Step ${event.step}`
-                    );
-
-                }
-
-
-                /* TOOL START */
-
-                else if(
-                    event.type === "tool_start"
-                ){
-
-                    const tool =
-                        event.tool;
-
-
-                    addActivity(
-                        `Running ${tool}`,
-                        JSON.stringify(
-                            event.args || {},
-                            null,
-                            2
-                        )
-                    );
-
-
-                    if(
-                        tool === "terminal"
-                    ){
-
-                        const args =
-                            event.args || {};
-
-
-                        terminalOutput(
-                            `$ ${args.command || ""} ${(args.args || []).join(" ")}`
-                        );
-
-                    }
-
-                }
-
-
-                /* TOOL RESULT */
-
-                else if(
-                    event.type === "tool_result"
-                ){
-
-                    const details =
-                        typeof event.result === "string"
-                            ? event.result
-                            : JSON.stringify(
-                                event.result,
-                                null,
-                                2
-                            );
-
-
-                    addActivity(
-                        `${event.tool} completed`,
-                        details,
-                        "done"
-                    );
-
-
-                    if(
-                        event.tool === "terminal"
-                    ){
-
-                        terminalOutput(
-                            details
-                        );
-
-                    }
-
-                }
-
-
-                /* TOOL ERROR */
-
-                else if(
-                    event.type === "tool_error"
-                ){
-
-                    addActivity(
-                        `${event.tool} failed`,
-                        event.error ||
-                        "Unknown error",
-                        "error"
-                    );
-
-                }
-
-
-                /* FINAL */
-
-                else if(
-                    event.type === "final"
-                ){
-
-                    addActivity(
-                        "Agent finished",
-                        event.message ||
-                        "Task completed.",
-                        "done"
-                    );
-
-                }
-
-
-                /* DONE */
-
-                else if(
-                    event.type === "done"
-                ){
-
-                    addActivity(
-                        "Task completed",
-                        event.message ||
-                        "Done.",
-                        "done"
-                    );
-
-
-                    await refreshFiles();
-
-                }
-
-
-                /* ERROR */
-
-                else if(
-                    event.type === "error"
-                ){
-
-                    addActivity(
-                        "Agent error",
-                        event.error ||
-                        "Unknown server error",
-                        "error"
-                    );
-
-                }
-
-            }
-
-        }
-
-
-        await refreshFiles();
-
-
-        setStatus(
-            "Ready",
-            false
-        );
-
-
-    }catch(error){
-
-        addActivity(
-            "Connection error",
-            error.message,
-            "error"
-        );
-
-
-        setStatus(
-            "Connection error",
-            false
-        );
-
-    }
-
 }
 
 
 /* =====================================================
-   TERMINAL MINIMIZE
+   INITIAL LOAD
 ===================================================== */
 
-let terminalMinimized =
-    false;
+(async function(){
 
+    /*
+     * إذا عنده Chat محفوظ نفتحه.
+     * إذا ما عنده، نخليه فارغ تمامًا.
+     */
 
-terminalMinBtn.addEventListener(
-    "click",
-    function(){
+    if(currentChatId){
 
-        terminalMinimized =
-            !terminalMinimized;
+        try {
 
-
-        const body =
-            terminalBox.querySelector(
-                ".terminal-body"
+            await openChat(
+                currentChatId
             );
 
+        } catch {
 
-        if(
-            terminalMinimized
-        ){
-
-            body.style.display =
-                "none";
-
-            terminalBox.style.height =
-                "46px";
-
-            terminalMinBtn.textContent =
-                "+";
-
-        }else{
-
-            body.style.display =
-                "block";
-
-            terminalBox.style.height =
-                "calc(100vh - 62px - env(safe-area-inset-top) - 44px)";
-
-            terminalMinBtn.textContent =
-                "−";
-
+            currentChatId =
+                null;
         }
-
     }
-);
 
 
-/* =====================================================
-   TERMINAL CLEAR
-===================================================== */
+    loadChats();
 
-terminalClearBtn.addEventListener(
-    "click",
-    function(){
-
-        terminalBody.innerHTML =
-            `
-            <span class="terminal-empty">
-                Terminal is empty.
-            </span>
-            `;
-
-    }
-);
-
-
-/* =====================================================
-   INITIAL
-===================================================== */
-
-showPage(
-    "home"
-);
-
-setStatus(
-    "Ready",
-    false
-);
+})();
 
 </script>
 
 </body>
+
 </html>
