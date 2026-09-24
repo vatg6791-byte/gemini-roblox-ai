@@ -2,378 +2,892 @@
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#07070b">
 <title>Gemini AI Agent</title>
+
 <style>
-*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#050509;color:#fff;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
-button,input,textarea{font:inherit}
-button{-webkit-appearance:none;appearance:none;cursor:pointer}
-.app{width:100%;height:100%;position:relative;overflow:hidden;background:radial-gradient(circle at 50% -15%,#29105b 0,#0d0918 35%,#050509 72%)}
-.header{height:64px;width:100%;display:flex;align-items:center;justify-content:space-between;padding:0 14px;position:relative;z-index:20;background:rgba(5,5,9,.82);border-bottom:1px solid rgba(255,255,255,.08);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
-.brand{display:flex;align-items:center;gap:10px;direction:ltr}
-.logo{width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:900;background:linear-gradient(135deg,#7c3cff,#00d9ff);box-shadow:0 0 25px rgba(124,60,255,.45)}
-.brandText{font-size:15px;font-weight:800}
-.menuBtn{width:44px;height:44px;border-radius:13px;border:1px solid rgba(255,255,255,.1);background:rgba(255,255,255,.07);color:#fff;display:flex;align-items:center;justify-content:center;font-size:23px;position:relative;z-index:100}
-.overlay{position:absolute;inset:0;background:rgba(0,0,0,.58);opacity:0;pointer-events:none;transition:.25s;z-index:40}
-.overlay.show{opacity:1;pointer-events:auto}
-.sidebar{position:absolute;top:0;right:-310px;width:290px;height:100%;z-index:50;padding:18px;overflow-y:auto;background:#0b0a12;border-left:1px solid rgba(255,255,255,.1);box-shadow:-20px 0 50px rgba(0,0,0,.5);transition:right .28s ease}
-.sidebar.open{right:0}
-.sideTitle{font-size:21px;font-weight:900;margin:7px 5px 20px}
-.nav{display:flex;flex-direction:column;gap:8px}
-.navBtn{width:100%;min-height:52px;border-radius:14px;border:1px solid rgba(255,255,255,.06);background:rgba(255,255,255,.045);color:#ccc;text-align:right;padding:0 15px;font-weight:700}
-.navBtn.active{color:#fff;border-color:rgba(124,60,255,.45);background:linear-gradient(90deg,rgba(124,60,255,.28),rgba(0,217,255,.07))}
-.closeBtn{width:100%;height:48px;margin-top:18px;border-radius:13px;background:rgba(255,255,255,.05);color:#aaa}
-.pages{position:absolute;top:64px;left:0;right:0;bottom:0}
-.page{display:none;width:100%;height:100%;overflow-y:auto;padding:22px 16px 30px}
-.page.active{display:block}
-.home{display:none;flex-direction:column}
-.home.active{display:flex}
-.hero{flex:1;min-height:0;display:flex;align-items:center;justify-content:center;flex-direction:column;text-align:center}
-.heroIcon{width:84px;height:84px;border-radius:27px;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;background:linear-gradient(135deg,#7c3cff,#00d9ff);box-shadow:0 0 35px rgba(124,60,255,.45),inset 0 0 20px rgba(255,255,255,.12);margin-bottom:22px}
-.hero h1{margin:0 0 10px;font-size:29px}
-.hero p{margin:0;max-width:520px;color:#8c8c97;line-height:1.7}
-.composer{width:100%;padding:10px 0 14px}
-.composerBox{width:100%;min-height:59px;display:flex;align-items:flex-end;gap:8px;padding:8px;border-radius:19px;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 35px rgba(0,0,0,.25)}
-#message{flex:1;min-height:42px;max-height:140px;resize:none;outline:none;border:0;background:transparent;color:#fff;padding:11px 10px;direction:rtl}
-#message::placeholder{color:#777783}
-.sendBtn{width:44px;height:44px;flex-shrink:0;border:0;border-radius:14px;color:#fff;background:linear-gradient(135deg,#7c3cff,#00bce8);font-size:20px;box-shadow:0 0 20px rgba(124,60,255,.3)}
-.sendBtn:disabled{opacity:.45}
-.pageTitle{font-size:25px;font-weight:900;margin:5px 0 7px}
-.pageDesc{color:#858590;margin:0 0 20px;line-height:1.6}
-.card{background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px;margin-bottom:12px}
-.empty{height:180px;display:flex;align-items:center;justify-content:center;text-align:center;color:#777783}
-.input{width:100%;height:50px;border-radius:13px;border:1px solid rgba(255,255,255,.1);outline:none;background:rgba(0,0,0,.25);color:#fff;padding:0 14px;margin-bottom:10px;direction:ltr;text-align:left}
-.keySave{width:100%;height:50px;border:0;border-radius:13px;color:#fff;font-weight:800;background:linear-gradient(135deg,#7c3cff,#00bce8)}
-.keyItem{padding:15px;border-radius:17px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.08);margin-bottom:10px}
-.keyTop{display:flex;align-items:center;justify-content:space-between;gap:10px}
-.keyName{font-weight:900}
-.badge{font-size:11px;padding:5px 8px;border-radius:8px;background:rgba(0,220,150,.12);color:#54e8b0}
-.keyValue{direction:ltr;text-align:left;color:#777783;font-family:monospace;margin:10px 0;font-size:12px}
-.keyActions{display:flex;gap:7px}
-.keyActions button{flex:1;height:40px;border:0;border-radius:10px;color:#ddd;background:rgba(255,255,255,.07)}
-.keyActions .danger{color:#ff7777}
-.activity{border:1px solid rgba(255,255,255,.08);border-radius:17px;overflow:hidden;margin-bottom:10px;background:rgba(255,255,255,.035)}
-.activityHead{min-height:52px;padding:12px 14px;display:flex;align-items:center;justify-content:space-between;gap:10px}
-.activityTitle{font-weight:800}
-.arrow{transition:.2s}
-.activity.open .arrow{transform:rotate(180deg)}
-.activityBody{display:none;border-top:1px solid rgba(255,255,255,.07);padding:12px;color:#8f8f99;font-family:monospace;direction:ltr;text-align:left;white-space:pre-wrap;word-break:break-word;font-size:12px;line-height:1.6}
-.activity.open .activityBody{display:block}
-.terminal{background:#020204;border:1px solid rgba(255,255,255,.09);border-radius:16px;overflow:hidden}
-.terminalHead{height:45px;display:flex;align-items:center;padding:0 12px;border-bottom:1px solid rgba(255,255,255,.08);color:#aaa;font-size:13px}
-.terminalBody{height:400px;overflow:auto;padding:14px;font-family:monospace;font-size:12px;direction:ltr;text-align:left;white-space:pre-wrap;color:#bdbdc7}
-.line{margin-bottom:5px}
-.prompt{color:#00d9ff}
-.toast{position:absolute;left:14px;right:14px;bottom:20px;z-index:100;padding:14px 16px;border-radius:14px;background:rgba(20,19,28,.96);border:1px solid rgba(255,255,255,.1);box-shadow:0 15px 40px rgba(0,0,0,.4);transform:translateY(120px);opacity:0;transition:.25s;text-align:center}
-.toast.show{transform:translateY(0);opacity:1}
-.statusDot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#44e6a2;margin-left:6px}
+:root{
+    --bg:#07070b;
+    --panel:#101017;
+    --panel2:#15151e;
+    --line:#282834;
+    --text:#f5f5f7;
+    --muted:#9696a8;
+    --purple:#8b5cf6;
+    --blue:#3b82f6;
+    --green:#35d07f;
+    --red:#ff5d73;
+}
+
+*{
+    box-sizing:border-box;
+    -webkit-tap-highlight-color:transparent;
+}
+
+html,body{
+    margin:0;
+    width:100%;
+    height:100%;
+    background:var(--bg);
+    color:var(--text);
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+    overflow:hidden;
+}
+
+button,
+input,
+textarea{
+    font:inherit;
+}
+
+button{
+    color:inherit;
+    border:0;
+    cursor:pointer;
+}
+
+.app{
+    width:100%;
+    height:100%;
+    position:relative;
+}
+
+.overlay{
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    z-index:30;
+}
+
+.overlay.open{
+    display:block;
+}
+
+/* SIDEBAR */
+
+.sidebar{
+    position:fixed;
+    z-index:40;
+    top:0;
+    right:0;
+    width:290px;
+    height:100%;
+    padding:18px;
+    background:rgba(12,12,18,.98);
+    border-left:1px solid var(--line);
+    transform:translateX(105%);
+    transition:.22s ease;
+    overflow-y:auto;
+}
+
+.sidebar.open{
+    transform:translateX(0);
+}
+
+.brand{
+    font-size:18px;
+    font-weight:800;
+    margin:4px 4px 22px;
+}
+
+.brand small{
+    display:block;
+    margin-top:5px;
+    color:var(--muted);
+    font-size:11px;
+    font-weight:500;
+}
+
+.closeMenu{
+    position:absolute;
+    left:14px;
+    top:14px;
+    width:38px;
+    height:38px;
+    border-radius:11px;
+    background:#1a1a23;
+    border:1px solid var(--line);
+    font-size:23px;
+}
+
+.nav{
+    display:grid;
+    gap:8px;
+}
+
+.nav button{
+    width:100%;
+    padding:13px;
+    border-radius:12px;
+    background:#12121a;
+    border:1px solid var(--line);
+    text-align:right;
+}
+
+.nav button.active{
+    background:#1a1629;
+    border-color:#7654e2;
+}
+
+.backendStatus{
+    margin-top:18px;
+    padding:12px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    color:var(--muted);
+    font-size:12px;
+}
+
+.backendStatus b{
+    color:var(--green);
+}
+
+/* MAIN */
+
+.main{
+    width:100%;
+    height:100%;
+    display:flex;
+    flex-direction:column;
+}
+
+.topbar{
+    height:64px;
+    flex:none;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 14px;
+    border-bottom:1px solid var(--line);
+    background:rgba(7,7,11,.88);
+    backdrop-filter:blur(15px);
+}
+
+.menuButton{
+    width:42px;
+    height:42px;
+    border-radius:12px;
+    background:#12121a;
+    border:1px solid var(--line);
+    font-size:22px;
+}
+
+.pageTitle{
+    font-weight:800;
+}
+
+.connectionDot{
+    width:9px;
+    height:9px;
+    border-radius:50%;
+    background:#777;
+}
+
+.connectionDot.online{
+    background:var(--green);
+    box-shadow:0 0 14px var(--green);
+}
+
+/* VIEWS */
+
+.view{
+    display:none;
+    flex:1;
+    min-height:0;
+    overflow:auto;
+    padding:18px;
+}
+
+.view.active{
+    display:block;
+}
+
+.home{
+    padding:0;
+    overflow:hidden;
+    flex-direction:column;
+}
+
+.home.active{
+    display:flex;
+}
+
+.hero{
+    flex:1;
+    min-height:0;
+    overflow:auto;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    padding:25px 18px;
+}
+
+.hero h1{
+    margin:0 0 8px;
+    font-size:28px;
+}
+
+.hero p{
+    margin:0;
+    max-width:420px;
+    color:var(--muted);
+    text-align:center;
+    line-height:1.6;
+}
+
+/* COMPOSER */
+
+.composer{
+    flex:none;
+    padding:12px 14px calc(12px + env(safe-area-inset-bottom));
+    border-top:1px solid var(--line);
+    background:rgba(7,7,11,.94);
+}
+
+.composeBox{
+    display:flex;
+    gap:8px;
+    align-items:flex-end;
+    background:#101017;
+    border:1px solid var(--line);
+    border-radius:17px;
+    padding:8px;
+}
+
+.prompt{
+    flex:1;
+    min-height:42px;
+    max-height:130px;
+    resize:none;
+    outline:none;
+    border:0;
+    background:transparent;
+    color:var(--text);
+    padding:10px;
+}
+
+.prompt::placeholder{
+    color:#777788;
+}
+
+.sendButton{
+    width:46px;
+    height:46px;
+    flex:none;
+    border-radius:13px;
+    background:linear-gradient(135deg,var(--purple),var(--blue));
+    font-weight:900;
+    font-size:20px;
+}
+
+.sendButton:disabled{
+    opacity:.4;
+}
+
+/* CARDS */
+
+.container{
+    width:100%;
+    max-width:900px;
+    margin:auto;
+}
+
+.card{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:14px;
+    margin-bottom:12px;
+}
+
+.row{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+
+.muted{
+    color:var(--muted);
+}
+
+.small{
+    font-size:12px;
+}
+
+.button{
+    padding:9px 12px;
+    border-radius:10px;
+    background:#171720;
+    border:1px solid var(--line);
+}
+
+.button.primary{
+    background:#6d4bd7;
+    border-color:#8062e8;
+}
+
+.button.danger{
+    color:#ff8797;
+    border-color:#592630;
+}
+
+.input{
+    width:100%;
+    padding:11px;
+    border-radius:11px;
+    outline:none;
+    background:#0b0b11;
+    border:1px solid var(--line);
+    color:var(--text);
+}
+
+.input:focus{
+    border-color:#7051d8;
+}
+
+/* ACTIVITY */
+
+.activity{
+    display:grid;
+    gap:8px;
+}
+
+.event{
+    background:#0e0e15;
+    border:1px solid var(--line);
+    border-radius:11px;
+    padding:10px;
+}
+
+.eventTitle{
+    color:#a995ff;
+    font-size:11px;
+    font-weight:700;
+}
+
+.eventText{
+    margin-top:6px;
+    color:#d7d7df;
+    font:12px ui-monospace,SFMono-Regular,Menlo,monospace;
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+/* TERMINAL */
+
+.terminal{
+    min-height:55vh;
+    background:#050507;
+    border:1px solid #24242c;
+    border-radius:14px;
+    padding:12px;
+    color:#dedee6;
+    font:12px ui-monospace,SFMono-Regular,Menlo,monospace;
+    white-space:pre-wrap;
+    word-break:break-word;
+    overflow:auto;
+}
+
+/* FILES */
+
+.file{
+    background:#0e0e15;
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:11px;
+    margin-bottom:8px;
+    word-break:break-word;
+}
+
+/* KEYS */
+
+.key{
+    display:grid;
+    gap:10px;
+}
+
+.keyInfo{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+}
+
+.pill{
+    padding:4px 8px;
+    border-radius:999px;
+    background:#171722;
+    border:1px solid var(--line);
+    color:var(--muted);
+    font-size:10px;
+}
+
+.pill.active{
+    color:#7ee9aa;
+    border-color:#24583b;
+}
+
+.empty{
+    padding:35px 10px;
+    color:var(--muted);
+    text-align:center;
+}
 </style>
 </head>
+
 <body>
+
 <div class="app">
 
-<header class="header">
-<div class="brand">
-<div class="logo">G</div>
-<div class="brandText">Gemini AI Agent</div>
-</div>
-<button class="menuBtn" id="menuBtn" type="button">☰</button>
-</header>
+    <div id="overlay" class="overlay"></div>
 
-<div class="overlay" id="overlay"></div>
+    <!-- MENU -->
+    <aside id="sidebar" class="sidebar">
 
-<aside class="sidebar" id="sidebar">
-<div class="sideTitle">AI Agent</div>
-<div class="nav">
+        <button id="closeMenu" class="closeMenu" type="button">
+            ×
+        </button>
 
-<button class="navBtn active" data-page="home" type="button">🏠 &nbsp; Home</button>
-<button class="navBtn" data-page="chats" type="button">💬 &nbsp; Chats</button>
-<button class="navBtn" data-page="files" type="button">📁 &nbsp; Files</button>
-<button class="navBtn" data-page="activity" type="button">⚡ &nbsp; Agent Activity</button>
-<button class="navBtn" data-page="terminal" type="button">▣ &nbsp; Terminal</button>
-<button class="navBtn" data-page="keys" type="button">🔑 &nbsp; Gemini API Keys</button>
+        <div class="brand">
+            Gemini AI Agent
+            <small>General-purpose AI workspace</small>
+        </div>
 
-</div>
-<button class="closeBtn" id="closeMenu" type="button">إغلاق</button>
-</aside>
+        <div class="nav">
 
-<div class="pages">
+            <button type="button" data-page="home">
+                ⌂ Home
+            </button>
 
-<section class="page home active" id="page-home">
-<div class="hero">
-<div class="heroIcon">G</div>
-<h1>Gemini AI Agent</h1>
-<p>ابنِ مواقع وألعاب وواجهات وبرامج باستخدام Agent يستطيع إنشاء الملفات وتشغيل المشاريع وإصلاح الأخطاء.</p>
-</div>
+            <button type="button" data-page="chats">
+                ◌ Chats
+            </button>
 
-<div class="composer">
-<div class="composerBox">
-<textarea id="message" placeholder="وش تبي أبني لك؟" rows="1"></textarea>
-<button class="sendBtn" id="sendBtn" type="button">↑</button>
-</div>
-</div>
-</section>
+            <button type="button" data-page="files">
+                ▣ Files
+            </button>
 
-<section class="page" id="page-chats">
-<div class="pageTitle">Chats</div>
-<p class="pageDesc">محادثات Agent المحفوظة.</p>
-<div id="chatList"></div>
-</section>
+            <button type="button" data-page="activity">
+                ◈ Agent Activity
+            </button>
 
-<section class="page" id="page-files">
-<div class="pageTitle">Files</div>
-<p class="pageDesc">ملفات المشروع التي أنشأها Agent.</p>
-<div id="fileList"></div>
-</section>
+            <button type="button" data-page="terminal">
+                ⌘ Terminal
+            </button>
 
-<section class="page" id="page-activity">
-<div class="pageTitle">Agent Activity</div>
-<p class="pageDesc">خطوات Agent والأدوات التي يستخدمها.</p>
-<div id="activityList"></div>
-</section>
+            <button type="button" data-page="keys">
+                ⚿ Gemini API Keys
+            </button>
 
-<section class="page" id="page-terminal">
-<div class="pageTitle">Terminal</div>
-<p class="pageDesc">Terminal الخاص بالمشروع.</p>
-<div class="terminal">
-<div class="terminalHead">Agent Terminal</div>
-<div class="terminalBody" id="terminalBody"></div>
-</div>
-</section>
+        </div>
 
-<section class="page" id="page-keys">
-<div class="pageTitle">Gemini API Keys</div>
-<p class="pageDesc">أضف مفاتيح Gemini إضافية وفعّل أو أوقف أي مفتاح بدون إظهار المفتاح كاملًا.</p>
+        <div class="backendStatus">
+            Backend:
+            <b id="backendText">Checking...</b>
+        </div>
 
-<div class="card">
-<input class="input" id="keyName" placeholder="اسم المفتاح — مثال: Gemini 2" autocomplete="off">
-<input class="input" id="apiKeyInput" placeholder="Gemini API Key" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false">
-<button class="keySave" id="saveKeyBtn" type="button">Add & Save</button>
-</div>
+    </aside>
 
-<div id="keysList"></div>
-</section>
+    <!-- MAIN -->
+    <main class="main">
 
-</div>
+        <header class="topbar">
 
-<div class="toast" id="toast"></div>
+            <button id="menuButton" class="menuButton" type="button">
+                ☰
+            </button>
+
+            <div id="pageTitle" class="pageTitle">
+                Home
+            </div>
+
+            <span id="connectionDot" class="connectionDot"></span>
+
+        </header>
+
+        <!-- HOME -->
+        <section id="home" class="view home active">
+
+            <div class="hero">
+
+                <h1>Gemini AI Agent</h1>
+
+                <p>
+                    Tell the Agent what you want it to build, edit, run, test, or fix.
+                </p>
+
+            </div>
+
+            <div id="composer" class="composer">
+
+                <div class="composeBox">
+
+                    <textarea
+                        id="prompt"
+                        class="prompt"
+                        rows="1"
+                        placeholder="اكتب طلبك للـ Agent..."
+                    ></textarea>
+
+                    <button
+                        id="sendButton"
+                        class="sendButton"
+                        type="button"
+                    >
+                        ↑
+                    </button>
+
+                </div>
+
+            </div>
+
+        </section>
+
+        <!-- CHATS -->
+        <section id="chats" class="view">
+
+            <div class="container">
+
+                <div class="card">
+
+                    <div class="row">
+
+                        <b>Chats</b>
+
+                        <button
+                            id="newChat"
+                            class="button primary"
+                            type="button"
+                        >
+                            New chat
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div id="chatList"></div>
+
+            </div>
+
+        </section>
+
+        <!-- FILES -->
+        <section id="files" class="view">
+
+            <div class="container">
+
+                <div class="card">
+
+                    <div class="row">
+
+                        <b>Files</b>
+
+                        <button
+                            id="refreshFiles"
+                            class="button"
+                            type="button"
+                        >
+                            Refresh
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div id="fileList"></div>
+
+            </div>
+
+        </section>
+
+        <!-- ACTIVITY -->
+        <section id="activity" class="view">
+
+            <div class="container">
+
+                <div class="card">
+
+                    <div class="row">
+
+                        <b>Agent Activity</b>
+
+                        <button
+                            id="clearActivity"
+                            class="button"
+                            type="button"
+                        >
+                            Clear
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div id="activityList" class="activity"></div>
+
+            </div>
+
+        </section>
+
+        <!-- TERMINAL -->
+        <section id="terminal" class="view">
+
+            <div class="container">
+
+                <div class="card">
+
+                    <div class="row">
+
+                        <b>Terminal</b>
+
+                        <button
+                            id="clearTerminal"
+                            class="button"
+                            type="button"
+                        >
+                            Clear
+                        </button>
+
+                    </div>
+
+                </div>
+
+                <div id="terminalOutput" class="terminal"></div>
+
+            </div>
+
+        </section>
+
+        <!-- KEYS -->
+        <section id="keys" class="view">
+
+            <div class="container">
+
+                <div class="card key">
+
+                    <b>Gemini API Keys</b>
+
+                    <div class="small muted">
+                        Keys are handled by the backend. Only masked keys are displayed here.
+                    </div>
+
+                    <input
+                        id="keyName"
+                        class="input"
+                        type="text"
+                        placeholder="Key name"
+                    >
+
+                    <input
+                        id="keyValue"
+                        class="input"
+                        type="password"
+                        placeholder="Gemini API key"
+                    >
+
+                    <button
+                        id="addKey"
+                        class="button primary"
+                        type="button"
+                    >
+                        Add key
+                    </button>
+
+                </div>
+
+                <div id="keyList"></div>
+
+            </div>
+
+        </section>
+
+    </main>
+
 </div>
 
 <script>
+(function(){
+
 "use strict";
 
 /* =========================================================
-   BACKEND
-========================================================= */
+   IMPORTANT
+   ========================================================= */
 
 const API = "https://gemini-roblox-ai.onrender.com";
 
+const PROJECT = "default";
+
 /* =========================================================
    STATE
-========================================================= */
+   ========================================================= */
 
-let currentPage = "home";
-let currentProject = "default";
-let agentRunning = false;
+const state = {
+
+    page: "home",
+
+    busy: false,
+
+    events: [],
+
+    terminal: "",
+
+    processedLength: 0,
+
+    agentXHR: null
+
+};
 
 /* =========================================================
-   ELEMENT
-========================================================= */
+   ELEMENT HELPER
+   ========================================================= */
 
 function $(id){
     return document.getElementById(id);
 }
 
 /* =========================================================
-   TOAST
-========================================================= */
+   PAGES
+   ========================================================= */
 
-function toast(message){
-    const el = $("toast");
-    el.textContent = String(message || "");
-    el.classList.add("show");
+const pages = [
+    "home",
+    "chats",
+    "files",
+    "activity",
+    "terminal",
+    "keys"
+];
 
-    clearTimeout(window.__toastTimer);
+const pageNames = {
 
-    window.__toastTimer = setTimeout(function(){
-        el.classList.remove("show");
-    },3000);
-}
+    home: "Home",
+
+    chats: "Chats",
+
+    files: "Files",
+
+    activity: "Agent Activity",
+
+    terminal: "Terminal",
+
+    keys: "Gemini API Keys"
+
+};
 
 /* =========================================================
    SAFE HTML
-========================================================= */
+   ========================================================= */
 
-function escapeHtml(value){
+function escapeHTML(value){
+
     return String(value == null ? "" : value)
         .replace(/&/g,"&amp;")
         .replace(/</g,"&lt;")
         .replace(/>/g,"&gt;")
         .replace(/"/g,"&quot;")
-        .replace(/'/g,"&#039;");
+        .replace(/'/g,"&#39;");
+
 }
 
 /* =========================================================
-   XHR
-   يستخدم XMLHttpRequest بدل fetch
-   لتجنب مشكلة Safari:
-   "The string did not match the expected pattern."
-========================================================= */
+   API URL
+   ========================================================= */
 
-function request(path,method,body){
-    return new Promise(function(resolve,reject){
+function apiURL(path){
 
-        let xhr;
+    return API.replace(/\/+$/,"") + path;
 
-        try{
-            xhr = new XMLHttpRequest();
-        }catch(error){
-            reject(error);
-            return;
-        }
+}
 
-        const url = API + path;
+/* =========================================================
+   STATUS
+   ========================================================= */
 
-        try{
-            xhr.open(method || "GET",url,true);
-        }catch(error){
-            reject(new Error("تعذر إنشاء اتصال بالـBackend."));
-            return;
-        }
+function setBackendStatus(online){
 
-        xhr.setRequestHeader(
-            "Content-Type",
-            "application/json;charset=UTF-8"
-        );
+    $("connectionDot").className =
+        online
+        ? "connectionDot online"
+        : "connectionDot";
 
-        xhr.timeout = 30000;
+    $("backendText").textContent =
+        online
+        ? "Online"
+        : "Offline";
 
-        xhr.onreadystatechange = function(){
-
-            if(xhr.readyState !== 4){
-                return;
-            }
-
-            const raw = xhr.responseText || "";
-
-            let data = {};
-
-            try{
-                data = raw ? JSON.parse(raw) : {};
-            }catch(error){
-                data = {
-                    ok:false,
-                    error:raw || "Invalid server response"
-                };
-            }
-
-            if(xhr.status >= 200 && xhr.status < 300){
-                resolve(data);
-            }else{
-                reject(
-                    new Error(
-                        data.error ||
-                        data.message ||
-                        ("HTTP " + xhr.status)
-                    )
-                );
-            }
-        };
-
-        xhr.onerror = function(){
-            reject(
-                new Error(
-                    "تعذر الاتصال بالسيرفر. تأكد أن Render يعمل."
-                )
-            );
-        };
-
-        xhr.ontimeout = function(){
-            reject(
-                new Error(
-                    "انتهى وقت الاتصال بالسيرفر."
-                )
-            );
-        };
-
-        try{
-            if(body == null){
-                xhr.send();
-            }else{
-                xhr.send(JSON.stringify(body));
-            }
-        }catch(error){
-            reject(error);
-        }
-    });
 }
 
 /* =========================================================
    MENU
-========================================================= */
+   ========================================================= */
 
 function openMenu(){
+
     $("sidebar").classList.add("open");
-    $("overlay").classList.add("show");
+
+    $("overlay").classList.add("open");
+
 }
 
 function closeMenu(){
+
     $("sidebar").classList.remove("open");
-    $("overlay").classList.remove("show");
+
+    $("overlay").classList.remove("open");
+
 }
-
-$("menuBtn").addEventListener("click",function(){
-    openMenu();
-});
-
-$("closeMenu").addEventListener("click",function(){
-    closeMenu();
-});
-
-$("overlay").addEventListener("click",function(){
-    closeMenu();
-});
 
 /* =========================================================
    PAGE
-========================================================= */
-
-document.querySelectorAll(".navBtn").forEach(function(button){
-
-    button.addEventListener("click",function(){
-
-        showPage(button.dataset.page);
-        closeMenu();
-
-    });
-
-});
+   ========================================================= */
 
 function showPage(page){
 
-    currentPage = page;
-
-    document.querySelectorAll(".page").forEach(function(el){
-        el.classList.remove("active");
-    });
-
-    const target = $("page-" + page);
-
-    if(target){
-        target.classList.add("active");
+    if(!pages.includes(page)){
+        page = "home";
     }
 
-    document.querySelectorAll(".navBtn").forEach(function(btn){
-        btn.classList.toggle(
-            "active",
-            btn.dataset.page === page
-        );
-    });
+    state.page = page;
 
-    if(page === "keys"){
-        loadKeys();
+    for(const name of pages){
+
+        const el = $(name);
+
+        if(el){
+            el.classList.toggle(
+                "active",
+                name === page
+            );
+        }
+
     }
+
+    $("pageTitle").textContent =
+        pageNames[page];
+
+    document
+        .querySelectorAll("[data-page]")
+        .forEach(button => {
+
+            button.classList.toggle(
+                "active",
+                button.dataset.page === page
+            );
+
+        });
+
+    $("composer").style.display =
+        page === "home"
+        ? "block"
+        : "none";
+
+    closeMenu();
 
     if(page === "files"){
         loadFiles();
@@ -382,965 +896,1488 @@ function showPage(page){
     if(page === "chats"){
         loadChats();
     }
+
+    if(page === "keys"){
+        loadKeys();
+    }
+
 }
 
 /* =========================================================
-   MESSAGE
-========================================================= */
+   NORMAL XHR
+   ========================================================= */
 
-$("message").addEventListener("input",function(){
+function request(
+    method,
+    path,
+    body,
+    success,
+    failure
+){
 
-    this.style.height = "auto";
+    const xhr = new XMLHttpRequest();
 
-    this.style.height =
-        Math.min(this.scrollHeight,140) + "px";
+    try{
 
-});
+        xhr.open(
+            method,
+            apiURL(path),
+            true
+        );
 
-$("message").addEventListener("keydown",function(e){
+    }catch(error){
 
-    if(e.key === "Enter" && !e.shiftKey){
+        if(failure){
+            failure(
+                error.message || String(error)
+            );
+        }
 
-        e.preventDefault();
+        return xhr;
 
-        sendMessage();
     }
 
-});
+    xhr.setRequestHeader(
+        "Accept",
+        "application/json,text/plain"
+    );
 
-$("sendBtn").addEventListener("click",function(){
-    sendMessage();
-});
+    if(body !== undefined){
+
+        xhr.setRequestHeader(
+            "Content-Type",
+            "application/json;charset=UTF-8"
+        );
+
+    }
+
+    xhr.onreadystatechange = function(){
+
+        if(xhr.readyState !== 4){
+            return;
+        }
+
+        let data = null;
+
+        try{
+
+            data =
+                xhr.responseText
+                ? JSON.parse(xhr.responseText)
+                : null;
+
+        }catch(error){
+
+            data = xhr.responseText;
+
+        }
+
+        if(
+            xhr.status >= 200 &&
+            xhr.status < 300
+        ){
+
+            if(success){
+                success(data,xhr);
+            }
+
+        }else{
+
+            let message =
+                "HTTP " + xhr.status;
+
+            if(
+                data &&
+                typeof data === "object"
+            ){
+
+                message =
+                    data.message ||
+                    data.error ||
+                    message;
+
+            }
+
+            if(failure){
+                failure(message,xhr);
+            }
+
+        }
+
+    };
+
+    xhr.onerror = function(){
+
+        if(failure){
+            failure("Network/CORS error",xhr);
+        }
+
+    };
+
+    xhr.ontimeout = function(){
+
+        if(failure){
+            failure("Request timed out",xhr);
+        }
+
+    };
+
+    try{
+
+        xhr.send(
+            body === undefined
+            ? null
+            : JSON.stringify(body)
+        );
+
+    }catch(error){
+
+        if(failure){
+            failure(
+                error.message || String(error),
+                xhr
+            );
+        }
+
+    }
+
+    return xhr;
+
+}
 
 /* =========================================================
    ACTIVITY
-========================================================= */
+   ========================================================= */
 
-function clearActivity(){
-    $("activityList").innerHTML = "";
-}
+function addActivity(
+    title,
+    text
+){
 
-function addActivity(title,details){
+    state.events.push({
 
-    const box = document.createElement("div");
+        title: title,
 
-    box.className = "activity";
+        text:
+            text == null
+            ? ""
+            : String(text)
 
-    const head = document.createElement("div");
-    head.className = "activityHead";
-
-    const titleEl = document.createElement("div");
-    titleEl.className = "activityTitle";
-    titleEl.textContent = title;
-
-    const arrow = document.createElement("div");
-    arrow.className = "arrow";
-    arrow.textContent = "⌄";
-
-    head.appendChild(titleEl);
-    head.appendChild(arrow);
-
-    const body = document.createElement("div");
-    body.className = "activityBody";
-    body.textContent = details || "";
-
-    head.addEventListener("click",function(){
-        box.classList.toggle("open");
     });
 
-    box.appendChild(head);
-    box.appendChild(body);
+    renderActivity();
 
-    $("activityList").appendChild(box);
+}
 
-    return box;
+function renderActivity(){
+
+    const box = $("activityList");
+
+    if(!state.events.length){
+
+        box.innerHTML =
+            '<div class="empty">No agent activity yet.</div>';
+
+        return;
+
+    }
+
+    box.innerHTML =
+        state.events
+        .map(event => {
+
+            return `
+                <div class="event">
+
+                    <div class="eventTitle">
+                        ${escapeHTML(event.title)}
+                    </div>
+
+                    <div class="eventText">
+                        ${escapeHTML(event.text)}
+                    </div>
+
+                </div>
+            `;
+
+        })
+        .join("");
+
+    box.scrollTop =
+        box.scrollHeight;
+
 }
 
 /* =========================================================
    TERMINAL
-========================================================= */
+   ========================================================= */
 
 function addTerminal(text){
 
-    const line = document.createElement("div");
-    line.className = "line";
-
-    const prompt = document.createElement("span");
-    prompt.className = "prompt";
-    prompt.textContent = "$";
-
-    line.appendChild(prompt);
-    line.appendChild(
-        document.createTextNode(" " + String(text || ""))
-    );
-
-    $("terminalBody").appendChild(line);
-
-    $("terminalBody").scrollTop =
-        $("terminalBody").scrollHeight;
-}
-
-/* =========================================================
-   SEND AGENT MESSAGE
-========================================================= */
-
-async function sendMessage(){
-
-    if(agentRunning){
-        toast("Agent يعمل حاليًا...");
+    if(
+        text === null ||
+        text === undefined ||
+        text === ""
+    ){
         return;
     }
 
-    const input = $("message");
-    const message = input.value.trim();
+    state.terminal +=
+        (state.terminal ? "\n" : "") +
+        String(text);
+
+    $("terminalOutput").textContent =
+        state.terminal;
+
+    $("terminalOutput").scrollTop =
+        $("terminalOutput").scrollHeight;
+
+}
+
+/* =========================================================
+   AGENT EVENTS
+   ========================================================= */
+
+function handleAgentEvent(event){
+
+    if(!event){
+        return;
+    }
+
+    const type =
+        event.type || "message";
+
+    const message =
+        event.message ??
+        event.error ??
+        event.step ??
+        event.result ??
+        "";
+
+    switch(type){
+
+        case "connected":
+
+            addActivity(
+                "Connected",
+                "Project: " +
+                (event.project || PROJECT)
+            );
+
+            break;
+
+
+        case "start":
+
+            addActivity(
+                "Agent started",
+                event.keyName
+                ? "Key: " + event.keyName
+                : ""
+            );
+
+            break;
+
+
+        case "thinking":
+
+            addActivity(
+                "Thinking",
+                message
+            );
+
+            break;
+
+
+        case "planning":
+
+            addActivity(
+                "Planning",
+                message
+            );
+
+            break;
+
+
+        case "tool_start":
+
+            addActivity(
+                "Tool start",
+                String(
+                    event.tool || "tool"
+                ) +
+                (
+                    message
+                    ? " — " + message
+                    : ""
+                )
+            );
+
+            addTerminal(
+                "> " +
+                String(
+                    event.tool || "tool"
+                ) +
+                (
+                    message
+                    ? " — " + message
+                    : ""
+                )
+            );
+
+            break;
+
+
+        case "tool_result":
+
+            let resultText;
+
+            if(
+                typeof message === "string"
+            ){
+
+                resultText = message;
+
+            }else{
+
+                try{
+
+                    resultText =
+                        JSON.stringify(
+                            message,
+                            null,
+                            2
+                        );
+
+                }catch(error){
+
+                    resultText =
+                        String(message);
+
+                }
+
+            }
+
+            addActivity(
+                "Tool result",
+                resultText
+            );
+
+            addTerminal(resultText);
+
+            break;
+
+
+        case "tool_error":
+
+            addActivity(
+                "Tool error",
+                String(
+                    event.tool || "tool"
+                ) +
+                (
+                    message
+                    ? " — " + message
+                    : ""
+                )
+            );
+
+            addTerminal(
+                "ERROR: " +
+                String(message || event.tool || "tool")
+            );
+
+            break;
+
+
+        case "final":
+
+            addActivity(
+                "Final",
+                message
+            );
+
+            break;
+
+
+        case "error":
+
+            addActivity(
+                "Error",
+                message || "Unknown agent error"
+            );
+
+            break;
+
+
+        case "done":
+
+            addActivity(
+                "Done",
+                "Agent finished."
+            );
+
+            break;
+
+
+        default:
+
+            addActivity(
+                type,
+                message ||
+                JSON.stringify(event)
+            );
+
+            break;
+
+    }
+
+}
+
+/* =========================================================
+   NDJSON STREAM PARSER
+   ========================================================= */
+
+function processAgentStream(
+    raw,
+    final
+){
+
+    if(!raw){
+        return;
+    }
+
+    let newText =
+        raw.substring(
+            state.processedLength
+        );
+
+    state.processedLength =
+        raw.length;
+
+    const lines =
+        newText.split(/\r?\n/);
+
+    if(!final){
+
+        /*
+         Keep the last incomplete line.
+         */
+
+        const last =
+            lines.pop();
+
+        if(
+            last &&
+            last.trim()
+        ){
+
+            /*
+             Put incomplete line back
+             by moving processed pointer.
+             */
+
+            state.processedLength -=
+                last.length;
+
+        }
+
+    }
+
+    for(const line of lines){
+
+        const clean =
+            line.trim();
+
+        if(!clean){
+            continue;
+        }
+
+        try{
+
+            const event =
+                JSON.parse(clean);
+
+            handleAgentEvent(event);
+
+        }catch(error){
+
+            addActivity(
+                "Stream parse error",
+                clean
+            );
+
+        }
+
+    }
+
+    if(final){
+
+        /*
+         Parse anything remaining
+         after the final newline.
+         */
+
+        const remaining =
+            raw.substring(
+                state.processedLength
+            ).trim();
+
+        if(remaining){
+
+            try{
+
+                handleAgentEvent(
+                    JSON.parse(remaining)
+                );
+
+                state.processedLength =
+                    raw.length;
+
+            }catch(error){
+
+                addActivity(
+                    "Stream parse error",
+                    remaining
+                );
+
+            }
+
+        }
+
+    }
+
+}
+
+/* =========================================================
+   RUN AGENT
+   ========================================================= */
+
+function runAgent(){
+
+    if(state.busy){
+        return;
+    }
+
+    const message =
+        $("prompt").value.trim();
 
     if(!message){
         return;
     }
 
-    agentRunning = true;
-    $("sendBtn").disabled = true;
+    state.busy = true;
+
+    $("sendButton").disabled = true;
+
+    state.events = [];
+
+    state.terminal = "";
+
+    state.processedLength = 0;
+
+    renderActivity();
+
+    $("terminalOutput").textContent = "";
 
     addActivity(
-        "يتم تشغيل Agent",
+        "Request",
         message
     );
+
+    showPage("activity");
+
+    const xhr =
+        new XMLHttpRequest();
+
+    state.agentXHR = xhr;
 
     try{
 
         /*
-          Agent endpoint is NDJSON streaming.
-          Keep fetch ONLY here because the Agent stream
-          requires ReadableStream.
-        */
+         IMPORTANT:
+         This is POST /agent.
+         The browser never opens /agent directly.
+         */
 
-        const response = await window.fetch(
-            API + "/agent",
-            {
-                method:"POST",
-                mode:"cors",
-                headers:{
-                    "Content-Type":"application/json"
-                },
-                body:JSON.stringify({
-                    message:message,
-                    project:currentProject
-                })
-            }
+        xhr.open(
+            "POST",
+            apiURL("/agent"),
+            true
         );
-
-        if(!response.ok){
-
-            const errorText =
-                await response.text();
-
-            throw new Error(
-                errorText ||
-                ("HTTP " + response.status)
-            );
-        }
-
-        input.value = "";
-        input.style.height = "auto";
-
-        if(!response.body){
-
-            toast("Agent بدأ.");
-
-            return;
-        }
-
-        const reader =
-            response.body.getReader();
-
-        const decoder =
-            new TextDecoder();
-
-        let buffer = "";
-
-        while(true){
-
-            const result =
-                await reader.read();
-
-            if(result.done){
-                break;
-            }
-
-            buffer += decoder.decode(
-                result.value,
-                {stream:true}
-            );
-
-            const lines =
-                buffer.split("\n");
-
-            buffer =
-                lines.pop() || "";
-
-            for(const line of lines){
-
-                if(!line.trim()){
-                    continue;
-                }
-
-                try{
-
-                    const event =
-                        JSON.parse(line);
-
-                    handleAgentEvent(event);
-
-                }catch(error){
-
-                    console.log(
-                        "Invalid agent event:",
-                        line
-                    );
-
-                }
-            }
-        }
 
     }catch(error){
 
-        console.error(error);
-
-        addActivity(
-            "حدث خطأ",
-            error.message
-        );
-
-        toast(error.message);
-
-    }finally{
-
-        agentRunning = false;
-        $("sendBtn").disabled = false;
-
-    }
-}
-
-/* =========================================================
-   AGENT EVENTS
-========================================================= */
-
-function handleAgentEvent(event){
-
-    const type = event.type;
-
-    if(type === "connected"){
-
-        addActivity(
-            "Agent connected",
-            JSON.stringify(event,null,2)
-        );
-
-        return;
-    }
-
-    if(type === "start"){
-
-        addActivity(
-            "Agent started",
-            JSON.stringify(event,null,2)
-        );
-
-        return;
-    }
-
-    if(type === "thinking"){
-
-        addActivity(
-            "Thinking — Step " + (event.step || "?"),
-            event.message || ""
-        );
-
-        return;
-    }
-
-    if(type === "planning"){
-
-        addActivity(
-            "Planning",
-            event.message || ""
-        );
-
-        return;
-    }
-
-    if(type === "tool_start"){
-
-        addActivity(
-            "Running: " + (event.tool || "Tool"),
-            event.message || ""
-        );
-
-        addTerminal(
-            "Running " + (event.tool || "Tool")
-        );
-
-        return;
-    }
-
-    if(type === "tool_result"){
-
-        let details = "";
-
-        if(typeof event.result === "string"){
-            details = event.result;
-        }else{
-            try{
-                details =
-                    JSON.stringify(
-                        event.result,
-                        null,
-                        2
-                    );
-            }catch(error){
-                details = String(event.result || "");
-            }
-        }
-
-        addActivity(
-            "Tool completed: " +
-            (event.tool || "Tool"),
-            details
-        );
-
-        return;
-    }
-
-    if(type === "tool_error"){
-
-        addActivity(
-            "Tool error: " +
-            (event.tool || "Tool"),
-            event.error || ""
-        );
-
-        return;
-    }
-
-    if(type === "final"){
-
-        addActivity(
-            "Agent finished",
-            event.message || ""
-        );
-
-        toast("Agent خلص المهمة.");
-
-        return;
-    }
-
-    if(type === "error"){
-
-        const message =
-            event.message ||
-            event.error ||
-            "حدث خطأ.";
+        finishAgent();
 
         addActivity(
             "Error",
-            message
-        );
-
-        toast(message);
-
-        return;
-    }
-
-    if(type === "done"){
-
-        addActivity(
-            "Done",
-            "Agent completed the run."
+            error.message || String(error)
         );
 
         return;
+
     }
 
-    addActivity(
-        type || "Agent event",
-        JSON.stringify(event,null,2)
+    xhr.setRequestHeader(
+        "Content-Type",
+        "application/json;charset=UTF-8"
     );
-}
 
-/* =========================================================
-   KEYS
-========================================================= */
+    xhr.setRequestHeader(
+        "Accept",
+        "application/x-ndjson,application/json,text/plain"
+    );
 
-async function loadKeys(){
+    xhr.onprogress = function(){
 
-    const list = $("keysList");
+        processAgentStream(
+            xhr.responseText || "",
+            false
+        );
 
-    list.innerHTML =
-        '<div class="empty">جاري تحميل المفاتيح...</div>';
+    };
 
-    try{
+    xhr.onreadystatechange = function(){
 
-        const data =
-            await request(
-                "/keys",
-                "GET"
-            );
-
-        renderKeys(data);
-
-    }catch(error){
-
-        list.innerHTML =
-            '<div class="empty">' +
-            escapeHtml(error.message) +
-            '</div>';
-
-    }
-}
-
-function renderKeys(data){
-
-    const list = $("keysList");
-
-    list.innerHTML = "";
-
-    if(!data){
-
-        list.innerHTML =
-            '<div class="empty">لا توجد بيانات.</div>';
-
-        return;
-    }
-
-    const allKeys = [];
-
-    if(data.primary){
-        allKeys.push(data.primary);
-    }
-
-    if(Array.isArray(data.keys)){
-
-        data.keys.forEach(function(key){
-
-            if(key.id !== "primary"){
-                allKeys.push(key);
-            }
-
-        });
-    }
-
-    if(!allKeys.length){
-
-        list.innerHTML =
-            '<div class="empty">لا توجد مفاتيح محفوظة.</div>';
-
-        return;
-    }
-
-    allKeys.forEach(function(key){
-
-        const item =
-            document.createElement("div");
-
-        item.className = "keyItem";
-
-        const active =
-            key.active === true ||
-            key.id === data.activeKeyId;
-
-        const enabled =
-            key.enabled !== false;
-
-        const name =
-            key.name ||
-            "Gemini Key";
-
-        const masked =
-            key.maskedKey ||
-            key.masked ||
-            "••••••••";
-
-        const top =
-            document.createElement("div");
-
-        top.className = "keyTop";
-
-        const nameEl =
-            document.createElement("div");
-
-        nameEl.className = "keyName";
-        nameEl.textContent = name;
-
-        top.appendChild(nameEl);
-
-        if(active){
-
-            const badge =
-                document.createElement("div");
-
-            badge.className = "badge";
-            badge.textContent = "ACTIVE";
-
-            top.appendChild(badge);
+        if(xhr.readyState !== 4){
+            return;
         }
 
-        const value =
-            document.createElement("div");
+        /*
+         Process the final stream.
+         */
 
-        value.className = "keyValue";
-        value.textContent = masked;
+        processAgentStream(
+            xhr.responseText || "",
+            true
+        );
 
-        const actions =
-            document.createElement("div");
+        if(
+            xhr.status >= 200 &&
+            xhr.status < 300
+        ){
 
-        actions.className = "keyActions";
-
-        if(key.id === "primary"){
-
-            actions.appendChild(
-                makeKeyButton(
-                    "Use",
-                    "use",
-                    key.id
-                )
-            );
+            setBackendStatus(true);
 
         }else{
 
-            actions.appendChild(
-                makeKeyButton(
-                    enabled ? "Use" : "Enable",
-                    enabled ? "use" : "enable",
-                    key.id
-                )
+            let message =
+                "HTTP " + xhr.status;
+
+            try{
+
+                const data =
+                    JSON.parse(
+                        xhr.responseText
+                    );
+
+                message =
+                    data.message ||
+                    data.error ||
+                    message;
+
+            }catch(error){}
+
+            addActivity(
+                "HTTP error",
+                message
             );
 
-            actions.appendChild(
-                makeKeyButton(
-                    "Stop",
-                    "stop",
-                    key.id
-                )
-            );
-
-            const del =
-                makeKeyButton(
-                    "Delete",
-                    "delete",
-                    key.id
-                );
-
-            del.classList.add("danger");
-
-            actions.appendChild(del);
         }
 
-        item.appendChild(top);
-        item.appendChild(value);
-        item.appendChild(actions);
+        finishAgent();
 
-        list.appendChild(item);
-    });
+    };
+
+    xhr.onerror = function(){
+
+        addActivity(
+            "Error",
+            "Network/CORS error."
+        );
+
+        setBackendStatus(false);
+
+        finishAgent();
+
+    };
+
+    xhr.ontimeout = function(){
+
+        addActivity(
+            "Error",
+            "Request timed out."
+        );
+
+        finishAgent();
+
+    };
+
+    const payload = {
+
+        message: message,
+
+        project: PROJECT
+
+    };
+
+    try{
+
+        xhr.send(
+            JSON.stringify(payload)
+        );
+
+    }catch(error){
+
+        addActivity(
+            "Error",
+            error.message || String(error)
+        );
+
+        finishAgent();
+
+    }
+
+    $("prompt").value = "";
+
+    $("prompt").style.height =
+        "auto";
+
 }
 
-function makeKeyButton(text,action,id){
+/* =========================================================
+   FINISH AGENT
+   ========================================================= */
 
-    const button =
-        document.createElement("button");
+function finishAgent(){
 
-    button.type = "button";
-    button.textContent = text;
+    state.busy = false;
 
-    button.addEventListener(
-        "click",
+    $("sendButton").disabled = false;
+
+    state.agentXHR = null;
+
+}
+
+/* =========================================================
+   HEALTH
+   ========================================================= */
+
+function loadHealth(){
+
+    request(
+        "GET",
+        "/health",
+        undefined,
+
+        function(data){
+
+            if(
+                data &&
+                data.ok
+            ){
+
+                setBackendStatus(true);
+
+            }else{
+
+                setBackendStatus(false);
+
+            }
+
+        },
+
         function(){
 
-            if(action === "use"){
-                useKey(id);
-            }
+            setBackendStatus(false);
 
-            if(action === "enable"){
-                enableKey(id);
-            }
-
-            if(action === "stop"){
-                stopKey(id);
-            }
-
-            if(action === "delete"){
-                deleteKey(id);
-            }
         }
     );
 
-    return button;
-}
-
-/* =========================================================
-   ADD KEY
-========================================================= */
-
-$("saveKeyBtn").addEventListener(
-    "click",
-    addKey
-);
-
-$("apiKeyInput").addEventListener(
-    "keydown",
-    function(e){
-
-        if(e.key === "Enter"){
-            addKey();
-        }
-    }
-);
-
-async function addKey(){
-
-    const name =
-        $("keyName").value.trim();
-
-    const apiKey =
-        $("apiKeyInput").value.trim();
-
-    if(!apiKey){
-
-        toast("حط Gemini API Key أول.");
-
-        return;
-    }
-
-    const button =
-        $("saveKeyBtn");
-
-    button.disabled = true;
-    button.textContent = "Saving...";
-
-    try{
-
-        const result =
-            await request(
-                "/keys",
-                "POST",
-                {
-                    name:name || "Gemini Key",
-                    apiKey:apiKey
-                }
-            );
-
-        if(result && result.ok === false){
-
-            throw new Error(
-                result.error ||
-                result.message ||
-                "فشل حفظ المفتاح."
-            );
-        }
-
-        $("keyName").value = "";
-        $("apiKeyInput").value = "";
-
-        toast("تم حفظ مفتاح Gemini وتفعيله.");
-
-        await loadKeys();
-
-    }catch(error){
-
-        console.error(error);
-
-        toast(
-            error.message ||
-            "حدث خطأ أثناء حفظ المفتاح."
-        );
-
-    }finally{
-
-        button.disabled = false;
-        button.textContent = "Add & Save";
-
-    }
-}
-
-/* =========================================================
-   USE KEY
-========================================================= */
-
-async function useKey(id){
-
-    try{
-
-        await request(
-            "/keys/use",
-            "POST",
-            {
-                id:id
-            }
-        );
-
-        toast("تم تفعيل المفتاح.");
-
-        await loadKeys();
-
-    }catch(error){
-
-        toast(error.message);
-    }
-}
-
-/* =========================================================
-   ENABLE KEY
-========================================================= */
-
-async function enableKey(id){
-
-    try{
-
-        await request(
-            "/keys/enable",
-            "POST",
-            {
-                id:id
-            }
-        );
-
-        toast("تم تشغيل المفتاح.");
-
-        await loadKeys();
-
-    }catch(error){
-
-        toast(error.message);
-    }
-}
-
-/* =========================================================
-   STOP KEY
-========================================================= */
-
-async function stopKey(id){
-
-    try{
-
-        await request(
-            "/keys/stop",
-            "POST",
-            {
-                id:id
-            }
-        );
-
-        toast(
-            "تم إيقاف المفتاح."
-        );
-
-        await loadKeys();
-
-    }catch(error){
-
-        toast(error.message);
-    }
-}
-
-/* =========================================================
-   DELETE KEY
-========================================================= */
-
-async function deleteKey(id){
-
-    if(id === "primary"){
-
-        toast(
-            "المفتاح الأساسي لا يمكن حذفه."
-        );
-
-        return;
-    }
-
-    if(!window.confirm(
-        "Delete this Gemini API key?"
-    )){
-        return;
-    }
-
-    try{
-
-        await request(
-            "/keys/" +
-            encodeURIComponent(id),
-            "DELETE"
-        );
-
-        toast("تم حذف المفتاح.");
-
-        await loadKeys();
-
-    }catch(error){
-
-        toast(error.message);
-    }
 }
 
 /* =========================================================
    FILES
-========================================================= */
+   ========================================================= */
 
-async function loadFiles(){
+function loadFiles(){
 
-    const list =
+    const box =
         $("fileList");
 
-    list.innerHTML =
-        '<div class="empty">جاري تحميل الملفات...</div>';
+    box.innerHTML =
+        '<div class="empty">Loading...</div>';
 
-    try{
+    request(
+        "GET",
+        "/files",
+        undefined,
 
-        const data =
-            await request(
-                "/files?project=" +
-                encodeURIComponent(currentProject),
-                "GET"
-            );
+        function(data){
 
-        renderFiles(data);
+            let files = [];
 
-    }catch(error){
+            if(
+                Array.isArray(data)
+            ){
 
-        list.innerHTML =
-            '<div class="empty">' +
-            escapeHtml(error.message) +
-            '</div>';
-    }
-}
+                files = data;
 
-function renderFiles(data){
+            }else if(
+                data &&
+                Array.isArray(data.files)
+            ){
 
-    const list =
-        $("fileList");
+                files = data.files;
 
-    list.innerHTML = "";
+            }
 
-    const files =
-        Array.isArray(data)
-        ? data
-        : data && data.files;
+            if(!files.length){
 
-    if(!Array.isArray(files) || !files.length){
+                box.innerHTML =
+                    '<div class="empty">No files yet.</div>';
 
-        list.innerHTML =
-            '<div class="empty">لا توجد ملفات حاليًا.</div>';
+                return;
 
-        return;
-    }
+            }
 
-    files.forEach(function(file){
+            box.innerHTML =
+                files
+                .map(file => {
 
-        const item =
-            document.createElement("div");
+                    const name =
+                        typeof file === "string"
+                        ? file
+                        : (
+                            file.path ||
+                            file.name ||
+                            JSON.stringify(file)
+                        );
 
-        item.className = "card";
+                    return `
+                        <div class="file">
+                            ${escapeHTML(name)}
+                        </div>
+                    `;
 
-        if(typeof file === "string"){
-            item.textContent = file;
-        }else{
-            item.textContent =
-                file.path ||
-                file.name ||
-                JSON.stringify(file);
+                })
+                .join("");
+
+        },
+
+        function(error){
+
+            box.innerHTML =
+                '<div class="empty">' +
+                escapeHTML(error) +
+                '</div>';
+
         }
+    );
 
-        list.appendChild(item);
-    });
 }
 
 /* =========================================================
    CHATS
-========================================================= */
+   ========================================================= */
 
-async function loadChats(){
+function loadChats(){
 
-    const list =
+    const box =
         $("chatList");
 
-    list.innerHTML =
-        '<div class="empty">جاري تحميل المحادثات...</div>';
+    box.innerHTML =
+        '<div class="empty">Loading...</div>';
 
-    try{
+    request(
+        "GET",
+        "/chats",
+        undefined,
 
-        const data =
-            await request(
-                "/chats",
-                "GET"
-            );
+        function(data){
 
-        renderChats(data);
+            let chats = [];
 
-    }catch(error){
+            if(
+                Array.isArray(data)
+            ){
 
-        list.innerHTML =
-            '<div class="empty">' +
-            escapeHtml(error.message) +
-            '</div>';
-    }
-}
+                chats = data;
 
-function renderChats(data){
+            }else if(
+                data &&
+                Array.isArray(data.chats)
+            ){
 
-    const list =
-        $("chatList");
+                chats = data.chats;
 
-    list.innerHTML = "";
+            }
 
-    const chats =
-        Array.isArray(data)
-        ? data
-        : data && data.chats;
+            if(!chats.length){
 
-    if(!Array.isArray(chats) || !chats.length){
+                box.innerHTML =
+                    '<div class="empty">No chats yet.</div>';
 
-        list.innerHTML =
-            '<div class="empty">لا توجد محادثات محفوظة.</div>';
+                return;
 
-        return;
-    }
+            }
 
-    chats.forEach(function(chat){
+            box.innerHTML =
+                chats
+                .map(chat => {
 
-        const item =
-            document.createElement("div");
+                    const name =
+                        chat.name ||
+                        chat.id ||
+                        "Chat";
 
-        item.className = "card";
+                    const id =
+                        chat.id || "";
 
-        if(typeof chat === "string"){
-            item.textContent = chat;
-        }else{
-            item.textContent =
-                chat.name ||
-                chat.title ||
-                chat.id ||
-                JSON.stringify(chat);
+                    return `
+                        <div class="card">
+
+                            <div class="row">
+
+                                <b>
+                                    ${escapeHTML(name)}
+                                </b>
+
+                                <span class="pill">
+                                    ${escapeHTML(id)}
+                                </span>
+
+                            </div>
+
+                        </div>
+                    `;
+
+                })
+                .join("");
+
+        },
+
+        function(error){
+
+            box.innerHTML =
+                '<div class="empty">' +
+                escapeHTML(error) +
+                '</div>';
+
         }
+    );
 
-        list.appendChild(item);
-    });
 }
 
 /* =========================================================
-   STARTUP
-========================================================= */
+   KEYS
+   ========================================================= */
 
-window.addEventListener("load",function(){
+function loadKeys(){
 
-    console.log(
-        "Gemini AI Agent UI loaded"
+    const box =
+        $("keyList");
+
+    box.innerHTML =
+        '<div class="empty">Loading...</div>';
+
+    request(
+        "GET",
+        "/keys",
+        undefined,
+
+        function(data){
+
+            const keys = [];
+
+            if(
+                data &&
+                data.primary
+            ){
+
+                keys.push(
+                    data.primary
+                );
+
+            }
+
+            if(
+                data &&
+                Array.isArray(data.keys)
+            ){
+
+                for(
+                    const key of data.keys
+                ){
+
+                    if(!key.primary){
+                        keys.push(key);
+                    }
+
+                }
+
+            }
+
+            if(!keys.length){
+
+                box.innerHTML =
+                    '<div class="empty">No keys returned.</div>';
+
+                return;
+
+            }
+
+            box.innerHTML =
+                keys
+                .map(key => {
+
+                    const active =
+                        key.active ||
+                        (
+                            data &&
+                            data.activeKeyId === key.id
+                        );
+
+                    const primary =
+                        !!key.primary;
+
+                    const masked =
+                        key.maskedKey ||
+                        key.masked ||
+                        "••••••••";
+
+                    const status =
+                        active
+                        ? "Active"
+                        : (
+                            key.enabled === false
+                            ? "Disabled"
+                            : "Ready"
+                        );
+
+                    return `
+                        <div class="card key">
+
+                            <div class="keyInfo">
+
+                                <div>
+
+                                    <b>
+                                        ${escapeHTML(
+                                            key.name || "Key"
+                                        )}
+                                    </b>
+
+                                    <div class="small muted">
+                                        ${escapeHTML(
+                                            key.provider ||
+                                            "Google Gemini"
+                                        )}
+                                        ·
+                                        ${escapeHTML(masked)}
+                                    </div>
+
+                                </div>
+
+                                <span class="pill ${active ? "active" : ""}">
+                                    ${status}
+                                </span>
+
+                            </div>
+
+                            <div class="row">
+
+                                <button
+                                    class="button useKey"
+                                    data-id="${escapeHTML(key.id)}"
+                                    type="button"
+                                >
+                                    Use
+                                </button>
+
+                                ${
+                                    primary
+                                    ? ""
+                                    : `
+                                        <button
+                                            class="button stopKey"
+                                            data-id="${escapeHTML(key.id)}"
+                                            type="button"
+                                        >
+                                            ${
+                                                key.enabled === false
+                                                ? "Enable"
+                                                : "Stop"
+                                            }
+                                        </button>
+                                    `
+                                }
+
+                                ${
+                                    primary
+                                    ? ""
+                                    : `
+                                        <button
+                                            class="button danger deleteKey"
+                                            data-id="${escapeHTML(key.id)}"
+                                            type="button"
+                                        >
+                                            Delete
+                                        </button>
+                                    `
+                                }
+
+                            </div>
+
+                        </div>
+                    `;
+
+                })
+                .join("");
+
+        },
+
+        function(error){
+
+            box.innerHTML =
+                '<div class="empty">' +
+                escapeHTML(error) +
+                '</div>';
+
+        }
     );
 
-    /*
-      لا توجد بيانات وهمية.
-      الصفحة تبدأ نظيفة.
-    */
+}
 
-});
+/* =========================================================
+   KEY ACTION
+   ========================================================= */
 
+function keyAction(
+    endpoint,
+    id
+){
+
+    request(
+        "POST",
+        endpoint,
+        {id:id},
+
+        function(){
+
+            loadKeys();
+
+        },
+
+        function(error){
+
+            alert(error);
+
+        }
+    );
+
+}
+
+/* =========================================================
+   EVENTS
+   ========================================================= */
+
+$("menuButton").addEventListener(
+    "click",
+    openMenu
+);
+
+$("closeMenu").addEventListener(
+    "click",
+    closeMenu
+);
+
+$("overlay").addEventListener(
+    "click",
+    closeMenu
+);
+
+document
+    .querySelectorAll("[data-page]")
+    .forEach(button => {
+
+        button.addEventListener(
+            "click",
+            function(){
+
+                showPage(
+                    this.dataset.page
+                );
+
+            }
+        );
+
+    });
+
+$("sendButton").addEventListener(
+    "click",
+    runAgent
+);
+
+$("prompt").addEventListener(
+    "keydown",
+    function(event){
+
+        if(
+            event.key === "Enter" &&
+            !event.shiftKey
+        ){
+
+            event.preventDefault();
+
+            runAgent();
+
+        }
+
+    }
+);
+
+$("prompt").addEventListener(
+    "input",
+    function(){
+
+        this.style.height = "auto";
+
+        this.style.height =
+            Math.min(
+                this.scrollHeight,
+                130
+            ) + "px";
+
+    }
+);
+
+$("clearActivity").addEventListener(
+    "click",
+    function(){
+
+        state.events = [];
+
+        renderActivity();
+
+    }
+);
+
+$("clearTerminal").addEventListener(
+    "click",
+    function(){
+
+        state.terminal = "";
+
+        $("terminalOutput")
+            .textContent = "";
+
+    }
+);
+
+$("refreshFiles").addEventListener(
+    "click",
+    loadFiles
+);
+
+$("newChat").addEventListener(
+    "click",
+    function(){
+
+        request(
+            "POST",
+            "/chats/new",
+            {},
+
+            function(){
+
+                loadChats();
+
+            },
+
+            function(error){
+
+                alert(error);
+
+            }
+        );
+
+    }
+);
+
+/* =========================================================
+   ADD KEY
+   ========================================================= */
+
+$("addKey").addEventListener(
+    "click",
+    function(){
+
+        const name =
+            $("keyName")
+            .value
+            .trim() ||
+            "Gemini Key";
+
+        const apiKey =
+            $("keyValue")
+            .value
+            .trim();
+
+        if(!apiKey){
+
+            alert(
+                "Gemini API key is required."
+            );
+
+            return;
+
+        }
+
+        request(
+            "POST",
+            "/keys",
+            {
+                name:name,
+                apiKey:apiKey
+            },
+
+            function(){
+
+                $("keyName").value = "";
+
+                $("keyValue").value = "";
+
+                loadKeys();
+
+                alert(
+                    "Key added successfully."
+                );
+
+            },
+
+            function(error){
+
+                alert(error);
+
+            }
+        );
+
+    }
+);
+
+/* =========================================================
+   KEY LIST BUTTONS
+   ========================================================= */
+
+$("keyList").addEventListener(
+    "click",
+    function(event){
+
+        const button =
+            event.target.closest("button");
+
+        if(!button){
+            return;
+        }
+
+        const id =
+            button.dataset.id;
+
+        if(!id){
+            return;
+        }
+
+        if(
+            button.classList.contains(
+                "useKey"
+            )
+        ){
+
+            keyAction(
+                "/keys/use",
+                id
+            );
+
+            return;
+
+        }
+
+        if(
+            button.classList.contains(
+                "stopKey"
+            )
+        ){
+
+            const enable =
+                button.textContent
+                .trim()
+                === "Enable";
+
+            keyAction(
+                enable
+                ? "/keys/enable"
+                : "/keys/stop",
+                id
+            );
+
+            return;
+
+        }
+
+        if(
+            button.classList.contains(
+                "deleteKey"
+            )
+        ){
+
+            if(
+                !confirm(
+                    "Delete this key?"
+                )
+            ){
+
+                return;
+
+            }
+
+            request(
+                "DELETE",
+                "/keys/" +
+                encodeURIComponent(id),
+                undefined,
+
+                function(){
+
+                    loadKeys();
+
+                },
+
+                function(error){
+
+                    alert(error);
+
+                }
+            );
+
+        }
+
+    }
+);
+
+/* =========================================================
+   INITIALIZE
+   ========================================================= */
+
+renderActivity();
+
+showPage("home");
+
+loadHealth();
+
+})();
 </script>
+
 </body>
 </html>
